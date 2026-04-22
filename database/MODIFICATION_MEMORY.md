@@ -1,5 +1,24 @@
 # Memória de Modificação - Database (database/)
 
+## [2026-04-22] Adição do Tipo ABONO DE PONTO ART 151 LEI
+
+### Arquivos Modificados/Criados:
+- **migrations/004_add_abono_art151_type.sql**: Nova migration criada e aplicada
+- **full_setup.sql**: ENUM atualizado em `tipo` e `tipo_turno2`
+- **migrations/001_create_tables.sql**: ENUM atualizado em `tipo` e `tipo_turno2`
+
+### Alterações:
+- Adicionado `'ABONO DE PONTO ART 151 LEI'` ao ENUM das colunas `tipo` e `tipo_turno2` da tabela `lancamentos_diarios`.
+- Migration aplicada ao banco existente via Docker (`folhaponto-mysql`).
+
+### Causa Raiz:
+`src/types.ts` incluía o novo tipo mas o ENUM do MySQL não o reconhecia, causando erro `1265 Data truncated for column 'tipo'` ao salvar lançamentos.
+
+### Observação:
+A partir desta data, use o script `add_entry_type.py` na raiz do projeto para adicionar novos tipos. Ele atualiza automaticamente todos os arquivos afetados (TypeScript, SQL e banco de dados).
+
+---
+
 ## [2026-04-17] Sincronização do Schema com Estado Atual do Banco
 
 ### Arquivos Modificados:

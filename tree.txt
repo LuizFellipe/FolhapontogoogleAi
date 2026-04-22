@@ -8,10 +8,12 @@
 📄 MODIFICATION_MEMORY.md
 📄 README.md
 📄 README_SETUP.md
+📄 add_entry_type.py
 📁 backend
 📁 database
 📄 docker-compose.prod.yml
 📄 docker-compose.yml
+📄 env
 📄 index.html
 📄 metadata.json
 📄 nginx.conf

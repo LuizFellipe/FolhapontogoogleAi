@@ -1,4 +1,4 @@
-export type EntryType = 'TRABALHO' | 'FERIAS' | 'RECESSO' | 'ATESTADO' | 'LICENCA' | 'FALTA' | 'TRE' | 'ABONO' | 'CPIP' | 'CURSO' | 'ABONO_NIVER' | 'FERIADO';
+export type EntryType = 'TRABALHO' | 'FERIAS' | 'RECESSO' | 'ATESTADO' | 'LICENCA' | 'FALTA' | 'TRE' | 'ABONO' | 'CPIP' | 'CURSO' | 'ABONO_NIVER' | 'FERIADO' | 'ABONO DE PONTO ART 151 LEI';
 
 export interface DailyEntry {
   day: number;
@@ -58,6 +58,7 @@ export const ENTRY_TYPES: { value: EntryType; label: string }[] = [
   { value: 'FALTA', label: 'FALTA' },
   { value: 'TRE', label: 'TRE' },
   { value: 'ABONO', label: 'ABONO' },
+  { value: 'ABONO DE PONTO ART 151 LEI', label: 'ABONO DE PONTO ART 151 LEI' },
   { value: 'CPIP', label: 'CPIP' },
   { value: 'CURSO', label: 'CURSO FORMAÇÃO CONTINUADA' },
   { value: 'ABONO_NIVER', label: 'ABONO ANIVERSÁRIO' },

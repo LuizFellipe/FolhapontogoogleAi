@@ -1,0 +1,14 @@
+-- Migration 004: Add 'ABONO DE PONTO ART 151 LEI' to tipo ENUM
+-- Execute this against the live database to support the new entry type
+
+ALTER TABLE lancamentos_diarios
+  MODIFY COLUMN tipo ENUM(
+    'TRABALHO','FERIAS','RECESSO','ATESTADO','LICENCA','FALTA',
+    'TRE','ABONO','CPIP','CURSO','ABONO_NIVER','FERIADO',
+    'ABONO DE PONTO ART 151 LEI'
+  ) NOT NULL DEFAULT 'TRABALHO',
+  MODIFY COLUMN tipo_turno2 ENUM(
+    'TRABALHO','FERIAS','RECESSO','ATESTADO','LICENCA','FALTA',
+    'TRE','ABONO','CPIP','CURSO','ABONO_NIVER','FERIADO',
+    'ABONO DE PONTO ART 151 LEI'
+  ) NULL;

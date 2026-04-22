@@ -15,7 +15,7 @@ Um sistema moderno e intuitivo desenvolvido para facilitar a geração e o geren
 - **📅 Calendário Inteligente**: Geração automática de dias com base no mês e ano selecionados.
 - **🛠️ Lançamentos Diversos**:
   - Trabalho Normal (padrão automático)
-  - Férias, Recesso, Atestado Médico, Licença Médica, Falta, TRE, Abono de Ponto.
+  - Férias, Recesso, Atestado Médico, Licença Médica, Falta, TRE, Abono de Ponto, CPIP, Curso, Abono Aniversário, Feriado, Abono de Ponto Art. 151 Lei.
   - **Suporte a Dois Turnos**: Controle independente por turno (matutino/vespertino)
   - **Controle por Carga Horária**: Segundo turno habilitado automaticamente para 40h
 - **📄 Página 2 (Resumo da Frequência)**: 
@@ -87,6 +87,7 @@ FolhapontogoogleAi/
 │   ├── App.tsx          # Orquestrador principal da aplicação
 │   ├── types.ts         # Tipagem TypeScript global
 │   └── README.md        # Documentação detalhada do frontend
+├── 📄 add_entry_type.py # Script para adicionar novos tipos de lançamento
 ├── 📄 index.html        # Ponto de entrada do navegador (Vite)
 ├── 📄 package.json      # Dependências do Node.js e scripts do frontend
 ├── 📄 requirements.txt  # Dependências do Python (Backend)

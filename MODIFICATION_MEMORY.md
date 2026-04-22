@@ -4,6 +4,37 @@ Este arquivo registra as alterações significativas realizadas no projeto para 
 
 ---
 
+## [2026-04-22] Script de Adição de Tipos de Lançamento e Correção de ENUM
+
+### Arquivos Modificados/Criados:
+- [add_entry_type.py](add_entry_type.py) (novo)
+- [database/full_setup.sql](database/full_setup.sql)
+- [database/migrations/001_create_tables.sql](database/migrations/001_create_tables.sql)
+- [database/migrations/004_add_abono_art151_type.sql](database/migrations/004_add_abono_art151_type.sql) (novo)
+- [src/types.ts](src/types.ts)
+
+### Alterações:
+
+#### 1. `src/types.ts` — Novo tipo `ABONO DE PONTO ART 151 LEI`
+- Adicionado ao union type `EntryType` e ao array `ENTRY_TYPES`.
+
+#### 2. Migration `004_add_abono_art151_type.sql`
+- Adiciona `'ABONO DE PONTO ART 151 LEI'` ao ENUM das colunas `tipo` e `tipo_turno2` de `lancamentos_diarios`.
+- Aplicada ao banco existente via Docker (container `folhaponto-mysql`).
+
+#### 3. `full_setup.sql` e `migrations/001_create_tables.sql`
+- ENUMs atualizados para incluir `'ABONO DE PONTO ART 151 LEI'`, garantindo que novas implantações Docker já iniciem com o tipo disponível.
+
+#### 4. `add_entry_type.py` — Script de manutenção
+- Script interativo para adicionar novos tipos de lançamento sem edição manual de arquivos.
+- Atualiza automaticamente: `src/types.ts`, `full_setup.sql`, `migrations/001_create_tables.sql`, cria migration numerada e aplica no banco via Docker.
+- Uso: `python3 add_entry_type.py`
+
+### Causa Raiz do Erro Original:
+`types.ts` foi atualizado com `'ABONO DE PONTO ART 151 LEI'` mas o ENUM do MySQL não incluía o valor, resultando em erro `1265 Data truncated for column 'tipo'` ao salvar.
+
+---
+
 ## [2026-04-22] Correção de Acesso via Rede Local (LAN)
 
 ### Arquivos Modificados:

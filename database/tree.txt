@@ -1,4 +1,5 @@
 # Directory Structure for: database
+├── Dockerfile
 ├── MODIFICATION_MEMORY.md
 ├── README.md
 ├── full_setup.sql
@@ -6,4 +7,5 @@
     ├── 001_create_tables.sql
     ├── 002_make_matricula_optional.sql
     ├── 003_add_second_turn_columns.sql
+    ├── 004_add_abono_art151_type.sql
     └── README.md
