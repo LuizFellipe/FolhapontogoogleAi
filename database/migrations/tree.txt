@@ -1,0 +1,5 @@
+# Directory Structure for: database/migrations
+├── 001_create_tables.sql
+├── 002_make_matricula_optional.sql
+├── 003_add_second_turn_columns.sql
+└── README.md

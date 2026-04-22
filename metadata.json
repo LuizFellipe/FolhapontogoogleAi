@@ -1,0 +1,5 @@
+{
+  "name": "Gerador de Folha de Ponto",
+  "description": "Sistema para geração e gerenciamento de folhas de ponto com lançamentos de férias, atestados e licenças.",
+  "requestFramePermissions": []
+}

@@ -1,0 +1,31 @@
+# Código Fonte do Frontend (Source Code)
+
+Esta pasta concentra toda a lógica de aplicação e componentes da interface do usuário (UI) desenvolvida com **React 18+** e **TypeScript**.
+
+## Estrutura da Pasta
+
+-   **`components/`**: Contém todos os componentes modulares da UI (formulários, grades, pré-visualizações para impressão).
+-   **`services/`**: Camada de serviço de API e regras de comunicação externa.
+-   **`types.ts`**: Arquivo central de definições de tipos TypeScript (Interfaces de Servidor, Folha de Ponto e Lançamentos). Inclui suporte a `type_turno2` para lançamentos independentes por turno. Garante a consistência dos dados em toda a aplicação.
+-   **`App.tsx`**: O orquestrador principal do frontend. Gerencia o estado global da folha selecionada, roteamento de telas e botões de ação do cabeçalho (Salvar, Imprimir, Novo Profissional).
+    - **Novo**: Implementa funções `handleNewProfissional()` e `handleDeleteProfissional()` para CRUD completo.
+    - **Validação**: Verifica nome obrigatório antes de salvar.
+    - **Integração**: Recarrega lista de profissionais após criar/excluir.
+    - **Segundo Turno**: Inicializa entries com `type_turno2: 'TRABALHO'` e passa carga horária para controle de colunas.
+-   **`main.tsx`**: Ponto de entrada oficial da aplicação React montando a estrutura do DOM no `index.html`.
+-   **`index.css`**: Contém todas as declarações de estilos globais, configurações do Tailwind CSS e definições de layout para impressão (como quebras de página controladas).
+-   **`logo.png`**: Logotipo utilizado no cabeçalho e na folha de ponto oficial.
+-   **`MODIFICATION_MEMORY.md`**: Registro consolidado de todas as melhorias visuais e funcionais aplicadas nesta camada.
+
+## Padrões Técnicos
+-   **Arquitetura baseada em Componentes**: Componentes reutilizáveis e isolados.
+-   **Hooks de Estado**: Utiliza `useState` e `useEffect` para controle de interface.
+-   **Tailwind CSS**: Estilização baseada em utilitários (`p-4`, `flex`, `hidden`, etc.).
+-   **Framer Motion**: Animações fluidas entre as páginas da folha e painéis laterais.
+
+## Como Desenvolver
+O código fonte é processado pelo **Vite**. Para rodar o ambiente de desenvolvimento:
+```bash
+npm run dev
+```
+O servidor de desenvolvimento servirá a aplicação em `http://localhost:5173`.

@@ -1,0 +1,71 @@
+# =============================================================================
+# Docker Compose para PRODUÇÃO / USO EM OUTRAS MÁQUINAS
+# Usa imagens pré-construídas do GitHub Container Registry (GHCR)
+#
+# Uso:
+#   1. Copie o .env.example para .env e ajuste as senhas
+#   2. docker-compose -f docker-compose.prod.yml pull
+#   3. docker-compose -f docker-compose.prod.yml up -d
+# =============================================================================
+version: '3.8'
+
+services:
+  db:
+    image: ghcr.io/luizfellipe/folhaponto-db:latest
+    container_name: folhaponto-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-123456}
+      MYSQL_DATABASE: ${DB_NAME:-folhaponto_db}
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # O full_setup.sql já está embutido na imagem ghcr.io/luizfellipe/folhaponto-db
+      # Nenhum arquivo local é necessário — a imagem inicializa o banco automaticamente
+    networks:
+      - folhaponto-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-123456}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  backend:
+    image: ghcr.io/luizfellipe/folhaponto-backend:latest
+    container_name: folhaponto-backend
+    restart: always
+    ports:
+      - "${API_PORT:-5000}:5000"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=${DB_PASSWORD:-123456}
+      - DB_NAME=${DB_NAME:-folhaponto_db}
+      - API_PORT=${API_PORT:-5000}
+      - FLASK_DEBUG=false
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - folhaponto-network
+
+  frontend:
+    image: ghcr.io/luizfellipe/folhaponto-frontend:latest
+    container_name: folhaponto-frontend
+    restart: always
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - folhaponto-network
+
+networks:
+  folhaponto-network:
+    driver: bridge
+
+volumes:
+  mysql_data:

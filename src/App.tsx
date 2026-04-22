@@ -1,0 +1,507 @@
+import { useState, useEffect } from 'react';
+import { EmployeeForm } from './components/EmployeeForm';
+import { TimesheetGrid } from './components/TimesheetGrid';
+import { TimesheetPreview } from './components/TimesheetPreview';
+import { TimesheetSummaryPreview } from './components/TimesheetSummaryPreview';
+import { SummaryForm } from './components/SummaryForm';
+import { EmployeeNavigator } from './components/EmployeeNavigator';
+import { TimesheetData, EmployeeData, DailyEntry, SummaryEntry, MONTHS } from './types';
+import { Printer, FileText, Settings, Download, Save, Database } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { apiService } from './services/api';
+
+const initialEmployee: EmployeeData = {
+  name: 'FULANO DE TAL SOUZA',
+  registration: '0123456-7',
+  cargo: 'PROFESSOR DE EDUC. BASICA 07-PV4',
+  ua: '005',
+  exercicio: '990210000029',
+  ch: '20',
+  funcao: '',
+  unidade: 'CENTRO DE EDUC PROF ESCOLA TEC DO GUARA PROF TERESA ONDINA M',
+  shift1: 'Noturno',
+  shift2: ''
+};
+
+const initialSummary: SummaryEntry[] = Array.from({ length: 8 }, () => ({
+  operation: '',
+  code: '',
+  carga: '',
+  months: '',
+  hoursDays: '',
+  startDay: '',
+  endDay: ''
+}));
+
+export default function App() {
+  const [view, setView] = useState<'edit' | 'preview'>('edit');
+  const [month, setMonth] = useState(new Date().getMonth());
+  const [year, setYear] = useState(new Date().getFullYear());
+  
+  const [employee, setEmployee] = useState<EmployeeData>(initialEmployee);
+  const [entries, setEntries] = useState<DailyEntry[]>([]);
+  const [summaryEntries, setSummaryEntries] = useState<SummaryEntry[]>(initialSummary);
+  const [observations, setObservations] = useState('');
+  
+  // Estados para controle de salvamento e carregamento
+  const [isLoading, setIsLoading] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [currentTimesheetId, setCurrentTimesheetId] = useState<number | null>(null);
+  
+  // Estados para navegação de profissionais
+  const [profissionais, setProfissionais] = useState<any[]>([]);
+  const [currentProfissionalIndex, setCurrentProfissionalIndex] = useState<number>(0);
+  const [isLoadingProfissionais, setIsLoadingProfissionais] = useState(true);
+  const [isNavigating, setIsNavigating] = useState(false);
+
+  // Carregar profissionais na inicialização
+  useEffect(() => {
+    loadProfissionais();
+  }, []);
+
+  // Carregar lista de profissionais
+  const loadProfissionais = async () => {
+    try {
+      setIsLoadingProfissionais(true);
+      const profissionaisData = await apiService.getProfissionais();
+      
+      // Ordenar alfabeticamente por nome
+      const sortedProfissionais = profissionaisData.sort((a: any, b: any) => 
+        a.nome.localeCompare(b.nome)
+      );
+      
+      setProfissionais(sortedProfissionais);
+      
+      // Encontrar o índice do profissional atual baseado na matrícula
+      const currentIndex = sortedProfissionais.findIndex((p: any) => 
+        p.matricula === employee.registration
+      );
+      
+      if (currentIndex !== -1) {
+        setCurrentProfissionalIndex(currentIndex);
+      } else if (sortedProfissionais.length > 0) {
+        // Se não encontrar, usar o primeiro profissional
+        setCurrentProfissionalIndex(0);
+        const firstProfissional = sortedProfissionais[0];
+        setEmployee(apiService.convertProfissionalToEmployee(firstProfissional));
+      }
+    } catch (error) {
+      console.error('Erro ao carregar profissionais:', error);
+    } finally {
+      setIsLoadingProfissionais(false);
+    }
+  };
+
+  // Navegar para profissional por índice
+  const navigateToProfissional = async (index: number) => {
+    if (index < 0 || index >= profissionais.length || index === currentProfissionalIndex || isNavigating) {
+      return;
+    }
+
+    try {
+      setIsNavigating(true);
+      
+      // Salvar folha atual antes de navegar
+      if (saveStatus !== 'idle') {
+        await saveTimesheet();
+      }
+      
+      setCurrentProfissionalIndex(index);
+      const newProfissional = profissionais[index];
+      setEmployee(apiService.convertProfissionalToEmployee(newProfissional));
+    } catch (error) {
+      console.error('Erro ao navegar para profissional:', error);
+    } finally {
+      setIsNavigating(false);
+    }
+  };
+
+  // Deletar profissional
+  const handleDeleteProfissional = async (id: number, nome: string) => {
+    const confirmacao = window.confirm(`Tem certeza que deseja excluir o profissional "${nome}"?\n\nEsta ação não pode ser desfeita e excluirá todas as folhas de ponto associadas.`);
+    
+    if (!confirmacao) {
+      return;
+    }
+
+    try {
+      await apiService.deleteProfissional(id);
+      
+      // Recarregar lista de profissionais
+      await loadProfissionais();
+      
+      // Resetar formulário para o primeiro profissional ou vazio
+      if (profissionais.length > 1) {
+        const newIndex = Math.min(currentProfissionalIndex, profissionais.length - 2);
+        setCurrentProfissionalIndex(newIndex);
+        setEmployee(apiService.convertProfissionalToEmployee(profissionais[newIndex]));
+      } else {
+        setEmployee(initialEmployee);
+        setCurrentProfissionalIndex(0);
+      }
+      
+      alert('Profissional excluído com sucesso!');
+    } catch (error: any) {
+      console.error('Erro ao excluir profissional:', error);
+      alert('Erro ao excluir profissional: ' + (error.message || 'Erro desconhecido'));
+    }
+  };
+
+  // Criar novo profissional
+  const handleNewProfissional = () => {
+    // Salvar folha atual antes de criar novo
+    if (saveStatus !== 'idle') {
+      saveTimesheet();
+    }
+    
+    // Limpar formulário com dados vazios
+    setEmployee({
+      name: '',
+      registration: '',
+      cargo: '',
+      ua: '',
+      exercicio: '',
+      ch: '',
+      funcao: '',
+      unidade: '',
+      shift1: '',
+      shift2: ''
+    });
+    
+    setSummaryEntries(initialSummary);
+    setObservations('');
+    setCurrentTimesheetId(null);
+    
+    // Resetar índice para -1 (nenhum profissional selecionado)
+    setCurrentProfissionalIndex(-1);
+    
+    // Focar no campo de nome
+    setTimeout(() => {
+      const nameInput = document.querySelector('input[name="name"]') as HTMLInputElement;
+      if (nameInput) {
+        nameInput.focus();
+      }
+    }, 100);
+  };
+
+  // Initialize entries when month/year changes
+  useEffect(() => {
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const newEntries: DailyEntry[] = Array.from({ length: daysInMonth }, (_, i) => ({
+      day: i + 1,
+      type: 'TRABALHO',
+      type_turno2: 'TRABALHO',
+      entry1: '',
+      exit1: '',
+      entry2: '',
+      exit2: '',
+      observation: '',
+      observation_turno2: ''
+    }));
+    setEntries(newEntries);
+    
+    // Tentar carregar folha existente quando mudar mês/ano
+    if (profissionais.length > 0) {
+      loadExistingTimesheet();
+    }
+  }, [month, year, currentProfissionalIndex]);
+
+  // Carregar folha de ponto existente
+  const loadExistingTimesheet = async () => {
+    if (profissionais.length === 0) return;
+    
+    try {
+      setIsLoading(true);
+      
+      const currentProfissional = profissionais[currentProfissionalIndex];
+      if (!currentProfissional) return;
+      
+      const timesheetData = await apiService.loadCompleteTimesheet(
+        currentProfissional.id,
+        month,
+        year
+      );
+      
+      if (timesheetData) {
+        setEmployee(timesheetData.employee);
+        setEntries(timesheetData.entries);
+        setSummaryEntries(timesheetData.summaryEntries);
+        setObservations(timesheetData.observations);
+        
+        // Buscar o ID da folha
+        const folhas = await apiService.getFolhasPonto({
+          profissional_id: currentProfissional.id,
+          mes: month,
+          ano: year
+        });
+        if (folhas.length > 0) {
+          setCurrentTimesheetId(folhas[0].id);
+        }
+      } else {
+        // Se não encontrar folha, resetar com dados do profissional atual
+        const employeeData = apiService.convertProfissionalToEmployee(currentProfissional);
+        setEmployee(employeeData);
+        setSummaryEntries(initialSummary);
+        setObservations('');
+        setCurrentTimesheetId(null);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar folha existente:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Salvar folha de ponto completa
+  const saveTimesheet = async () => {
+    try {
+      setSaveStatus('saving');
+      
+      // Validar campos obrigatórios
+      if (!employee.name) {
+        alert('Por favor, preencha pelo menos o nome do servidor.');
+        setSaveStatus('error');
+        setTimeout(() => setSaveStatus('idle'), 3000);
+        return;
+      }
+      
+      const timesheetData: TimesheetData = {
+        month,
+        year,
+        employee,
+        entries,
+        summaryEntries,
+        observations
+      };
+      
+      const result = await apiService.saveCompleteTimesheet(timesheetData);
+      
+      if (result.success) {
+        setCurrentTimesheetId(result.folhaPontoId);
+        setSaveStatus('saved');
+        
+        // Recarregar profissionais para atualizar a lista com o novo cadastro
+        await loadProfissionais();
+        
+        setTimeout(() => setSaveStatus('idle'), 3000);
+      }
+    } catch (error: any) {
+      console.error('Erro ao salvar folha de ponto:', error);
+      setSaveStatus('error');
+      
+      // Exibir mensagem de erro mais amigável
+      const errorMessage = error.message || 'Erro ao salvar folha de ponto';
+      
+      // Se for erro de matrícula duplicada, mostrar alerta específico
+      if (errorMessage.includes('Matrícula') && errorMessage.includes('já está')) {
+        alert(errorMessage);
+      } else {
+        alert('Erro ao salvar: ' + errorMessage);
+      }
+      
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    }
+  };
+
+  const timesheetData: TimesheetData = {
+    month,
+    year,
+    employee,
+    entries,
+    summaryEntries,
+    observations
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  return (
+    <div className="min-h-screen bg-stone-50 pb-20">
+      {/* Navigation Header */}
+      <header className="bg-white border-b border-stone-200 sticky top-0 z-10 no-print">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="bg-stone-900 p-2 rounded-lg">
+              <FileText className="text-white w-5 h-5" />
+            </div>
+            <h1 className="text-xl font-bold tracking-tight text-stone-900">Folha de Ponto</h1>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setView('edit')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                view === 'edit' 
+                ? 'bg-stone-900 text-white shadow-md' 
+                : 'text-stone-600 hover:bg-stone-100'
+              }`}
+            >
+              Editor
+            </button>
+            <button
+              onClick={() => setView('preview')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                view === 'preview' 
+                ? 'bg-stone-900 text-white shadow-md' 
+                : 'text-stone-600 hover:bg-stone-100'
+              }`}
+            >
+              Visualizar
+            </button>
+            <div className="w-px h-6 bg-stone-200 mx-2" />
+            
+            {/* Botão de Salvar */}
+            <button
+              onClick={saveTimesheet}
+              disabled={saveStatus === 'saving'}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                saveStatus === 'saving' 
+                  ? 'bg-gray-400 text-white cursor-not-allowed'
+                  : saveStatus === 'saved'
+                  ? 'bg-green-600 text-white'
+                  : saveStatus === 'error'
+                  ? 'bg-red-600 text-white'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              }`}
+            >
+              <Save className="w-4 h-4" />
+              {saveStatus === 'saving' ? 'Salvando...' : 
+               saveStatus === 'saved' ? 'Salvo!' :
+               saveStatus === 'error' ? 'Erro' : 'Salvar'}
+            </button>
+            
+            {/* Indicador de status do banco */}
+            <div className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+              <Database className="w-3 h-3" />
+              MySQL
+            </div>
+            
+            <div className="w-px h-6 bg-stone-200 mx-2" />
+            
+            <button
+              onClick={handlePrint}
+              className="p-2 text-stone-600 hover:bg-stone-100 rounded-lg transition-all"
+              title="Imprimir"
+            >
+              <Printer className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <AnimatePresence mode="wait">
+          {view === 'edit' ? (
+            <motion.div
+              key="edit"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-8 no-print"
+            >
+              {/* Controls */}
+              <div className="flex flex-wrap items-end gap-4 bg-white p-6 rounded-2xl shadow-sm border border-stone-200">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-medium text-stone-500 uppercase tracking-wider">Mês de Referência</label>
+                  <select
+                    value={month}
+                    onChange={(e) => setMonth(Number(e.target.value))}
+                    className="px-3 py-2 bg-stone-50 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-200"
+                  >
+                    {MONTHS.map((m, i) => (
+                      <option key={m} value={i}>{m}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-medium text-stone-500 uppercase tracking-wider">Ano</label>
+                  <input
+                    type="number"
+                    value={year}
+                    onChange={(e) => setYear(Number(e.target.value))}
+                    className="px-3 py-2 bg-stone-50 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-200 w-24"
+                  />
+                </div>
+                
+                {/* Navegação de Profissionais */}
+                <div className="flex flex-col gap-1 flex-1 min-w-[400px]">
+                  <label className="text-xs font-medium text-stone-500 uppercase tracking-wider">Servidor</label>
+                  <EmployeeNavigator
+                    profissionais={profissionais}
+                    currentIndex={currentProfissionalIndex}
+                    isLoading={isLoadingProfissionais || isNavigating}
+                    onNavigate={navigateToProfissional}
+                    onDelete={handleDeleteProfissional}
+                    onNew={handleNewProfissional}
+                  />
+                </div>
+                
+                <div className="flex-1" />
+                <button 
+                  onClick={() => setView('preview')}
+                  className="flex items-center gap-2 bg-stone-900 text-white px-6 py-2 rounded-xl font-medium hover:bg-stone-800 transition-all shadow-lg shadow-stone-200"
+                >
+                  <Download className="w-4 h-4" />
+                  Gerar Folha
+                </button>
+              </div>
+
+              <EmployeeForm data={employee} onChange={setEmployee} />
+              
+              <TimesheetGrid 
+                entries={entries} 
+                month={month} 
+                year={year} 
+                onChange={setEntries} 
+                employeeCh={employee.ch}
+              />
+
+              <SummaryForm 
+                entries={summaryEntries} 
+                onChange={setSummaryEntries} 
+              />
+
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-stone-200">
+                <h2 className="text-lg font-semibold mb-4 text-stone-800 border-b pb-2">Observações</h2>
+                <textarea
+                  value={observations}
+                  onChange={(e) => setObservations(e.target.value)}
+                  className="w-full h-32 px-3 py-2 bg-stone-50 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-200 transition-all resize-none"
+                  placeholder="Informações adicionais..."
+                />
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="preview"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="py-4 space-y-8 print-wrapper"
+            >
+              <div className="mb-6 flex justify-center no-print">
+                <div className="bg-stone-900/5 px-4 py-2 rounded-full text-stone-600 text-sm flex items-center gap-2">
+                  <Settings className="w-4 h-4 animate-spin-slow" />
+                  Modo de Visualização para Impressão (Página 1 e 2)
+                </div>
+              </div>
+              <TimesheetPreview data={timesheetData} />
+              <TimesheetSummaryPreview data={timesheetData} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
+
+      {/* Floating Action Button for Mobile */}
+      <div className="fixed bottom-6 right-6 no-print md:hidden">
+        <button 
+          onClick={handlePrint}
+          className="bg-stone-900 text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform active:scale-95"
+        >
+          <Printer className="w-6 h-6" />
+        </button>
+      </div>
+    </div>
+  );
+}

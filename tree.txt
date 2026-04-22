@@ -1,0 +1,25 @@
+# Root Directory Structure (Shallow)
+📄 Dockerfile
+📄 EmitirFolha.pdf
+📄 FolhaExemplo.jpeg
+📄 FolhaExemplo.odg
+📄 FolhaExemplo.pdf
+📄 FolhaExemplo2.jpeg
+📄 MODIFICATION_MEMORY.md
+📄 README.md
+📄 README_SETUP.md
+📁 backend
+📁 database
+📄 docker-compose.prod.yml
+📄 docker-compose.yml
+📄 index.html
+📄 metadata.json
+📄 nginx.conf
+📄 package-lock.json
+📄 package.json
+📄 requirements.txt
+📁 src
+📄 start_backend.sh
+📄 tsconfig.json
+📄 update_tree.py
+📄 vite.config.ts

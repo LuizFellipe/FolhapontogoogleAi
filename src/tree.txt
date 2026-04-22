@@ -1,0 +1,21 @@
+# Directory Structure for: src
+├── App.tsx
+├── MODIFICATION_MEMORY.md
+├── README.md
+├── components
+│   ├── EmployeeForm.tsx
+│   ├── EmployeeNavigator.tsx
+│   ├── MODIFICATION_MEMORY.md
+│   ├── README.md
+│   ├── SummaryForm.tsx
+│   ├── TimesheetGrid.tsx
+│   ├── TimesheetPreview.tsx
+│   └── TimesheetSummaryPreview.tsx
+├── index.css
+├── logo.png
+├── main.tsx
+├── services
+│   ├── README.md
+│   └── api.ts
+├── types.ts
+└── vite-env.d.ts
