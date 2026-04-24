@@ -165,7 +165,8 @@ def apply_migration(migration_file: Path, env: dict):
         print(f"  Aplicando via Docker (container: {container})...")
         cmd = [
             "docker", "exec", "-i", container,
-            "mysql", "-u", env["DB_USER"], f"-p{env['DB_PASSWORD']}", env["DB_NAME"]
+            "mysql", "--default-character-set=utf8mb4",
+            "-u", env["DB_USER"], f"-p{env['DB_PASSWORD']}", env["DB_NAME"]
         ]
         with open(migration_file) as f:
             result = subprocess.run(cmd, stdin=f, capture_output=True, text=True)

@@ -15,7 +15,7 @@ Um sistema moderno e intuitivo desenvolvido para facilitar a geração e o geren
 - **📅 Calendário Inteligente**: Geração automática de dias com base no mês e ano selecionados.
 - **🛠️ Lançamentos Diversos**:
   - Trabalho Normal (padrão automático)
-  - Férias, Recesso, Atestado Médico, Licença Médica, Falta, TRE, Abono de Ponto, CPIP, Curso, Abono Aniversário, Feriado, Abono de Ponto Art. 151 Lei.
+  - Férias, Recesso, Atestado Médico, Licença Médica, Falta, TRE, Abono de Ponto, CPIP, Curso, Abono Aniversário, Feriado, Abono de Ponto Art. 151 Lei, Falta Paralisação, Atestado de Comparecimento.
   - **Suporte a Dois Turnos**: Controle independente por turno (matutino/vespertino)
   - **Controle por Carga Horária**: Segundo turno habilitado automaticamente para 40h
 - **📄 Página 2 (Resumo da Frequência)**: 

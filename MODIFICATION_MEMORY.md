@@ -4,6 +4,39 @@ Este arquivo registra as alterações significativas realizadas no projeto para 
 
 ---
 
+## [2026-04-24] Correção de Mojibake no ENUM — FALTA PARALISAÇÃO e ATESTADO DE COMPARECIMENTO
+
+### Arquivos Modificados:
+- [add_entry_type.py](add_entry_type.py)
+- Banco de dados MySQL (via Docker exec)
+
+### Alterações:
+
+#### 1. `add_entry_type.py` — Adicionado `--default-character-set=utf8mb4` ao comando `mysql`
+- **Antes**: `["docker", "exec", "-i", container, "mysql", "-u", ...]`
+- **Depois**: `["docker", "exec", "-i", container, "mysql", "--default-character-set=utf8mb4", "-u", ...]`
+
+#### 2. Banco de dados — ENUM recriado com valores corretos
+- As migrations 005 (FALTA PARALISAÇÃO) e 006 (ATESTADO DE COMPARECIMENTO) foram aplicadas sem o flag de charset, causando Mojibake: os bytes UTF-8 de `Ç` (0xC3 0x87) e `Ã` (0xC3 0x83) foram interpretados como caracteres cp1252 (`‡` e `ƒ`) e armazenados corrompidos no ENUM.
+- Correção aplicada via `ALTER TABLE ... MODIFY COLUMN tipo ENUM(...) / tipo_turno2 ENUM(...)` com `--default-character-set=utf8mb4`, restaurando os valores corretos nas colunas `tipo` e `tipo_turno2` de `lancamentos_diarios`.
+
+### Causa Raiz do Erro:
+`add_entry_type.py` chamava `mysql` via Docker sem `--default-character-set=utf8mb4`. O arquivo de migration (UTF-8) era lido com charset padrão do servidor (latin1/cp1252), corrompendo os caracteres acentuados do ENUM. O resultado era erro `1265 (01000): Data truncated for column 'tipo' at row 1` ao tentar salvar qualquer lançamento com os novos tipos.
+
+### Como Diagnosticar Problemas Similares:
+```sql
+-- Verificar bytes reais do ENUM (Mojibake aparece como 'Ã‡', 'Ãƒ', etc.)
+SELECT COLUMN_TYPE FROM information_schema.COLUMNS
+WHERE TABLE_NAME='lancamentos_diarios' AND COLUMN_NAME='tipo';
+
+-- Testar inserção direta
+INSERT INTO lancamentos_diarios (folha_ponto_id, dia, tipo, observacao, tipo_turno2, observacao_turno2)
+VALUES (1, 99, 'FALTA PARALISAÇÃO', '', 'TRABALHO', '');
+DELETE FROM lancamentos_diarios WHERE dia=99;
+```
+
+---
+
 ## [2026-04-22] Script de Adição de Tipos de Lançamento e Correção de ENUM
 
 ### Arquivos Modificados/Criados:
