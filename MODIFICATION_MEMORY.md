@@ -1,5 +1,99 @@
 # Memória de Modificações do Projeto
 
+## [2026-04-26] Configuração Condicional do Proxy Vite e Otimizações Docker
+
+### Arquivos Modificados:
+- [vite.config.ts](vite.config.ts)
+- [.env.example](.env.example)
+- [Dockerfile](Dockerfile)
+- [backend/Dockerfile](backend/Dockerfile)
+- [package.json](package.json)
+- [.dockerignore](.dockerignore) (novo)
+
+### Problema:
+O proxy Vite estava configurado com target fixo (`localhost:5000` ou `backend:5000`), o que impedia o funcionamento simultâneo em desenvolvimento local e ambiente Docker. Além disso, os Dockerfiles não estavam otimizados e continham dependências desnecessárias no package.json.
+
+### Soluções Implementadas:
+
+#### 1. Configuração Condicional do Proxy
+- **vite.config.ts**: Implementada lógica condicional baseada em `VITE_ENVIRONMENT`
+  - `VITE_ENVIRONMENT=local` → proxy para `http://localhost:5000`
+  - `VITE_ENVIRONMENT=docker` → proxy para `http://backend:5000`
+- **.env.example**: Adicionada documentação da nova variável com exemplos
+- **Resultado**: Mesmo código funciona em ambos os ambientes sem alterações manuais
+
+#### 2. Otimizações nos Dockerfiles
+- **Dockerfile principal**: Adicionado `ENV VITE_ENVIRONMENT=docker` e `COPY .env .`
+- **Backend Dockerfile**: Adicionado `ENV VITE_ENVIRONMENT=docker` e `COPY .env .`
+- **Resultado**: Variáveis de ambiente disponíveis durante build e execução
+
+#### 3. Limpeza de Dependências
+- **package.json**: Removidas dependências desnecessárias (`express`, `dotenv`, `@types/express`)
+- **Resultado**: Build mais limpo e eficiente
+
+#### 4. .dockerignore (novo)
+- **Criado**: Arquivo `.dockerignore` otimizado para builds Docker
+- **Conteúdo**: Exclusão de arquivos desnecessários (node_modules, .git, logs, etc.)
+- **Resultado**: Builds mais rápidos e imagens menores
+
+### Comportamento Implementado:
+
+#### Desenvolvimento Local (start_backend.sh):
+- `VITE_ENVIRONMENT` não definido → usa padrão `local`
+- Proxy aponta para `localhost:5000`
+- Funciona com backend rodando localmente
+
+#### Ambiente Docker (docker-compose):
+- `VITE_ENVIRONMENT=docker` definido nos Dockerfiles
+- Proxy aponta para `backend:5000` (nome do serviço)
+- Funciona com comunicação entre containers
+
+### Benefícios:
+- ✅ **Flexibilidade Total**: Mesmo código funciona em ambos os ambientes
+- ✅ **Automático**: Sem necessidade de configurações manuais
+- ✅ **Consistente**: Proxy correto para cada cenário
+- ✅ **Otimizado**: Builds Docker mais eficientes
+- ✅ **Manutenível**: Único ponto de configuração
+
+### Validação:
+- ✅ `start_backend.sh` funciona com proxy local
+- ✅ `docker-compose up` funciona com proxy Docker
+- ✅ Build otimizado com .dockerignore
+- ✅ Dependências limpas no package.json
+
+---
+
+## [2026-04-26] Atualização da Documentação do Projeto
+
+### Arquivos Modificados:
+- [tree.txt](tree.txt)
+- [README.md](README.md)
+
+### Problema:
+A documentação do projeto estava desatualizada e não refletia a estrutura real dos arquivos e funcionalidades implementadas.
+
+### Correções:
+
+#### 1. tree.txt
+- **Removidos**: Arquivos inexistentes (EmitirFolha.pdf, FolhaExemplo.*, etc.)
+- **Adicionados**: Arquivos existentes não listados (.env.example, .gitignore, metadata.json, etc.)
+- **Corrigido**: Nome `env` → `.env`
+- **Atualizada**: Estrutura completa de diretórios (.claude/, .git/, node_modules/, venv/)
+
+#### 2. README.md
+- **Funcionalidades**: Atualizadas para refletir sistema simplificado (apenas Dia + Tipo)
+- **Navegação**: Adicionada descrição da navegação entre profissionais
+- **Como Usar**: Removidas referências a preenchimento de horários
+- **Estrutura**: Atualizada com listagem completa e detalhada dos arquivos
+- **Pré-preenchimento**: Simplificada descrição da funcionalidade
+
+### Resultado:
+- ✅ Documentação 100% alinhada com estrutura real do projeto
+- ✅ Descrição precisa das funcionalidades atuais
+- ✅ Facilita manutenção e onboarding de novos desenvolvedores
+
+---
+
 ## [2026-04-26] Ampliação do Campo de Nome do Servidor no Navegador
 
 ### Arquivos Modificados:

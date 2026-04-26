@@ -8,4 +8,7 @@
     ├── 002_make_matricula_optional.sql
     ├── 003_add_second_turn_columns.sql
     ├── 004_add_abono_art151_type.sql
+    ├── 005_add_type_falta_paralisação.sql
+    ├── 006_add_type_atestado_de_comparecimento.sql
+    ├── 007_add_type_lic_acomp_pessoa_doente.sql
     └── README.md

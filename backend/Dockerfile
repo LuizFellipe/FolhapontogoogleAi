@@ -3,6 +3,9 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# Configurar ambiente Docker para consistência
+ENV VITE_ENVIRONMENT=docker
+
 # Instalar apenas dependências de sistema necessárias para o mysql-connector
 RUN apt-get update && apt-get install -y --no-install-recommends \
     default-libmysqlclient-dev \
@@ -14,7 +17,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar o código do backend
+# Copiar o .env e o código do backend
+COPY .env .
 COPY backend/ .
 
 EXPOSE 5000

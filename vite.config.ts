@@ -22,7 +22,9 @@ export default defineConfig(({mode}) => {
       host: true,
       proxy: {
         '/api': {
-          target: 'http://0.0.0.0:5000',
+          target: env.VITE_ENVIRONMENT === 'docker' 
+            ? 'http://backend:5000' 
+            : 'http://localhost:5000',
           changeOrigin: true,
         },
       },

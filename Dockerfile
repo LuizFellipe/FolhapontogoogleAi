@@ -5,11 +5,15 @@ FROM node:20-slim AS builder
 
 WORKDIR /app
 
+# Configurar ambiente Docker para proxy correto
+ENV VITE_ENVIRONMENT=docker
+
 # Instala dependências primeiro (cache eficiente)
 COPY package*.json ./
 RUN npm ci --prefer-offline
 
-# Copia o código-fonte e gera o build de produção
+# Copia o .env e o código-fonte, então gera o build de produção
+COPY .env .
 COPY . .
 RUN npm run build
 

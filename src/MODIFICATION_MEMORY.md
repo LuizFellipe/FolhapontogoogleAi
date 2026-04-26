@@ -89,6 +89,63 @@ Implementar suporte a lançamentos independentes por turno com controle automát
 
 ---
 
+## [2026-04-20] Simplificação Completa do Sistema - Apenas Dia + Tipo
+
+**Data:** 2026-04-20
+**Objetivo:** Sistema ultra-simplificado com apenas **Dia + Tipo de Lançamento**, removendo todos os campos desnecessários.
+
+### Arquivos Modificados:
+1. **types.ts**: 
+   - **DailyEntry**: Reduzida para apenas `day` e `type`
+   - **Removidos**: entry1, exit1, entry2, exit2, observation, type_turno2, observation_turno2
+   - **ENTRY_TYPES**: Mantidos apenas tipos essenciais de lançamento
+
+2. **App.tsx**:
+   - **Removido TimesheetGrid**: Substituído por tabela inline simplificada
+   - **Tabela**: 2 colunas apenas (Dia + Tipo)
+   - **Inicialização**: Entries criadas apenas com dia e tipo
+   - **Importação**: Adicionado ENTRY_TYPES do types.ts
+
+3. **services/api.ts**:
+   - **Salvamento**: Apenas dia + tipo + campos vazios para compatibilidade
+   - **Carregamento**: Apenas dia + tipo do banco
+   - **Conversão**: Simplificada para essencial
+
+4. **components/TimesheetPreview.tsx**:
+   - **Layout**: Reduzido para 2 colunas
+   - **Cabeçalho**: Simplificado sem turnos e horários
+   - **Corpo**: Apenas dia + tipo de lançamento
+   - **Logo**: Substituído por placeholder textual
+
+5. **components/TimesheetGrid.tsx**: 
+   - **Removido**: Componente complexo substituído por tabela inline
+   - **Simplificado**: Sistema agora usa abordagem direta em App.tsx
+
+### Estrutura Final Implementada:
+```
+Dia | Tipo de Lançamento
+01  | Trabalho Normal
+02  | FÉRIAS
+03  | ATESTADO
+```
+
+### Benefícios Alcançados:
+- ✅ Interface ultra-simplificada e direta
+- ✅ Fluxo objetivo sem campos desnecessários
+- ✅ Banco de dados limpo com dados essenciais
+- ✅ Foco no essencial sem complexidade
+- ✅ Manutenção simplificada
+- ✅ Performance melhorada
+
+### Funcionalidades Mantidas:
+- ✅ Seleção de tipo de lançamento
+- ✅ Navegação entre profissionais
+- ✅ Salvamento e carregamento
+- ✅ Preview para impressão
+- ✅ Resumo da folha
+
+---
+
 ## [2026-03-26] Remoção de Campos de Horário
 
 **Data:** 2026-03-26

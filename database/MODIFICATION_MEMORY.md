@@ -19,6 +19,51 @@ A partir desta data, use o script `add_entry_type.py` na raiz do projeto para ad
 
 ---
 
+## [2026-04-23] Adição do Tipo FALTA PARALISAÇÃO
+
+### Arquivos Modificados/Criados:
+- **migrations/005_add_type_falta_paralisação.sql**: Nova migration criada e aplicada
+- **full_setup.sql**: ENUM atualizado em `tipo` e `tipo_turno2`
+- **migrations/001_create_tables.sql**: ENUM atualizado em `tipo` e `tipo_turno2`
+
+### Alterações:
+- Adicionado `'FALTA PARALISAÇÃO'` ao ENUM das colunas `tipo` e `tipo_turno2` da tabela `lancamentos_diarios`.
+- Migration gerada automaticamente pelo script `add_entry_type.py`.
+
+---
+
+## [2026-04-24] Adição do Tipo ATESTADO DE COMPARECIMENTO
+
+### Arquivos Modificados/Criados:
+- **migrations/006_add_type_atestado_de_comparecimento.sql**: Nova migration criada e aplicada
+- **full_setup.sql**: ENUM atualizado em `tipo` e `tipo_turno2`
+- **migrations/001_create_tables.sql**: ENUM atualizado em `tipo` e `tipo_turno2`
+
+### Alterações:
+- Adicionado `'ATESTADO DE COMPARECIMENTO'` ao ENUM das colunas `tipo` e `tipo_turno2` da tabela `lancamentos_diarios`.
+- Migration gerada automaticamente pelo script `add_entry_type.py`.
+
+---
+
+## [2026-04-25] Adição de Múltiplos Tipos de Lançamento
+
+### Arquivos Modificados/Criados:
+- **migrations/007_add_type_lic_acomp_pessoa_doente.sql**: Nova migration criada e aplicada
+- **full_setup.sql**: ENUM atualizado em `tipo` e `tipo_turno2`
+- **migrations/001_create_tables.sql**: ENUM atualizado em `tipo` e `tipo_turno2`
+
+### Alterações:
+- Adicionados múltiplos tipos ao ENUM das colunas `tipo` e `tipo_turno2` da tabela `lancamentos_diarios`:
+  - `'AFAST DOACAO SANGUE ART 62'`
+  - `'LIC. ACOMP. PESSOA DOENTE'`
+  - `'ABONO DE PONTO BIMESTRAL LEI'`
+- Migration gerada automaticamente pelo script `add_entry_type.py`.
+
+### Observação:
+Nesta mesma data, o tipo `'SUSPENSAO'` também foi adicionado manualmente ao schema, estando presente no `full_setup.sql` mas sem migration específica.
+
+---
+
 ## [2026-04-17] Sincronização do Schema com Estado Atual do Banco
 
 ### Arquivos Modificados:
