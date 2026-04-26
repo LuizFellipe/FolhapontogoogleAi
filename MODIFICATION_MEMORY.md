@@ -1,5 +1,41 @@
 # Memória de Modificações do Projeto
 
+---
+
+## [2026-04-25] Sincronização de Tipos de Lançamento: LIC. ACOMP. PESSOA DOENTE, AFAST DOACAO SANGUE ART 62, ABONO DE PONTO BIMESTRAL LEI
+
+### Arquivos Modificados:
+- [src/types.ts](src/types.ts)
+- [database/migrations/007_add_type_lic_acomp_pessoa_doente.sql](database/migrations/007_add_type_lic_acomp_pessoa_doente.sql) (novo)
+- [database/full_setup.sql](database/full_setup.sql)
+
+### Alterações:
+
+#### 1. `src/types.ts` — Três novos tipos adicionados
+- Adicionados ao union type `EntryType` e ao array `ENTRY_TYPES`:
+  - `'LIC. ACOMP. PESSOA DOENTE'`
+  - `'AFAST DOACAO SANGUE ART 62'`
+  - `'ABONO DE PONTO BIMESTRAL LEI'`
+
+#### 2. Migration `007_add_type_lic_acomp_pessoa_doente.sql`
+- Adiciona os três novos tipos ao ENUM das colunas `tipo` e `tipo_turno2` de `lancamentos_diarios`.
+- Destinada a instalações frescas via migrations (1-6 → 7).
+- **ATENÇÃO**: Não deve ser aplicada ao banco de produção existente pois ele já possui esses valores no ENUM.
+
+#### 3. `full_setup.sql`
+- ENUM atualizado para incluir os três novos tipos, garantindo que novas implantações Docker já iniciem com todos os tipos disponíveis.
+
+### Causa Raiz do Problema:
+Os três tipos de lançamento foram adicionados diretamente ao banco de dados de produção (via ALTER TABLE manual) sem que os arquivos do projeto fossem atualizados. Ao baixar o projeto do git e restaurar o banco, o frontend não exibia esses lançamentos pois o TypeScript não os reconhecia como `EntryType` válidos — o registro id 13335 (`LIC. ACOMP. PESSOA DOENTE`) ficava invisível na grade diária.
+
+### Como Identificar Novos Tipos Ausentes:
+```sql
+-- No banco de produção, listar todos os tipos distintos usados:
+SELECT tipo, COUNT(*) FROM lancamentos_diarios GROUP BY tipo ORDER BY qtd DESC;
+SELECT tipo_turno2, COUNT(*) FROM lancamentos_diarios GROUP BY tipo_turno2;
+-- Comparar com o array ENTRY_TYPES em src/types.ts
+```
+
 Este arquivo registra as alterações significativas realizadas no projeto para facilitar o acompanhamento e a manutenção.
 
 ---
