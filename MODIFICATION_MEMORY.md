@@ -1,5 +1,69 @@
 # Memória de Modificações do Projeto
 
+## [2026-04-26] Ampliação do Campo de Nome do Servidor no Navegador
+
+### Arquivos Modificados:
+- [src/components/EmployeeNavigator.tsx](src/components/EmployeeNavigator.tsx)
+- [src/App.tsx](src/App.tsx)
+
+### Problema:
+O campo `<select>` de seleção do servidor exibia o nome truncado (ex.: "ALLANA DA SILVA S...") porque a classe `min-w-0` permitia que o elemento encolhesse indefinidamente, e o container pai tinha `min-w-[400px]`, insuficiente para nomes longos.
+
+### Correção:
+- **`EmployeeNavigator.tsx`**: Alterada classe do `<select>` de `flex-1 min-w-0` para `flex-1 min-w-[280px]`, garantindo largura mínima para exibição do nome completo.
+- **`App.tsx`**: Aumentada a `min-w` do container do navegador de `min-w-[400px]` para `min-w-[700px]`, dando mais espaço total ao componente.
+
+---
+
+## [2026-04-26] Correção Pré Preenchimento — não propagar tipos diferentes de CPIP/CURSO
+
+### Arquivos Modificados:
+- [src/App.tsx](src/App.tsx)
+
+### Problema:
+Ao realizar o pré preenchimento, dias cuja condição `temCpipCurso` era satisfeita apenas pelo turno 2 (ex.: `tipo_turno2 = 'CPIP'`) tinham o valor bruto do turno 1 copiado para o novo mês (ex.: `'ATESTADO DE COMPARECIMENTO'`), pois o padrão era salvo com `lancamento.tipo || 'TRABALHO'` sem verificar se o valor era CPIP/CURSO.
+
+### Correção (`src/App.tsx` — `handlePreFill`):
+- Declarada constante `CPIP_CURSO = ['CPIP', 'CURSO']` antes do loop.
+- Condição `temCpipCurso` refatorada para usar `CPIP_CURSO.includes(...)`.
+- Ao registrar o padrão, cada turno é armazenado como CPIP/CURSO somente se ele próprio pertencer à lista; caso contrário, cai para `'TRABALHO'`.
+
+---
+
+## [2026-04-26] Pré Preenchimento de CPIP/CURSO e Botão Limpar Lançamentos
+
+### Arquivos Modificados:
+- [src/App.tsx](src/App.tsx)
+- [src/components/EmployeeNavigator.tsx](src/components/EmployeeNavigator.tsx)
+
+### Alterações:
+
+#### 1. `src/App.tsx` — Duas novas funções e novo estado
+
+- **`isPreFilling`** (estado): controla o loading do botão durante a busca na API.
+- **`handlePreFill`**: busca todas as folhas do profissional no mesmo ano (`getFolhasPonto({ profissional_id, ano })`), filtra excluindo o mês atual, ordena pela mais próxima e itera sobre os lançamentos à procura de dias com `tipo` **ou** `tipo_turno2` igual a `'CPIP'` ou `'CURSO'`. Para cada dia da semana (seg=1...sex=5) encontrado, registra o padrão `{tipo, tipo_turno2}` usando a primeira ocorrência. Aplica o padrão ao mês atual via `setEntries`.
+- **`handleClearEntries`**: reseta todos os `entries` para `type: 'TRABALHO'` e `type_turno2: 'TRABALHO'`.
+- Novos props `onPreFill`, `onClear` e `isPreFilling` passados ao `EmployeeNavigator`.
+
+#### 2. `src/components/EmployeeNavigator.tsx` — Layout reorganizado em duas linhas
+
+- Adicionados props `onPreFill`, `onClear`, `isPreFilling` à interface `Props`.
+- Importados ícones `ClipboardList` e `X` do `lucide-react`.
+- Layout reestruturado de linha única para **duas linhas**:
+  - **Linha 1**: botões `< >` · indicador `N de Total` · dropdown de seleção · botões Novo (verde) e Excluir (vermelho).
+  - **Linha 2**: botão **Pré Preenchimento** (âmbar) · botão **Limpar Lançamentos** (cinza).
+- Removido bloco redundante "Nome atual" (o nome já aparece no dropdown).
+
+### Comportamento do Algoritmo:
+1. Busca folhas do mesmo ano excluindo o mês atual.
+2. Ordena pela folha mais próxima (menor diferença de mês).
+3. Verifica `tipo` **e** `tipo_turno2` — necessário porque o padrão pode estar apenas no turno 2 (ex: usuário id=114 tem CPIP somente em `tipo_turno2`).
+4. Para cada dia da semana com CPIP/CURSO, registra a primeira ocorrência encontrada.
+5. Aplica o padrão a todos os dias equivalentes no novo mês.
+
+### Objetivo:
+Permitir o reaproveitamento do padrão semanal de `CPIP` e `CURSO FORMAÇÃO CONTINUADA` de folhas anteriores do mesmo ano, evitando retrabalho ao abrir um novo mês para profissionais com lançamentos regulares dessas ocorrências.
+
 ---
 
 ## [2026-04-25] Sincronização de Tipos de Lançamento: LIC. ACOMP. PESSOA DOENTE, AFAST DOACAO SANGUE ART 62, ABONO DE PONTO BIMESTRAL LEI
@@ -37,7 +101,6 @@ SELECT tipo_turno2, COUNT(*) FROM lancamentos_diarios GROUP BY tipo_turno2;
 ```
 
 Este arquivo registra as alterações significativas realizadas no projeto para facilitar o acompanhamento e a manutenção.
-
 ---
 
 ## [2026-04-24] Correção de Mojibake no ENUM — FALTA PARALISAÇÃO e ATESTADO DE COMPARECIMENTO

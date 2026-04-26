@@ -4,6 +4,66 @@ Este arquivo registra as modificações significativas realizadas nos componente
 
 ---
 
+## [2026-04-26] - Melhoria: Ampliação do Campo de Nome do Servidor no Navegador
+
+### 🔍 Alterações Realizadas
+
+#### 1. EmployeeNavigator.tsx — Largura mínima do `<select>`
+- Classe alterada de `flex-1 min-w-0` para `flex-1 min-w-[280px]`.
+- `min-w-0` permitia que o elemento encolhesse indefinidamente, truncando nomes longos (ex.: "ALLANA DA SILVA S...").
+- Com `min-w-[280px]`, o campo garante espaço suficiente para exibir o nome completo.
+
+### ✅ Arquivos Modificados
+- `src/components/EmployeeNavigator.tsx`
+
+### 🎯 Objetivo
+Exibir o nome completo do servidor no campo de seleção do navegador, sem truncamento.
+
+---
+
+## [2026-04-26] - Funcionalidade: Pré Preenchimento de CPIP/CURSO e Botão Limpar Lançamentos
+
+### 🔍 Alterações Realizadas
+
+#### 1. EmployeeNavigator.tsx — Reestruturação de layout e novos props
+- Adicionados props à interface `Props`: `onPreFill`, `onClear`, `isPreFilling`.
+- Importados ícones `ClipboardList` e `X` do `lucide-react`.
+- Layout reestruturado de linha única para **duas linhas**:
+  - **Linha 1**: botões `< >` · indicador `N de Total` · dropdown de seleção · botões Novo (verde) e Excluir (vermelho).
+  - **Linha 2**: botão **Pré Preenchimento** (âmbar, com estado de loading) · botão **Limpar Lançamentos** (cinza).
+- Removido bloco redundante "Nome atual" (o nome já aparece no dropdown).
+- Botões desabilitados quando `isNewProfissional` é verdadeiro.
+
+### ✅ Arquivos Modificados
+- `src/components/EmployeeNavigator.tsx`
+
+### 🎯 Objetivo
+Permitir o reaproveitamento do padrão semanal de `CPIP` e `CURSO FORMAÇÃO CONTINUADA` de folhas anteriores do mesmo ano, e resetar todos os lançamentos para TRABALHO NORMAL com um clique.
+
+---
+
+## [2026-03-30] - Funcionalidade: Matrícula Opcional, Exclusão e Inclusão de Profissionais
+
+### 🔍 Alterações Realizadas
+
+#### 1. EmployeeForm.tsx — Campo matrícula opcional
+- Campo de matrícula passa a aceitar valor vazio, com placeholder indicativo de que é opcional.
+
+#### 2. EmployeeNavigator.tsx — Novos controles de cadastro
+- Adicionado botão **Excluir** (ícone lixeira, vermelho) ao lado do nome do profissional.
+- Adicionado botão **Novo** (ícone usuário, verde) para criar novo cadastro em branco.
+- Indicador visual **"NOVO"** (badge verde) substitui o contador "N de Total" durante a criação.
+- Botões Anterior/Próximo desabilitados durante a criação de novo cadastro.
+
+### ✅ Arquivos Modificados
+- `src/components/EmployeeForm.tsx`
+- `src/components/EmployeeNavigator.tsx`
+
+### 🎯 Objetivo
+Permitir o cadastro de servidores sem matrícula, possibilitar a exclusão de cadastros e adicionar funcionalidade de criar novos profissionais diretamente pela interface.
+
+---
+
 ## [2026-04-12] - Melhoria: Impressão Preenche A4 Completo
 
 ### 🔍 Alterações Realizadas

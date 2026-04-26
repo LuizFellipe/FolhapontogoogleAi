@@ -53,6 +53,7 @@ export default function App() {
   const [currentProfissionalIndex, setCurrentProfissionalIndex] = useState<number>(0);
   const [isLoadingProfissionais, setIsLoadingProfissionais] = useState(true);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [isPreFilling, setIsPreFilling] = useState(false);
 
   // Carregar profissionais na inicialização
   useEffect(() => {
@@ -144,6 +145,87 @@ export default function App() {
     } catch (error: any) {
       console.error('Erro ao excluir profissional:', error);
       alert('Erro ao excluir profissional: ' + (error.message || 'Erro desconhecido'));
+    }
+  };
+
+  // Limpar todos os lançamentos para TRABALHO NORMAL
+  const handleClearEntries = () => {
+    setEntries(prev => prev.map(e => ({ ...e, type: 'TRABALHO' as const, type_turno2: 'TRABALHO' as const })));
+  };
+
+  // Pré preenchimento: replica padrão semanal de CPIP/CURSO de folha anterior do mesmo ano
+  const handlePreFill = async () => {
+    const currentProfissional = profissionais[currentProfissionalIndex];
+    if (!currentProfissional) {
+      alert('Selecione um servidor para realizar o pré preenchimento.');
+      return;
+    }
+
+    try {
+      setIsPreFilling(true);
+
+      const folhasDoAno = await apiService.getFolhasPonto({
+        profissional_id: currentProfissional.id,
+        ano: year,
+      });
+
+      const folhasAnteriores = folhasDoAno.filter((f: any) => f.mes !== month);
+
+      if (folhasAnteriores.length === 0) {
+        alert(`Nenhuma folha de ponto encontrada em ${year} para este servidor.`);
+        return;
+      }
+
+      // Ordena pelo mês mais próximo do atual
+      folhasAnteriores.sort((a: any, b: any) =>
+        Math.abs(a.mes - month) - Math.abs(b.mes - month)
+      );
+
+      // Busca padrão semanal de CPIP/CURSO na folha mais próxima que contenha esses lançamentos
+      const pattern = new Map<number, { tipo: string; tipo_turno2: string }>();
+      const CPIP_CURSO = ['CPIP', 'CURSO'];
+
+      for (const folha of folhasAnteriores) {
+        const dados = await apiService.getFolhaPonto(folha.id);
+
+        for (const lancamento of dados.lancamentos) {
+          // Verifica CPIP/CURSO em qualquer um dos turnos
+          const temCpipCurso =
+            CPIP_CURSO.includes(lancamento.tipo) ||
+            CPIP_CURSO.includes(lancamento.tipo_turno2);
+          if (!temCpipCurso) continue;
+
+          const dow = new Date(folha.ano, folha.mes, lancamento.dia).getDay();
+          if (dow < 1 || dow > 5) continue; // ignora fins de semana
+          if (!pattern.has(dow)) {
+            pattern.set(dow, {
+              tipo: CPIP_CURSO.includes(lancamento.tipo) ? lancamento.tipo : 'TRABALHO',
+              tipo_turno2: CPIP_CURSO.includes(lancamento.tipo_turno2) ? lancamento.tipo_turno2 : 'TRABALHO',
+            });
+          }
+        }
+
+        if (pattern.size > 0) break;
+      }
+
+      if (pattern.size === 0) {
+        alert('Nenhum padrão de CPIP ou CURSO FORMAÇÃO CONTINUADA encontrado nas folhas anteriores.');
+        return;
+      }
+
+      setEntries(prev => prev.map(entry => {
+        const dow = new Date(year, month, entry.day).getDay();
+        if (pattern.has(dow)) {
+          const p = pattern.get(dow)!;
+          return { ...entry, type: p.tipo as any, type_turno2: p.tipo_turno2 as any };
+        }
+        return entry;
+      }));
+    } catch (error) {
+      console.error('Erro no pré preenchimento:', error);
+      alert('Erro ao realizar pré preenchimento.');
+    } finally {
+      setIsPreFilling(false);
     }
   };
 
@@ -425,7 +507,7 @@ export default function App() {
                 </div>
                 
                 {/* Navegação de Profissionais */}
-                <div className="flex flex-col gap-1 flex-1 min-w-[400px]">
+                <div className="flex flex-col gap-1 flex-1 min-w-[700px]">
                   <label className="text-xs font-medium text-stone-500 uppercase tracking-wider">Servidor</label>
                   <EmployeeNavigator
                     profissionais={profissionais}
@@ -434,6 +516,9 @@ export default function App() {
                     onNavigate={navigateToProfissional}
                     onDelete={handleDeleteProfissional}
                     onNew={handleNewProfissional}
+                    onPreFill={handlePreFill}
+                    onClear={handleClearEntries}
+                    isPreFilling={isPreFilling}
                   />
                 </div>
                 

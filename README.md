@@ -13,6 +13,8 @@ Um sistema moderno e intuitivo desenvolvido para facilitar a geração e o geren
 - **🗑️ Exclusão de Profissionais**: Remove servidores e suas folhas de ponto associadas com confirmação.
 - **🌗 Seleção de Turnos**: Opções de Matutino, Vespertino e Noturno para cada período de trabalho.
 - **📅 Calendário Inteligente**: Geração automática de dias com base no mês e ano selecionados.
+- **⚡ Pré Preenchimento Inteligente**: Ao abrir um novo mês, o botão **Pré Preenchimento** detecta automaticamente o padrão semanal de `CPIP` e `CURSO FORMAÇÃO CONTINUADA` de uma folha anterior do mesmo ano (verificando turno 1 e turno 2) e replica o padrão em todos os dias equivalentes do novo mês.
+- **🧹 Limpar Lançamentos**: Botão para resetar todos os dias do mês para **TRABALHO NORMAL** com um clique.
 - **🛠️ Lançamentos Diversos**:
   - Trabalho Normal (padrão automático)
   - Férias, Recesso, Atestado Médico, Licença Médica, Falta, TRE, Abono de Ponto, CPIP, Curso, Abono Aniversário, Feriado, Abono de Ponto Art. 151 Lei, Falta Paralisação, Atestado de Comparecimento.

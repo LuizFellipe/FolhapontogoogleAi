@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, ChevronRight, User, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, User, Trash2, ClipboardList, X } from 'lucide-react';
 
 interface Profissional {
   id: number;
@@ -14,15 +14,21 @@ interface Props {
   onNavigate: (index: number) => void;
   onDelete?: (id: number, nome: string) => void;
   onNew?: () => void;
+  onPreFill?: () => void;
+  onClear?: () => void;
+  isPreFilling?: boolean;
 }
 
-export const EmployeeNavigator: React.FC<Props> = ({ 
-  profissionais, 
-  currentIndex, 
-  isLoading, 
+export const EmployeeNavigator: React.FC<Props> = ({
+  profissionais,
+  currentIndex,
+  isLoading,
   onNavigate,
   onDelete,
-  onNew
+  onNew,
+  onPreFill,
+  onClear,
+  isPreFilling = false,
 }) => {
   const canGoPrevious = currentIndex > 0;
   const canGoNext = currentIndex < profissionais.length - 1;
@@ -79,51 +85,48 @@ export const EmployeeNavigator: React.FC<Props> = ({
   }
 
   return (
-    <div className="flex items-center gap-3">
-      {/* Botões Anterior/Próximo */}
-      <div className="flex items-center gap-1">
+    <div className="flex flex-col gap-2 w-full">
+      {/* Linha 1: navegação + seleção de profissional */}
+      <div className="flex items-center gap-2">
+        {/* Botões Anterior/Próximo */}
         <button
           onClick={handlePrevious}
           disabled={!canGoPrevious || isNewProfissional}
-          className={`p-2 rounded-lg transition-all ${
+          className={`p-2 rounded-lg transition-all flex-shrink-0 ${
             canGoPrevious && !isNewProfissional
-              ? 'bg-stone-100 text-stone-700 hover:bg-stone-200' 
+              ? 'bg-stone-100 text-stone-700 hover:bg-stone-200'
               : 'bg-stone-50 text-stone-300 cursor-not-allowed'
           }`}
           title="Anterior"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
-        
+
         <button
           onClick={handleNext}
           disabled={!canGoNext || isNewProfissional}
-          className={`p-2 rounded-lg transition-all ${
+          className={`p-2 rounded-lg transition-all flex-shrink-0 ${
             canGoNext && !isNewProfissional
-              ? 'bg-stone-100 text-stone-700 hover:bg-stone-200' 
+              ? 'bg-stone-100 text-stone-700 hover:bg-stone-200'
               : 'bg-stone-50 text-stone-300 cursor-not-allowed'
           }`}
           title="Próximo"
         >
           <ChevronRight className="w-4 h-4" />
         </button>
-      </div>
 
-      {/* Indicador de posição */}
-      <div className={`px-3 py-2 rounded-lg text-sm font-medium ${
-        isNewProfissional 
-          ? 'bg-green-600 text-white' 
-          : 'bg-stone-900 text-white'
-      }`}>
-        {isNewProfissional ? 'NOVO' : `${currentIndex + 1} de ${profissionais.length}`}
-      </div>
+        {/* Indicador de posição */}
+        <div className={`px-3 py-2 rounded-lg text-sm font-medium flex-shrink-0 ${
+          isNewProfissional ? 'bg-green-600 text-white' : 'bg-stone-900 text-white'
+        }`}>
+          {isNewProfissional ? 'NOVO' : `${currentIndex + 1} de ${profissionais.length}`}
+        </div>
 
-      {/* Select de profissionais */}
-      <div className="flex-1 min-w-[300px]">
+        {/* Select de profissionais */}
         <select
           value={isNewProfissional ? '' : currentProfissional?.id || ''}
           onChange={handleSelectChange}
-          className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-200 text-sm"
+          className="flex-1 min-w-[280px] px-3 py-2 bg-stone-50 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-200 text-sm"
         >
           <option value="" disabled>Selecione um profissional...</option>
           {profissionais.map((profissional) => (
@@ -132,32 +135,55 @@ export const EmployeeNavigator: React.FC<Props> = ({
             </option>
           ))}
         </select>
+
+        {/* Ações do profissional */}
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {onNew && (
+            <button
+              onClick={onNew}
+              className="p-2 text-green-600 hover:bg-green-100 rounded-lg transition-all"
+              title="Novo profissional"
+            >
+              <User className="w-4 h-4" />
+            </button>
+          )}
+          {onDelete && currentProfissional && (
+            <button
+              onClick={() => onDelete(currentProfissional.id, currentProfissional.nome)}
+              className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-all"
+              title="Excluir profissional"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Nome atual */}
-      {currentProfissional && (
-        <div className="flex items-center gap-2 px-3 py-2 bg-stone-100 rounded-lg text-sm text-stone-700 font-medium min-w-0">
-          <div className="truncate">{currentProfissional.nome}</div>
-          <div className="flex items-center gap-1 ml-auto">
-            {onNew && (
-              <button
-                onClick={onNew}
-                className="p-1.5 text-green-600 hover:bg-green-100 rounded-lg transition-all"
-                title="Novo profissional"
-              >
-                <User className="w-4 h-4" />
-              </button>
-            )}
-            {onDelete && (
-              <button
-                onClick={() => onDelete(currentProfissional.id, currentProfissional.nome)}
-                className="p-1.5 text-red-600 hover:bg-red-100 rounded-lg transition-all"
-                title="Excluir profissional"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            )}
-          </div>
+      {/* Linha 2: ações de lançamento */}
+      {(onPreFill || onClear) && (
+        <div className="flex items-center gap-2">
+          {onPreFill && (
+            <button
+              onClick={onPreFill}
+              disabled={isPreFilling || isNewProfissional}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              title="Pré preenchimento com CPIP e CURSO de folha anterior do mesmo ano"
+            >
+              <ClipboardList className="w-4 h-4" />
+              {isPreFilling ? 'Buscando...' : 'Pré Preenchimento'}
+            </button>
+          )}
+          {onClear && (
+            <button
+              onClick={onClear}
+              disabled={isNewProfissional}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-stone-200 text-stone-700 hover:bg-stone-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              title="Limpar todos os lançamentos para TRABALHO NORMAL"
+            >
+              <X className="w-4 h-4" />
+              Limpar Lançamentos
+            </button>
+          )}
         </div>
       )}
     </div>
