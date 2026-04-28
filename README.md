@@ -15,6 +15,7 @@ Um sistema moderno e intuitivo desenvolvido para facilitar a geração e o geren
 - **📅 Calendário Inteligente**: Geração automática de dias com base no mês e ano selecionados.
 - **⚡ Pré Preenchimento Inteligente**: Detecta automaticamente padrões de CPIP e CURSO FORMAÇÃO CONTINUADA de folhas anteriores e replica no novo mês.
 - **🧹 Limpar Lançamentos**: Botão para resetar todos os dias do mês para **TRABALHO NORMAL** com um clique.
+- **📦 Geração em Lote**: Gera e imprime folhas de ponto de múltiplos profissionais de uma só vez para um mês/ano selecionado. Aplica pré-preenchimento de CPIP/CURSO automaticamente quando a folha ainda não existe. Filtro por cargo, seleção individual ou em massa via checkboxes e barra de progresso durante o processamento.
 - **🛠️ Sistema Simplificado de Lançamentos**:
   - Apenas **Dia + Tipo de Lançamento** (sem campos de horário)
   - Trabalho Normal (padrão automático)
@@ -59,6 +60,13 @@ Um sistema moderno e intuitivo desenvolvido para facilitar a geração e o geren
 4. **Geração e Impressão**:
    - Clique no botão **Visualizar** para conferir o layout das duas páginas.
    - Use o ícone de **Impressora** no cabeçalho ou pressione `Ctrl + P` para imprimir ou salvar como PDF.
+
+5. **Geração em Lote** (múltiplos profissionais):
+   - Clique em **Gerar em Lote** na barra de ações do servidor.
+   - No modal, filtre por cargo se necessário, selecione o mês e ano de referência.
+   - Marque os profissionais desejados individualmente ou use **Selecionar todos**.
+   - Clique em **Gerar**: o sistema carregará folhas existentes e criará (com pré-preenchimento CPIP/CURSO) as que ainda não existem.
+   - Ao concluir, o diálogo de impressão abrirá automaticamente com todas as folhas em sequência.
 
 ---
 
@@ -159,6 +167,7 @@ FolhapontogoogleAi/
 │   └── 📄 README.md      # Documentação do banco
 └── 📂 src/               # Código Fonte Frontend (React + TypeScript)
     ├── 📂 components/   # Componentes React
+    │   ├── 📄 BatchTimesheetModal.tsx # Modal de geração em lote
     │   ├── 📄 EmployeeForm.tsx      # Formulário de servidor
     │   ├── 📄 EmployeeNavigator.tsx # Navegação entre profissionais
     │   ├── 📄 MODIFICATION_MEMORY.md # Histórico de alterações dos componentes

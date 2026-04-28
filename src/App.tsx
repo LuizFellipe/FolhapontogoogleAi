@@ -5,7 +5,8 @@ import { TimesheetPreview } from './components/TimesheetPreview';
 import { TimesheetSummaryPreview } from './components/TimesheetSummaryPreview';
 import { SummaryForm } from './components/SummaryForm';
 import { EmployeeNavigator } from './components/EmployeeNavigator';
-import { TimesheetData, EmployeeData, DailyEntry, SummaryEntry, MONTHS } from './types';
+import { BatchTimesheetModal } from './components/BatchTimesheetModal';
+import { TimesheetData, EmployeeData, DailyEntry, EntryType, SummaryEntry, MONTHS } from './types';
 import { Printer, FileText, Settings, Download, Save, Database } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { apiService } from './services/api';
@@ -54,6 +55,12 @@ export default function App() {
   const [isLoadingProfissionais, setIsLoadingProfissionais] = useState(true);
   const [isNavigating, setIsNavigating] = useState(false);
   const [isPreFilling, setIsPreFilling] = useState(false);
+
+  // Estados para geração em lote
+  const [showBatchModal, setShowBatchModal] = useState(false);
+  const [isGeneratingBatch, setIsGeneratingBatch] = useState(false);
+  const [batchProgress, setBatchProgress] = useState<{ current: number; total: number; currentName: string } | undefined>();
+  const [batchTimesheets, setBatchTimesheets] = useState<TimesheetData[]>([]);
 
   // Carregar profissionais na inicialização
   useEffect(() => {
@@ -153,7 +160,64 @@ export default function App() {
     setEntries(prev => prev.map(e => ({ ...e, type: 'TRABALHO' as const, type_turno2: 'TRABALHO' as const })));
   };
 
-  // Pré preenchimento: replica padrão semanal de CPIP/CURSO de folha anterior do mesmo ano
+  // Calcula entradas com pré preenchimento de CPIP/CURSO de folha anterior do mesmo ano.
+  // Retorna array de DailyEntry com o padrão aplicado (ou TRABALHO para todos se não houver padrão).
+  const computePreFillEntries = async (
+    profissionalId: number,
+    targetMonth: number,
+    targetYear: number
+  ): Promise<DailyEntry[]> => {
+    const daysInMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+    const defaultEntries = (): DailyEntry[] =>
+      Array.from({ length: daysInMonth }, (_, i) => ({
+        day: i + 1, type: 'TRABALHO' as EntryType, type_turno2: 'TRABALHO' as EntryType,
+        entry1: '', exit1: '', entry2: '', exit2: '',
+        observation: '', observation_turno2: ''
+      }));
+
+    const folhasDoAno = await apiService.getFolhasPonto({ profissional_id: profissionalId, ano: targetYear });
+    const folhasAnteriores = folhasDoAno.filter((f: any) => f.mes !== targetMonth);
+    if (folhasAnteriores.length === 0) return defaultEntries();
+
+    folhasAnteriores.sort((a: any, b: any) =>
+      Math.abs(a.mes - targetMonth) - Math.abs(b.mes - targetMonth)
+    );
+
+    const pattern = new Map<number, { tipo: string; tipo_turno2: string }>();
+    const CPIP_CURSO = ['CPIP', 'CURSO'];
+
+    for (const folha of folhasAnteriores) {
+      const dados = await apiService.getFolhaPonto(folha.id);
+      for (const lancamento of dados.lancamentos) {
+        const tem = CPIP_CURSO.includes(lancamento.tipo) || CPIP_CURSO.includes(lancamento.tipo_turno2);
+        if (!tem) continue;
+        const dow = new Date(folha.ano, folha.mes, lancamento.dia).getDay();
+        if (dow < 1 || dow > 5) continue;
+        if (!pattern.has(dow)) {
+          pattern.set(dow, {
+            tipo: CPIP_CURSO.includes(lancamento.tipo) ? lancamento.tipo : 'TRABALHO',
+            tipo_turno2: CPIP_CURSO.includes(lancamento.tipo_turno2) ? lancamento.tipo_turno2 : 'TRABALHO',
+          });
+        }
+      }
+      if (pattern.size > 0) break;
+    }
+
+    return Array.from({ length: daysInMonth }, (_, i) => {
+      const day = i + 1;
+      const dow = new Date(targetYear, targetMonth, day).getDay();
+      const p = pattern.get(dow);
+      return {
+        day,
+        type: (p?.tipo || 'TRABALHO') as EntryType,
+        type_turno2: (p?.tipo_turno2 || 'TRABALHO') as EntryType,
+        entry1: '', exit1: '', entry2: '', exit2: '',
+        observation: '', observation_turno2: ''
+      };
+    });
+  };
+
+  // Pré preenchimento individual: replica padrão semanal de CPIP/CURSO de folha anterior do mesmo ano
   const handlePreFill = async () => {
     const currentProfissional = profissionais[currentProfissionalIndex];
     if (!currentProfissional) {
@@ -176,56 +240,72 @@ export default function App() {
         return;
       }
 
-      // Ordena pelo mês mais próximo do atual
-      folhasAnteriores.sort((a: any, b: any) =>
-        Math.abs(a.mes - month) - Math.abs(b.mes - month)
-      );
+      const newEntries = await computePreFillEntries(currentProfissional.id, month, year);
 
-      // Busca padrão semanal de CPIP/CURSO na folha mais próxima que contenha esses lançamentos
-      const pattern = new Map<number, { tipo: string; tipo_turno2: string }>();
-      const CPIP_CURSO = ['CPIP', 'CURSO'];
-
-      for (const folha of folhasAnteriores) {
-        const dados = await apiService.getFolhaPonto(folha.id);
-
-        for (const lancamento of dados.lancamentos) {
-          // Verifica CPIP/CURSO em qualquer um dos turnos
-          const temCpipCurso =
-            CPIP_CURSO.includes(lancamento.tipo) ||
-            CPIP_CURSO.includes(lancamento.tipo_turno2);
-          if (!temCpipCurso) continue;
-
-          const dow = new Date(folha.ano, folha.mes, lancamento.dia).getDay();
-          if (dow < 1 || dow > 5) continue; // ignora fins de semana
-          if (!pattern.has(dow)) {
-            pattern.set(dow, {
-              tipo: CPIP_CURSO.includes(lancamento.tipo) ? lancamento.tipo : 'TRABALHO',
-              tipo_turno2: CPIP_CURSO.includes(lancamento.tipo_turno2) ? lancamento.tipo_turno2 : 'TRABALHO',
-            });
-          }
-        }
-
-        if (pattern.size > 0) break;
-      }
-
-      if (pattern.size === 0) {
+      const hasPattern = newEntries.some(e => e.type !== 'TRABALHO' || e.type_turno2 !== 'TRABALHO');
+      if (!hasPattern) {
         alert('Nenhum padrão de CPIP ou CURSO FORMAÇÃO CONTINUADA encontrado nas folhas anteriores.');
         return;
       }
 
-      setEntries(prev => prev.map(entry => {
-        const dow = new Date(year, month, entry.day).getDay();
-        if (pattern.has(dow)) {
-          const p = pattern.get(dow)!;
-          return { ...entry, type: p.tipo as any, type_turno2: p.tipo_turno2 as any };
-        }
-        return entry;
-      }));
+      setEntries(newEntries);
     } catch (error) {
       console.error('Erro no pré preenchimento:', error);
       alert('Erro ao realizar pré preenchimento.');
     } finally {
       setIsPreFilling(false);
+    }
+  };
+
+  // Geração em lote: processa cada profissional selecionado e abre impressão
+  const handleBatchGenerate = async (selectedIds: number[], mes: number, ano: number) => {
+    setIsGeneratingBatch(true);
+    const results: TimesheetData[] = [];
+
+    try {
+      for (let i = 0; i < selectedIds.length; i++) {
+        const profId = selectedIds[i];
+        const prof = profissionais.find((p: any) => p.id === profId);
+        setBatchProgress({ current: i + 1, total: selectedIds.length, currentName: prof?.nome || '' });
+
+        const folhas = await apiService.getFolhasPonto({ profissional_id: profId, mes, ano });
+
+        if (folhas.length > 0) {
+          const data = await apiService.loadCompleteTimesheet(profId, mes, ano);
+          if (data) results.push(data);
+        } else {
+          const novaFolha = await apiService.createFolhaPonto({ profissional_id: profId, mes, ano, observacoes: '' });
+          const entries = await computePreFillEntries(profId, mes, ano);
+          const lancamentos = entries.map(e => ({
+            dia: e.day, tipo: e.type, tipo_turno2: e.type_turno2,
+            observacao: e.observation, observacao_turno2: e.observation_turno2
+          }));
+          await apiService.saveLancamentosDiarios(novaFolha.id, lancamentos);
+          const data = await apiService.loadCompleteTimesheet(profId, mes, ano);
+          if (data) results.push(data);
+        }
+      }
+
+      setBatchTimesheets(results);
+      setShowBatchModal(false);
+
+      // Aguarda renderização e dispara impressão em lote
+      setTimeout(() => {
+        document.body.classList.add('batch-printing');
+        window.print();
+        const cleanup = () => {
+          document.body.classList.remove('batch-printing');
+          setBatchTimesheets([]);
+          window.removeEventListener('afterprint', cleanup);
+        };
+        window.addEventListener('afterprint', cleanup);
+      }, 100);
+    } catch (error) {
+      console.error('Erro na geração em lote:', error);
+      alert('Erro ao gerar folhas em lote.');
+    } finally {
+      setIsGeneratingBatch(false);
+      setBatchProgress(undefined);
     }
   };
 
@@ -518,6 +598,7 @@ export default function App() {
                     onNew={handleNewProfissional}
                     onPreFill={handlePreFill}
                     onClear={handleClearEntries}
+                    onBatchGenerate={() => setShowBatchModal(true)}
                     isPreFilling={isPreFilling}
                   />
                 </div>
@@ -580,13 +661,32 @@ export default function App() {
 
       {/* Floating Action Button for Mobile */}
       <div className="fixed bottom-6 right-6 no-print md:hidden">
-        <button 
+        <button
           onClick={handlePrint}
           className="bg-stone-900 text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform active:scale-95"
         >
           <Printer className="w-6 h-6" />
         </button>
       </div>
+
+      {/* Conteúdo de impressão em lote — oculto normalmente, exibido apenas ao imprimir em lote */}
+      <div className="batch-print-content">
+        {batchTimesheets.map((ts, idx) => (
+          <div key={idx}>
+            <TimesheetPreview data={ts} />
+            <TimesheetSummaryPreview data={ts} />
+          </div>
+        ))}
+      </div>
+
+      <BatchTimesheetModal
+        isOpen={showBatchModal}
+        profissionais={profissionais}
+        onClose={() => setShowBatchModal(false)}
+        onGenerate={handleBatchGenerate}
+        isGenerating={isGeneratingBatch}
+        progress={batchProgress}
+      />
     </div>
   );
 }

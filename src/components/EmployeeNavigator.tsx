@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, ChevronRight, User, Trash2, ClipboardList, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, User, Trash2, ClipboardList, X, Printer } from 'lucide-react';
 
 interface Profissional {
   id: number;
@@ -16,6 +16,7 @@ interface Props {
   onNew?: () => void;
   onPreFill?: () => void;
   onClear?: () => void;
+  onBatchGenerate?: () => void;
   isPreFilling?: boolean;
 }
 
@@ -28,6 +29,7 @@ export const EmployeeNavigator: React.FC<Props> = ({
   onNew,
   onPreFill,
   onClear,
+  onBatchGenerate,
   isPreFilling = false,
 }) => {
   const canGoPrevious = currentIndex > 0;
@@ -182,6 +184,16 @@ export const EmployeeNavigator: React.FC<Props> = ({
             >
               <X className="w-4 h-4" />
               Limpar Lançamentos
+            </button>
+          )}
+          {onBatchGenerate && (
+            <button
+              onClick={onBatchGenerate}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-stone-800 text-white hover:bg-stone-700 transition-all"
+              title="Gerar folhas de ponto em lote para vários profissionais"
+            >
+              <Printer className="w-4 h-4" />
+              Gerar em Lote
             </button>
           )}
         </div>

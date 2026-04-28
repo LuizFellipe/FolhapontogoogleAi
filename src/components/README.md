@@ -7,7 +7,8 @@ Esta pasta contém todos os componentes React modulares utilizados para construi
 ### 📝 Formulários de Preenchimento (Edição)
 
 -   **`EmployeeForm.tsx`**: Gerencia o formulário de dados cadastrais do servidor (Nome, Matrícula, UA, Carga Horária, Lotação e Turnos). Valida campos obrigatórios.
--   **`EmployeeNavigator.tsx`**: Componente de navegação e busca que permite selecionar profissionais cadastrados, alternar visualizações e criar novas folhas.
+-   **`EmployeeNavigator.tsx`**: Componente de navegação e busca que permite selecionar profissionais cadastrados, alternar visualizações e criar novas folhas. Expõe as ações: **Novo**, **Excluir**, **Pré Preenchimento**, **Limpar Lançamentos** e **Gerar em Lote**.
+-   **`BatchTimesheetModal.tsx`**: Modal de geração em lote de folhas de ponto. Permite filtrar profissionais por cargo, selecionar o mês/ano de referência e marcar múltiplos profissionais via checkboxes. Exibe barra de progresso durante o processamento e aciona a impressão automática ao final.
 -   **`SummaryForm.tsx`**: Gerencia a grade de preenchimento da **Página 2** (Resumo da Frequência). Permite adicionar códigos de operação (Inclusão, Alteração, Exclusão) e códigos de ocorrência.
 -   **`TimesheetGrid.tsx`**: Grade principal da **Página 1** para lançamentos diários (Trabalho Normal, Férias, Atestado, etc.). Automatiza a limpeza de campos de horário quando uma ocorrência é selecionada.
 

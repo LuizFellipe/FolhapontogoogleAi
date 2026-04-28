@@ -85,3 +85,20 @@
     flex: 1 !important;
   }
 }
+
+/* Geração em lote: conteúdo oculto normalmente */
+.batch-print-content {
+  display: none;
+}
+
+@media print {
+  /* Modo lote: exibe somente o conteúdo em lote, oculta o restante */
+  body.batch-printing .batch-print-content {
+    display: block;
+  }
+  body.batch-printing header,
+  body.batch-printing main,
+  body.batch-printing .no-print {
+    display: none !important;
+  }
+}

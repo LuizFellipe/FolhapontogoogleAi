@@ -4,6 +4,33 @@ Este arquivo registra as modificações significativas realizadas nos componente
 
 ---
 
+## [2026-04-27] - Funcionalidade: Geração em Lote de Folhas de Ponto
+
+### 🔍 Alterações Realizadas
+
+#### 1. BatchTimesheetModal.tsx — Novo componente
+- Modal de seleção para geração em lote com os seguintes elementos:
+  - **Filtro de cargo**: dropdown com valores únicos extraídos da lista de profissionais (ex.: PROFESSOR TEMPORÁRIO, PROF. DE EDU. BASICA).
+  - **Seleção de Mês e Ano**: controles independentes de período de referência do lote.
+  - **Lista de profissionais com checkboxes**: exibe nome, cargo e matrícula (se houver); permite seleção individual.
+  - **Selecionar todos**: checkbox que marca/desmarca todos os profissionais visíveis no filtro ativo.
+  - **Barra de progresso**: exibida durante a geração, mostrando `atual/total — nome do profissional em processamento`.
+  - **Botão "Gerar (N selecionados)"**: desabilitado quando nenhum profissional está selecionado ou enquanto a geração está em andamento.
+
+#### 2. EmployeeNavigator.tsx — Nova prop e botão
+- Adicionada prop `onBatchGenerate?: () => void` à interface `Props`.
+- Adicionado ícone `Printer` às importações do `lucide-react`.
+- Inserido botão **"Gerar em Lote"** (fundo `stone-800`, ícone impressora) na Linha 2 de ações, ao lado dos botões Pré Preenchimento e Limpar Lançamentos.
+
+### ✅ Arquivos Modificados
+- `src/components/BatchTimesheetModal.tsx` *(novo)*
+- `src/components/EmployeeNavigator.tsx`
+
+### 🎯 Objetivo
+Permitir a geração simultânea de folhas de ponto para múltiplos profissionais em um único mês/ano, aplicando pré-preenchimento de CPIP/CURSO automaticamente quando a folha ainda não existe, e enviando tudo para impressão de uma só vez.
+
+---
+
 ## [2026-04-26] - Melhoria: Ampliação do Campo de Nome do Servidor no Navegador
 
 ### 🔍 Alterações Realizadas

@@ -1,5 +1,43 @@
 # Memória de Modificação - Frontend (src/)
 
+## [2026-04-27] Funcionalidade: Geração em Lote de Folhas de Ponto
+
+### Arquivos Modificados/Criados:
+- **components/BatchTimesheetModal.tsx** *(novo)*
+- **components/EmployeeNavigator.tsx**
+- **App.tsx**
+- **index.css**
+
+### Alterações Detalhadas:
+
+#### 1. Novo Componente — `BatchTimesheetModal.tsx`
+- Modal completo para seleção e geração em lote, com: filtro de cargo (dropdown com valores únicos), seleção de mês e ano, lista de profissionais com checkboxes individuais, botão "Selecionar todos", barra de progresso durante processamento e botão "Gerar (N selecionados)".
+
+#### 2. `EmployeeNavigator.tsx`
+- Adicionada prop `onBatchGenerate?: () => void`.
+- Importado ícone `Printer` do `lucide-react`.
+- Novo botão **"Gerar em Lote"** na linha 2 de ações (ao lado de Pré Preenchimento e Limpar).
+
+#### 3. `App.tsx`
+- **`computePreFillEntries(profissionalId, targetMonth, targetYear)`**: função extraída da lógica de pré-preenchimento existente, reutilizável de forma assíncrona para calcular o padrão semanal de CPIP/CURSO de qualquer profissional e mês.
+- **`handlePreFill`**: refatorado para chamar `computePreFillEntries` e aplicar via `setEntries` (comportamento idêntico ao anterior).
+- **`handleBatchGenerate(selectedIds, mes, ano)`**: para cada profissional selecionado, verifica se a folha existe no mês/ano escolhido:
+  - **Existe**: carrega os dados existentes.
+  - **Não existe**: cria a folha, aplica pré-preenchimento CPIP/CURSO, salva os lançamentos no banco e então carrega os dados.
+  - Ao final, adiciona `batch-printing` ao `document.body`, chama `window.print()` e limpa o estado no evento `afterprint`.
+- **Div `batch-print-content`**: container oculto com `TimesheetPreview` + `TimesheetSummaryPreview` para cada folha do lote.
+- **`<BatchTimesheetModal>`**: montado no JSX com controle via estado `showBatchModal`.
+- Novos estados: `showBatchModal`, `isGeneratingBatch`, `batchProgress`, `batchTimesheets`.
+
+#### 4. `index.css`
+- Classe `.batch-print-content { display: none }` para ocultar o container normalmente.
+- Regras `@media print` com `body.batch-printing`: exibe `.batch-print-content` e oculta `header`, `main` e `.no-print` durante a impressão em lote.
+
+### Objetivo:
+Permitir a geração simultânea de folhas de ponto para múltiplos profissionais em um único mês/ano, com pré-preenchimento automático de CPIP/CURSO quando a folha ainda não existe, e impressão unificada de todas as folhas em sequência.
+
+---
+
 ## [2026-04-17] Correção de Acesso Remoto — URL da API
 
 ### Arquivos Modificados:
