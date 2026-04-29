@@ -249,6 +249,14 @@ export default function App() {
       }
 
       setEntries(newEntries);
+      
+      const obsText = "CURSO FORMACAO CONTINUADA DE ACORDO MEMORANDO/CIRC 59/2025 - SEE/SUBEB DE 18/02/2025 - SEI 00080.00049147/2025-76";
+      setObservations(prev => {
+        if (!prev.includes(obsText)) {
+          return prev ? `${prev}\n${obsText}` : obsText;
+        }
+        return prev;
+      });
     } catch (error) {
       console.error('Erro no pré preenchimento:', error);
       alert('Erro ao realizar pré preenchimento.');
@@ -274,8 +282,11 @@ export default function App() {
           const data = await apiService.loadCompleteTimesheet(profId, mes, ano);
           if (data) results.push(data);
         } else {
-          const novaFolha = await apiService.createFolhaPonto({ profissional_id: profId, mes, ano, observacoes: '' });
           const entries = await computePreFillEntries(profId, mes, ano);
+          const hasPattern = entries.some(e => e.type !== 'TRABALHO' || e.type_turno2 !== 'TRABALHO');
+          const obsText = "CURSO FORMACAO CONTINUADA DE ACORDO MEMORANDO/CIRC 59/2025 - SEE/SUBEB DE 18/02/2025 - SEI 00080.00049147/2025-76";
+          
+          const novaFolha = await apiService.createFolhaPonto({ profissional_id: profId, mes, ano, observacoes: hasPattern ? obsText : '' });
           const lancamentos = entries.map(e => ({
             dia: e.day, tipo: e.type, tipo_turno2: e.type_turno2,
             observacao: e.observation, observacao_turno2: e.observation_turno2

@@ -1,5 +1,22 @@
 # Memória de Modificações do Projeto
 
+## [2026-04-28] Funcionalidade: Observação Automática para CPIP/CURSO
+
+### Arquivos Modificados:
+- [src/App.tsx](src/App.tsx)
+
+### Alterações:
+
+#### 1. Lógica de preenchimento automático
+- Atualizada a função `handlePreFill` para inserir automaticamente a observação referente ao CURSO FORMAÇÃO CONTINUADA caso seja detectado o padrão de CPIP ou CURSO de meses anteriores.
+- Atualizada a função `handleBatchGenerate` para inserir a mesma observação automática nas folhas geradas em lote, quando houver dias com CPIP ou CURSO.
+- Texto inserido: `"CURSO FORMACAO CONTINUADA DE ACORDO MEMORANDO/CIRC 59/2025 - SEE/SUBEB DE 18/02/2025 - SEI 00080.00049147/2025-76"`
+
+### Objetivo:
+Automatizar a inclusão da justificativa/observação padrão para servidores que possuem CPIP ou CURSO DE FORMAÇÃO CONTINUADA, garantindo conformidade com as orientações circulares da SEE/SUBEB tanto no preenchimento individual quanto na geração em lote.
+
+---
+
 ## [2026-04-26] Configuração Condicional do Proxy Vite e Otimizações Docker
 
 ### Arquivos Modificados:
