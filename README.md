@@ -13,7 +13,7 @@ Um sistema moderno e intuitivo desenvolvido para facilitar a geração e o geren
 - **🗑️ Exclusão de Profissionais**: Remove servidores e suas folhas de ponto associadas com confirmação.
 - **🧭 Navegação entre Profissionais**: Botões Anterior/Próximo e select dropdown para navegação rápida.
 - **📅 Calendário Inteligente**: Geração automática de dias com base no mês e ano selecionados.
-- **⚡ Pré Preenchimento Inteligente**: Detecta automaticamente padrões de CPIP e CURSO FORMAÇÃO CONTINUADA de folhas anteriores e replica no novo mês.
+- **⚡ Pré Preenchimento Inteligente**: Detecta automaticamente padrões de CPIP e CURSO FORMAÇÃO CONTINUADA de folhas anteriores e replica no novo mês. O algoritmo mapeia por **posição semanal + dia da semana** (ex: 3ª segunda ≠ 4ª segunda), garantindo precisão quando diferentes tipos de lançamento ocorrem na mesma semana do mês.
 - **🧹 Limpar Lançamentos**: Botão para resetar todos os dias do mês para **TRABALHO NORMAL** com um clique.
 - **📦 Geração em Lote**: Gera e imprime folhas de ponto de múltiplos profissionais de uma só vez para um mês/ano selecionado. Aplica pré-preenchimento de CPIP/CURSO automaticamente quando a folha ainda não existe. Filtro por cargo, seleção individual ou em massa via checkboxes e barra de progresso durante o processamento.
 - **🛠️ Sistema Simplificado de Lançamentos**:

@@ -65,7 +65,7 @@ class ApiService {
   async getFolhasPonto(filters?: { profissional_id?: number; mes?: number; ano?: number }) {
     const params = new URLSearchParams();
     if (filters?.profissional_id) params.append('profissional_id', filters.profissional_id.toString());
-    if (filters?.mes) params.append('mes', filters.mes.toString());
+    if (filters?.mes != null) params.append('mes', filters.mes.toString());
     if (filters?.ano) params.append('ano', filters.ano.toString());
     
     const queryString = params.toString();

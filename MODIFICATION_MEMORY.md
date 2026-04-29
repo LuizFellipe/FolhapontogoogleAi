@@ -1,5 +1,43 @@
 # Memória de Modificações do Projeto
 
+## [2026-04-29] Correção: Algoritmo de Pré Preenchimento CPIP/CURSO
+
+### Arquivos Modificados:
+- [src/App.tsx](src/App.tsx)
+
+### Problema:
+Ao executar o Pré Preenchimento (individual ou em lote) para um mês alvo, o algoritmo em `computePreFillEntries` aplicava os lançamentos CPIP/CURSO de forma incorreta em dois cenários:
+
+#### 1. Colisão de DOW (causa raiz do bug reportado — usuário id=22, Fevereiro/2026)
+O pattern usava apenas o dia da semana (DOW) como chave (`Map<number, pattern>`). Quando CURSO (dia 16, 3ª segunda-feira) e CPIP (dia 23, 4ª segunda-feira) caíam no mesmo DOW=1 no mês fonte, somente o primeiro lançamento encontrado (menor dia = CURSO) era armazenado — o CPIP era descartado. Resultado: todas as segundas-feiras do mês alvo recebiam CURSO, nunca CPIP.
+
+#### 2. Sort instável entre meses equidistantes
+O sort `Math.abs(mes - targetMonth)` era não-determinístico quando dois meses estavam à mesma distância do alvo (ex: Janeiro e Março ambos a 1 mês de Fevereiro). O mês usado como fonte dependia do runtime JS.
+
+### Correções (`src/App.tsx` — `computePreFillEntries`):
+
+#### Fix 1 — Chave composta `"DOW-weekIndex"`
+- **Antes**: `Map<number, pattern>` — chave = DOW
+- **Depois**: `Map<string, pattern>` — chave = `"${dow}-${weekIndex}"` onde `weekIndex = Math.floor((dia - 1) / 7)`
+- Dias 1–7 → weekIndex=0, 8–14 → 1, 15–21 → 2, 22–28 → 3, 29–31 → 4
+- Resultado: dia 16 (CURSO, "1-2") e dia 23 (CPIP, "1-3") armazenados independentemente
+
+#### Fix 2 — Sort determinístico com preferência por meses anteriores
+- **Antes**: `sort((a,b) => |a.mes - target| - |b.mes - target|)` (instável em empate)
+- **Depois**: mesma distância → prefere meses **antes** do target (passado mais recente)
+- Garante que Janeiro seja preferido sobre Março para preencher Fevereiro
+
+### Resultado após correção:
+| Mês fonte | Dia | Tipo  | DOW-weekIndex | Mês alvo | Dia alvo | Tipo aplicado |
+|-----------|-----|-------|---------------|----------|----------|---------------|
+| Março     | 16  | CURSO | 1-2           | Fevereiro| 16       | CURSO ✓       |
+| Março     | 23  | CPIP  | 1-3           | Fevereiro| 23       | CPIP ✓        |
+
+### Objetivo:
+Garantir que o pré preenchimento replique com precisão o padrão semanal posicional (ex: 3ª segunda vs 4ª segunda) tanto no fluxo individual quanto na geração em lote.
+
+---
+
 ## [2026-04-29] Funcionalidade: Valores Padrão para Novo Profissional
 
 ### Arquivos Modificados:

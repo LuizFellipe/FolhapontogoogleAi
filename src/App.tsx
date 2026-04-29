@@ -179,11 +179,21 @@ export default function App() {
     const folhasAnteriores = folhasDoAno.filter((f: any) => f.mes !== targetMonth);
     if (folhasAnteriores.length === 0) return defaultEntries();
 
-    folhasAnteriores.sort((a: any, b: any) =>
-      Math.abs(a.mes - targetMonth) - Math.abs(b.mes - targetMonth)
-    );
+    // Sort: closest month first; tie-break: prefer months BEFORE target (most recent past)
+    folhasAnteriores.sort((a: any, b: any) => {
+      const distA = Math.abs(a.mes - targetMonth);
+      const distB = Math.abs(b.mes - targetMonth);
+      if (distA !== distB) return distA - distB;
+      const aIsBefore = a.mes < targetMonth;
+      const bIsBefore = b.mes < targetMonth;
+      if (aIsBefore && !bIsBefore) return -1;
+      if (!aIsBefore && bIsBefore) return 1;
+      return b.mes - a.mes;
+    });
 
-    const pattern = new Map<number, { tipo: string; tipo_turno2: string }>();
+    // Pattern key: "DOW-weekIndex" — distinguishes 3ª segunda (dia 16) de 4ª segunda (dia 23)
+    // weekIndex = Math.floor((dia - 1) / 7): dias 1-7→0, 8-14→1, 15-21→2, 22-28→3, 29-31→4
+    const pattern = new Map<string, { tipo: string; tipo_turno2: string }>();
     const CPIP_CURSO = ['CPIP', 'CURSO'];
 
     for (const folha of folhasAnteriores) {
@@ -193,8 +203,10 @@ export default function App() {
         if (!tem) continue;
         const dow = new Date(folha.ano, folha.mes, lancamento.dia).getDay();
         if (dow < 1 || dow > 5) continue;
-        if (!pattern.has(dow)) {
-          pattern.set(dow, {
+        const weekIndex = Math.floor((lancamento.dia - 1) / 7);
+        const key = `${dow}-${weekIndex}`;
+        if (!pattern.has(key)) {
+          pattern.set(key, {
             tipo: CPIP_CURSO.includes(lancamento.tipo) ? lancamento.tipo : 'TRABALHO',
             tipo_turno2: CPIP_CURSO.includes(lancamento.tipo_turno2) ? lancamento.tipo_turno2 : 'TRABALHO',
           });
@@ -206,7 +218,9 @@ export default function App() {
     return Array.from({ length: daysInMonth }, (_, i) => {
       const day = i + 1;
       const dow = new Date(targetYear, targetMonth, day).getDay();
-      const p = pattern.get(dow);
+      const weekIndex = Math.floor((day - 1) / 7);
+      const key = `${dow}-${weekIndex}`;
+      const p = pattern.get(key);
       return {
         day,
         type: (p?.tipo || 'TRABALHO') as EntryType,
