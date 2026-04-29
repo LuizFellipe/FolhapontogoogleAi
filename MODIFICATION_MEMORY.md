@@ -1,5 +1,23 @@
 # Memória de Modificações do Projeto
 
+## [2026-04-29] Funcionalidade: Valores Padrão para Novo Profissional
+
+### Arquivos Modificados:
+- [src/App.tsx](src/App.tsx)
+
+### Alterações:
+- Atualizada a função `handleNewProfissional` para preencher automaticamente os campos `ua`, `exercicio` e `unidade` com os valores padrão da instituição ao criar um novo cadastro.
+- Valores configurados:
+  - **UA**: `"005"`
+  - **Exercício**: `"990210000029"`
+  - **Unidade**: `"CENTRO DE EDUC PROF ESCOLA TEC DO GUARA PROF TERESA ONDINA M"`
+- Limpeza do `initialEmployee` para remover dados de exemplo (Nome/Matrícula) mantendo os padrões institucionais.
+
+### Objetivo:
+Agilizar o cadastro de novos profissionais, pré-populando os campos que são comuns à maioria dos servidores da unidade.
+
+---
+
 ## [2026-04-28] Funcionalidade: Observação Automática para CPIP/CURSO
 
 ### Arquivos Modificados:

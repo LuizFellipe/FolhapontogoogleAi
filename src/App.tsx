@@ -12,8 +12,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { apiService } from './services/api';
 
 const initialEmployee: EmployeeData = {
-  name: 'FULANO DE TAL SOUZA',
-  registration: '0123456-7',
+  name: '',
+  registration: '',
   cargo: 'PROFESSOR DE EDUC. BASICA 07-PV4',
   ua: '005',
   exercicio: '990210000029',
@@ -332,11 +332,11 @@ export default function App() {
       name: '',
       registration: '',
       cargo: '',
-      ua: '',
-      exercicio: '',
+      ua: '005',
+      exercicio: '990210000029',
       ch: '',
       funcao: '',
-      unidade: '',
+      unidade: 'CENTRO DE EDUC PROF ESCOLA TEC DO GUARA PROF TERESA ONDINA M',
       shift1: '',
       shift2: ''
     });
