@@ -57,12 +57,13 @@ def create_backup():
     # Obter nome do container Docker
     container_name = get_docker_container_info()
     
-    # Obter data atual para nome do arquivo
+    # Obter data e hora atual para nome do arquivo
     today = datetime.datetime.now()
-    date_str = today.strftime("%d.%m.%Y")
+    date_str = today.strftime("%d.%m.%Y.%H.%M.%S")
     
-    # Nome do arquivo de backup
+    # Nome dos arquivos de backup
     backup_filename = f"backup.{db_name}.{date_str}.sql"
+    info_filename = f"backup.{db_name}.{date_str}.txt"
     temp_tar_name = f"backup.{db_name}.{date_str}.tar.gz"
 
     print(f"Iniciando backup do banco de dados '{db_name}'...")
@@ -81,6 +82,32 @@ def create_backup():
         if container_name not in result.stdout:
             print(f"ERRO: Container '{container_name}' não está em execução.")
             return False
+        
+        # Obter contagem de registros das tabelas
+        print_progress("Obtendo contagem de registros")
+        
+        tabelas = ['folhas_ponto', 'lancamentos_diarios', 'profissionais', 'resumo_folha']
+        contagem_registros = {}
+        
+        for tabela in tabelas:
+            count_cmd = [
+                "docker", "exec", container_name,
+                "mysql", "-N", "-s",
+                f"--host={db_host}",
+                f"--port={db_port}",
+                f"--user={db_user}",
+                f"--password={db_password}",
+                "-e", f"SELECT COUNT(*) FROM {tabela};",
+                db_name
+            ]
+            try:
+                result = subprocess.run(count_cmd, capture_output=True, text=True, timeout=30)
+                if result.returncode == 0:
+                    contagem_registros[tabela] = int(result.stdout.strip())
+                else:
+                    contagem_registros[tabela] = 0
+            except:
+                contagem_registros[tabela] = 0
         
         print_progress("Executando mysqldump")
         
@@ -109,17 +136,69 @@ def create_backup():
             
         print("Backup concluído com sucesso!")
         
-        # Compactar o arquivo SQL em .tar.gz
-        print_progress("Compactando o arquivo de backup")
+        # Criar arquivo de informações do backup
+        print_progress("Criando arquivo de informações")
+        
+        file_size = os.path.getsize(backup_filename)
+        file_size_mb = file_size / (1024 * 1024)
+        
+        with open(info_filename, 'w', encoding='utf-8') as f:
+            f.write(f"Backup do Banco de Dados\n")
+            f.write(f"========================\n\n")
+            f.write(f"Banco de Dados: {db_name}\n")
+            f.write(f"Data/Hora: {today.strftime('%d/%m/%Y %H:%M:%S')}\n")
+            f.write(f"Host: {db_host}:{db_port}\n")
+            f.write(f"Usuário: {db_user}\n")
+            f.write(f"Container Docker: {container_name}\n\n")
+            f.write(f"RESUMO DE REGISTROS POR TABELA:\n")
+            f.write(f"================================\n")
+            total_registros = 0
+            for tabela, count in contagem_registros.items():
+                f.write(f"{tabela}: {count:,} registros\n")
+                total_registros += count
+            f.write(f"----------------------------------------\n")
+            f.write(f"TOTAL: {total_registros:,} registros\n\n")
+            f.write(f"Arquivo SQL: {backup_filename}\n")
+            f.write(f"Tamanho: {file_size_mb:.2f} MB ({file_size} bytes)\n")
+        
+        # Compactar os arquivos SQL e TXT em .tar.gz
+        print_progress("Compactando arquivos de backup")
         
         with tarfile.open(temp_tar_name, "w:gz") as tar:
             tar.add(backup_filename, arcname=os.path.basename(backup_filename))
+            tar.add(info_filename, arcname=os.path.basename(info_filename))
         
-        # Remover o arquivo .sql original após compactação
+        # Remover os arquivos originais após compactação
         os.remove(backup_filename)
+        os.remove(info_filename)
         
-        print(f"Backup compactado com sucesso: {temp_tar_name}")
-        print("Processo de backup concluído!")
+        # Calcular tamanho do arquivo compactado
+        tar_size = os.path.getsize(temp_tar_name)
+        tar_size_mb = tar_size / (1024 * 1024)
+        
+        # Exibir resumo de registros
+        print("\n" + "="*50)
+        print("RESUMO DE REGISTROS POR TABELA:")
+        print("="*50)
+        total_registros = 0
+        for tabela, count in contagem_registros.items():
+            print(f"{tabela}: {count:,} registros")
+            total_registros += count
+        print("-" * 40)
+        print(f"TOTAL: {total_registros:,} registros")
+        
+        # Exibir resumo do backup
+        print("\n" + "="*50)
+        print("RESUMO DO BACKUP")
+        print("="*50)
+        print(f"Banco de Dados: {db_name}")
+        print(f"Data/Hora: {today.strftime('%d/%m/%Y %H:%M:%S')}")
+        print(f"Arquivo: {temp_tar_name}")
+        print(f"Tamanho do SQL: {file_size_mb:.2f} MB")
+        print(f"Tamanho do TAR.GZ: {tar_size_mb:.2f} MB")
+        print(f"Taxa de compressão: {((file_size - tar_size) / file_size * 100):.1f}%")
+        print("="*50)
+        print("Processo de backup concluído com sucesso!")
         
         return True
         

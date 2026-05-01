@@ -1,4 +1,28 @@
-# Migrações do Banco de Dados
+### `004_add_abono_art151_type.sql`
+Adiciona o valor `'ABONO DE PONTO ART 151 LEI'` ao ENUM das colunas `tipo` e `tipo_turno2` da tabela `lancamentos_diarios`.
+> **Nota:** Aplica-se apenas a bancos criados antes de 2026-04-22. Bancos novos já inicializam com o valor incluído no `001_create_tables.sql` e `full_setup.sql`.
+
+### `005_add_type_falta_paralisação.sql`
+Adiciona o valor `'FALTA PARALISAÇÃO'` ao ENUM das colunas `tipo` e `tipo_turno2` da tabela `lancamentos_diarios`.
+> **Nota:** Aplica-se apenas a bancos criados antes de 2026-04-23.
+
+### `006_add_type_atestado_de_comparecimento.sql`
+Adiciona o valor `'ATESTADO DE COMPARECIMENTO'` ao ENUM das colunas `tipo` e `tipo_turno2` da tabela `lancamentos_diarios`.
+> **Nota:** Aplica-se apenas a bancos criados antes de 2026-04-24.
+
+### `007_add_type_lic_acomp_pessoa_doente.sql`
+Adiciona o valor `'AFAST DOACAO SANGUE ART 62'` ao ENUM das colunas `tipo` e `tipo_turno2` da tabela `lancamentos_diarios`.
+> **Nota:** Aplica-se apenas a bancos criados antes de 2026-04-25.
+
+### `008_add_type_abono_de_ponto_bimestral_lei.sql`
+Adiciona os valores `'LIC. ACOMP. PESSOA DOENTE'` e `'ABONO DE PONTO BIMESTRAL LEI'` ao ENUM das colunas `tipo` e `tipo_turno2` da tabela `lancamentos_diarios`.
+> **Nota:** Aplica-se apenas a bancos criados antes de 2026-04-25.
+
+### `009_add_type_afast_doacao_sangue_art_62.sql`
+Adiciona o valor `'ABONO DE PONTO BIMESTRAL LEI'` ao ENUM das colunas `tipo` e `tipo_turno2` da tabela `lancamentos_diarios`.
+> **Nota:** Aplica-se apenas a bancos criados antes de 2026-04-25.
+
+## Como Adicionar Novos Tipos de Lançamento# Migrações do Banco de Dados
 
 Esta pasta contém os scripts SQL necessários para inicializar e atualizar a estrutura do banco de dados MySQL do sistema.
 
