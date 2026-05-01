@@ -1,5 +1,38 @@
 # Memória de Modificação - Database (database/)
 
+## [2026-05-01] Substituição de Dados Pessoais por Dados Fictícios
+
+### Arquivos Modificados:
+- **full_setup.sql**: Substituídos dados pessoais reais por dados fictícios na tabela `profissionais`
+- **README.md**: Adicionado aviso sobre dados fictícios
+
+### Alterações:
+- **Dados Removidos (Pessoais Reais)**:
+  - FULANO DE TAL SOUZA (matrícula: 0123456-7)
+  - JOÃO DA SILVA (matrícula: 123456-7)
+  - SERVIDORA EXEMPLO I (matrícula: 0666.666-6)
+
+- **Dados Adicionados (Fictícios)**:
+  - JOÃO DA SILVA (matrícula: 123456-7)
+  - MARIA SOUZA (matrícula: 987654-3)
+  - PEDRO SANTOS (matrícula: 456789-0)
+
+### Motivo:
+Segurança e privacidade de dados - eliminação de informações pessoais sensíveis do arquivo de setup usado em desenvolvimento e implantações Docker.
+
+### Impacto:
+- ✅ Nenhum dado pessoal real exposto no repositório
+- ✅ Funcionalidade mantida para desenvolvimento/testes
+- ✅ Estrutura do banco preservada
+- ✅ Compatibilidade total com sistema existente
+
+### Validação:
+- Verificação completa de remoção de todos os dados pessoais
+- Confirmação de presença apenas de dados fictícios
+- Teste de integridade da estrutura do banco
+
+---
+
 ## [2026-04-22] Adição do Tipo ABONO DE PONTO ART 151 LEI
 
 ### Arquivos Modificados/Criados:

@@ -20,6 +20,8 @@ O banco de dados `folhaponto_db` utiliza um modelo estruturado para representar 
 
 O arquivo **`full_setup.sql`** é o script usado pelos containers Docker (`docker-compose.yml` e `docker-compose.prod.yml`) para inicializar o banco de dados em novas implantações. Ele **sempre deve refletir o schema completo e atualizado**, incluindo todas as colunas adicionadas por migrations posteriores.
 
+> **⚠️ Dados Fictícios:** Este arquivo contém apenas dados fictícios para desenvolvimento e testes. Nomes como "JOÃO DA SILVA", "MARIA SOUZA" e "PEDRO SANTOS" são exemplos criados para demonstrar a funcionalidade do sistema sem expor informações pessoais reais.
+
 > **Importante:** Ao adicionar uma nova migration em `migrations/`, atualize também o `full_setup.sql` para que novas implantações Docker já iniciem com o schema correto.
 > Para adicionar novos tipos de lançamento, use o script interativo na raiz: `python3 add_entry_type.py`. Ele atualiza automaticamente `src/types.ts`, `full_setup.sql`, `001_create_tables.sql` e aplica a migration no banco.
 
