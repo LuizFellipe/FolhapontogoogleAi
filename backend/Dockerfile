@@ -4,7 +4,6 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Configurar ambiente Docker para consistência
-ENV VITE_ENVIRONMENT=docker
 
 # Instalar apenas dependências de sistema necessárias para o mysql-connector
 RUN apt-get update && apt-get install -y --no-install-recommends \
