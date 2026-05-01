@@ -4,6 +4,27 @@ Este arquivo registra as modificações significativas realizadas nos componente
 
 ---
 
+## [2026-04-29] - Documentação: Sincronização de README e Árvore de Componentes
+
+### 🔍 Alterações Realizadas
+
+#### 1. src/components/tree.txt — Estrutura atualizada
+- Inclusão de `BatchTimesheetModal.tsx` na listagem da pasta.
+- Inclusão do próprio `tree.txt` na listagem.
+
+#### 2. src/components/README.md — Descrição do TimesheetGrid atualizada
+- Texto ajustado para refletir o comportamento atual do componente, com suporte a lançamentos por dois turnos e habilitação do segundo turno por carga horária.
+- Removida referência desatualizada à limpeza automática de campos de horário.
+
+### ✅ Arquivos Modificados
+- `src/components/tree.txt`
+- `src/components/README.md`
+
+### 🎯 Objetivo
+Eliminar inconsistências entre documentação, histórico e estrutura real dos arquivos em `src/components`.
+
+---
+
 ## [2026-04-27] - Funcionalidade: Geração em Lote de Folhas de Ponto
 
 ### 🔍 Alterações Realizadas

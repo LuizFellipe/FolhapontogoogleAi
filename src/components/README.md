@@ -10,7 +10,7 @@ Esta pasta contém todos os componentes React modulares utilizados para construi
 -   **`EmployeeNavigator.tsx`**: Componente de navegação e busca que permite selecionar profissionais cadastrados, alternar visualizações e criar novas folhas. Expõe as ações: **Novo**, **Excluir**, **Pré Preenchimento**, **Limpar Lançamentos** e **Gerar em Lote**.
 -   **`BatchTimesheetModal.tsx`**: Modal de geração em lote de folhas de ponto. Permite filtrar profissionais por cargo, selecionar o mês/ano de referência e marcar múltiplos profissionais via checkboxes. Exibe barra de progresso durante o processamento e aciona a impressão automática ao final.
 -   **`SummaryForm.tsx`**: Gerencia a grade de preenchimento da **Página 2** (Resumo da Frequência). Permite adicionar códigos de operação (Inclusão, Alteração, Exclusão) e códigos de ocorrência.
--   **`TimesheetGrid.tsx`**: Grade principal da **Página 1** para lançamentos diários (Trabalho Normal, Férias, Atestado, etc.). Automatiza a limpeza de campos de horário quando uma ocorrência é selecionada.
+-   **`TimesheetGrid.tsx`**: Grade principal da **Página 1** para lançamentos diários (Trabalho Normal, Férias, Atestado, etc.). Suporta lançamentos por **dois turnos** (Turno 1 e Turno 2), com o segundo turno habilitado conforme a carga horária.
 
 ### 📄 Visualizações para Impressão (Preview)
 
