@@ -12,7 +12,7 @@ export const TimesheetSummaryPreview: React.FC<Props> = ({ data }) => {
         {padded.split('').map((digit, i) => (
           <div 
             key={i} 
-            className="w-3.5 h-5 border-b border-l border-black flex items-center justify-center last:border-r text-[9px] font-bold"
+            className="w-5 h-6 border-b border-l border-black flex items-center justify-center last:border-r text-[9px] font-bold"
           >
             {digit}
           </div>
@@ -22,7 +22,7 @@ export const TimesheetSummaryPreview: React.FC<Props> = ({ data }) => {
   };
 
   const renderOperation = (op: string) => (
-    <div className="w-4 h-5 border-b border-l border-r border-black flex items-center justify-center font-bold">
+    <div className="w-5 h-6 border-b border-l border-r border-black flex items-center justify-center font-bold">
       {op}
     </div>
   );

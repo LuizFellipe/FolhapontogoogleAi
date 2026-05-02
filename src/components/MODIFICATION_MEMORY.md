@@ -4,6 +4,25 @@ Este arquivo registra as modificações significativas realizadas nos componente
 
 ---
 
+## [2026-05-02] - Melhoria: Proporção dos boxes no Resumo da Frequência
+
+### 🔍 Alterações Realizadas
+
+#### 1. TimesheetSummaryPreview.tsx — Tamanho dos boxes de dígitos e operação
+
+- `renderDigits`: classe alterada de `w-3.5 h-5` para `w-5 h-6` (14×20px → 20×24px).
+- `renderOperation`: classe alterada de `w-4 h-5` para `w-5 h-6` (16×20px → 20×24px).
+- Boxes agora são aproximadamente quadrados, mais fiéis à imagem de referência oficial.
+- Espaçamento `gap-x-8` mantido. Layout `items-center` mantido.
+
+### ✅ Arquivos Modificados
+- `src/components/TimesheetSummaryPreview.tsx`
+
+### 🎯 Objetivo
+Aproximar o visual da seção "RESUMO DA FREQUÊNCIA" à proporção dos boxes presentes no documento oficial de referência.
+
+---
+
 ## [2026-05-01] - Correção: SummaryForm sem linhas em folhas sem resumo salvo
 
 ### 🔴 Problema Identificado
