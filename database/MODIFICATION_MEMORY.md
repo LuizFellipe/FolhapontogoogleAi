@@ -1,5 +1,59 @@
 # Memória de Modificação - Database (database/)
 
+## [2026-05-01] Refatoração Completa dos Tipos de Lançamento (Migration 010)
+
+### Arquivos Modificados/Criados:
+- **migrations/010_refactor_tipos_lancamento.sql**: Nova migration criada e aplicada
+- **full_setup.sql**: ENUM → VARCHAR(80), tabela `tipos_lancamento` adicionada, seed data corrigido
+- **migrations/001_create_tables.sql**: ENUM → VARCHAR(80), tabela `tipos_lancamento` adicionada
+- **README.md**: Documentação atualizada com nova tabela e lista completa de tipos
+
+### Alterações:
+
+#### 1. Nova tabela `tipos_lancamento` (lookup)
+- Criada com colunas `valor VARCHAR(80) PK`, `label VARCHAR(150)`, `codigo VARCHAR(20) NULL`
+- Populada com 21 tipos de lançamento oficiais com seus respectivos labels e códigos
+- Serve como fonte de verdade para todos os tipos válidos do sistema
+
+#### 2. Migração ENUM → VARCHAR(80)
+- `lancamentos_diarios.tipo` e `tipo_turno2` convertidos de ENUM para `VARCHAR(80)`
+- Elimina a necessidade de `ALTER TABLE` a cada novo tipo adicionado
+- Dados existentes preservados integralmente
+
+#### 3. Migração de values antigos (UPDATE em dados existentes)
+| value antigo | value novo | registros afetados (tipo + turno2) |
+|---|---|---|
+| `ATESTADO` | `ATESTADO MEDICO DE ATE 03` | 15 |
+| `LICENCA` | `LICENCA MEDICA OU` | 21 |
+| `ABONO` | `ABONO DE PONTO ART 151 LEI` (merge) | 2 |
+| `TRE` | `Abono TRE` | 0 |
+
+#### 4. Novos tipos adicionados
+- `PONTO FACULTATIVO` (código 00000)
+- `ATESTADO COMPARECIMENTO A` (código 00343)
+- `ATESTADO COMPARECIMENTO P.` (código 00341)
+- `EXAME MEDICO PREV/PERIOD ART` (código 00118)
+
+#### 5. Correção no seed data (`full_setup.sql`)
+- 3 registros com value `'LICENCA'` (obsoleto) corrigidos para `'LICENCA MEDICA OU'`
+- IDs afetados: 1092, 1093, 1124
+
+### Causa Raiz:
+Sistema precisava associar códigos oficiais (ex: 00294, 99902) a cada tipo de lançamento para uso nos formulários e relatórios. O ENUM hardcoded impedia adições flexíveis e não comportava o campo `codigo`.
+
+### Impacto:
+- ✅ 21 tipos de lançamento com codes oficiais registrados
+- ✅ Novo container Docker inicializa com schema e seed corretos
+- ✅ Adição de novos tipos não requer mais ALTER TABLE de ENUM
+- ✅ `add_entry_type.py` corrigido para gerar entries com campo `code`
+
+### Validação:
+- Migration aplicada ao container `meu-mysql` sem erros
+- `SELECT COUNT(*) FROM tipos_lancamento` → 21
+- `vite build` → zero erros TypeScript
+
+---
+
 ## [2026-05-01] Substituição de Dados Pessoais por Dados Fictícios
 
 ### Arquivos Modificados:

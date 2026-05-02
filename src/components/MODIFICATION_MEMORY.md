@@ -4,6 +4,26 @@ Este arquivo registra as modificações significativas realizadas nos componente
 
 ---
 
+## [2026-05-01] - Auditoria: Impacto da Refatoração de Tipos de Lançamento
+
+### Contexto
+Refatoração em `src/types.ts` renomeou values de `EntryType` e adicionou campo `code` ao `ENTRY_TYPES`. Foi realizada varredura completa dos componentes para identificar impactos.
+
+### Resultado da Auditoria
+
+| Componente | Uso de ENTRY_TYPES/EntryType | Impacto | Ação |
+|---|---|---|---|
+| `TimesheetGrid.tsx` | `ENTRY_TYPES.map(t => <option value={t.value}>{t.label}</option>)` | Nenhum — iteração dinâmica | Sem alteração |
+| `TimesheetPreview.tsx` | `ENTRY_TYPES.find(t => t.value === type)` | Nenhum — lookup dinâmico | Sem alteração |
+| `TimesheetSummaryPreview.tsx` | `{ code: '256', desc: 'TRE' }` em tabela de referência | Cosmético — texto informativo, não validação de dados | Sem alteração |
+| `BatchTimesheetModal.tsx` | Sem referência direta a tipos | Nenhum | Sem alteração |
+| `EmployeeNavigator.tsx` | Sem referência direta a tipos | Nenhum | Sem alteração |
+
+### Conclusão
+Todos os componentes que usam tipos de lançamento fazem isso via iteração dinâmica sobre `ENTRY_TYPES` — nenhum value está hardcoded nos componentes. A adição do campo `code` em `ENTRY_TYPES` não quebra nenhum componente existente pois nenhum desestrutura a lista com tipo fixo.
+
+---
+
 ## [2026-04-29] - Documentação: Sincronização de README e Árvore de Componentes
 
 ### 🔍 Alterações Realizadas

@@ -55,6 +55,41 @@ LOCK TABLES `folhas_ponto` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `tipos_lancamento`
+--
+
+DROP TABLE IF EXISTS `tipos_lancamento`;
+CREATE TABLE `tipos_lancamento` (
+  `valor`  varchar(80)  NOT NULL,
+  `label`  varchar(150) NOT NULL,
+  `codigo` varchar(20)  DEFAULT NULL,
+  PRIMARY KEY (`valor`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `tipos_lancamento` (`valor`, `label`, `codigo`) VALUES
+  ('TRABALHO',                    'TRABALHO NORMAL',                               NULL),
+  ('FERIAS',                      'FÉRIAS',                                        '99902'),
+  ('ATESTADO MEDICO DE ATE 03',   'ATESTADO MEDICO DE ATE 03 DIAS',                '00294'),
+  ('LICENCA MEDICA OU',           'LICENCA MEDICA OU ODONTOLOGICA',                '00306'),
+  ('FALTA',                       'FALTA',                                         '40010'),
+  ('Abono TRE',                   'Abono TRE',                                     '00256'),
+  ('ABONO DE PONTO ART 151 LEI',  'ABONO DE PONTO ART 151 LEI COMP 840/2011',     '00219'),
+  ('CPIP',                        'CPIP',                                          NULL),
+  ('CURSO',                       'CURSO FORMAÇÃO CONTINUADA',                     NULL),
+  ('ABONO_NIVER',                 'ABONO ANIVERSÁRIO',                             NULL),
+  ('FERIADO',                     'FERIADO',                                       NULL),
+  ('FALTA PARALISAÇÃO',           'FALTA PARALISAÇÃO',                             '40034'),
+  ('ATESTADO DE COMPARECIMENTO',  'ATESTADO COMPARECIMENTO SERVIDOR',              '00340'),
+  ('LIC. ACOMP. PESSOA DOENTE',   'LIC. ACOMP. PESSOA DOENTE FAMILIA',            '99906'),
+  ('AFAST DOACAO SANGUE ART 62',  'AFAST DOACAO SANGUE ART 62 LEI COMP 840/2011', '00310'),
+  ('ABONO DE PONTO BIMESTRAL LEI','ABONO DE PONTO BIMESTRAL LEI 449/1993',         '00284'),
+  ('RECESSO',                     'RECESSO',                                       '00258'),
+  ('PONTO FACULTATIVO',           'PONTO FACULTATIVO',                             '00000'),
+  ('ATESTADO COMPARECIMENTO A',   'ATESTADO COMPARECIMENTO A SUBSAUDE',            '00343'),
+  ('ATESTADO COMPARECIMENTO P.',  'ATESTADO COMPARECIMENTO PESSOA DA FAMILIA',     '00341'),
+  ('EXAME MEDICO PREV/PERIOD ART','EXAME MEDICO PREV/PERIOD ART 62 LEI COMP',      '00118');
+
+--
 -- Table structure for table `lancamentos_diarios`
 --
 
@@ -65,8 +100,8 @@ CREATE TABLE `lancamentos_diarios` (
   `id` int NOT NULL AUTO_INCREMENT,
   `folha_ponto_id` int NOT NULL,
   `dia` int NOT NULL,
-  `tipo` enum('TRABALHO','FERIAS','RECESSO','ATESTADO','LICENCA','FALTA','TRE','ABONO','CPIP','CURSO','ABONO_NIVER','FERIADO','ABONO DE PONTO ART 151 LEI','SUSPENSAO','FALTA PARALISAÇÃO','ATESTADO DE COMPARECIMENTO','AFAST DOACAO SANGUE ART 62','LIC. ACOMP. PESSOA DOENTE','ABONO DE PONTO BIMESTRAL LEI') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'TRABALHO',
-  `tipo_turno2` enum('TRABALHO','FERIAS','RECESSO','ATESTADO','LICENCA','FALTA','TRE','ABONO','CPIP','CURSO','ABONO_NIVER','FERIADO','ABONO DE PONTO ART 151 LEI','SUSPENSAO','FALTA PARALISAÇÃO','ATESTADO DE COMPARECIMENTO','AFAST DOACAO SANGUE ART 62','LIC. ACOMP. PESSOA DOENTE','ABONO DE PONTO BIMESTRAL LEI') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `tipo` varchar(80) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'TRABALHO',
+  `tipo_turno2` varchar(80) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `observacao` text COLLATE utf8mb4_unicode_ci,
   `observacao_turno2` text COLLATE utf8mb4_unicode_ci,
   `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,

@@ -37,13 +37,44 @@ CREATE TABLE IF NOT EXISTS folhas_ponto (
     INDEX idx_profissional_mes_ano (profissional_id, mes, ano)
 );
 
+-- Tabela lookup de tipos de lançamento (tipos_lancamento)
+CREATE TABLE IF NOT EXISTS tipos_lancamento (
+    valor   VARCHAR(80)  NOT NULL,
+    label   VARCHAR(150) NOT NULL,
+    codigo  VARCHAR(20)  NULL,
+    PRIMARY KEY (valor)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT IGNORE INTO tipos_lancamento (valor, label, codigo) VALUES
+    ('TRABALHO',                    'TRABALHO NORMAL',                               NULL),
+    ('FERIAS',                      'FÉRIAS',                                        '99902'),
+    ('ATESTADO MEDICO DE ATE 03',   'ATESTADO MEDICO DE ATE 03 DIAS',                '00294'),
+    ('LICENCA MEDICA OU',           'LICENCA MEDICA OU ODONTOLOGICA',                '00306'),
+    ('FALTA',                       'FALTA',                                         '40010'),
+    ('Abono TRE',                   'Abono TRE',                                     '00256'),
+    ('ABONO DE PONTO ART 151 LEI',  'ABONO DE PONTO ART 151 LEI COMP 840/2011',     '00219'),
+    ('CPIP',                        'CPIP',                                          NULL),
+    ('CURSO',                       'CURSO FORMAÇÃO CONTINUADA',                     NULL),
+    ('ABONO_NIVER',                 'ABONO ANIVERSÁRIO',                             NULL),
+    ('FERIADO',                     'FERIADO',                                       NULL),
+    ('FALTA PARALISAÇÃO',           'FALTA PARALISAÇÃO',                             '40034'),
+    ('ATESTADO DE COMPARECIMENTO',  'ATESTADO COMPARECIMENTO SERVIDOR',              '00340'),
+    ('LIC. ACOMP. PESSOA DOENTE',   'LIC. ACOMP. PESSOA DOENTE FAMILIA',            '99906'),
+    ('AFAST DOACAO SANGUE ART 62',  'AFAST DOACAO SANGUE ART 62 LEI COMP 840/2011', '00310'),
+    ('ABONO DE PONTO BIMESTRAL LEI','ABONO DE PONTO BIMESTRAL LEI 449/1993',         '00284'),
+    ('RECESSO',                     'RECESSO',                                       '00258'),
+    ('PONTO FACULTATIVO',           'PONTO FACULTATIVO',                             '00000'),
+    ('ATESTADO COMPARECIMENTO A',   'ATESTADO COMPARECIMENTO A SUBSAUDE',            '00343'),
+    ('ATESTADO COMPARECIMENTO P.',  'ATESTADO COMPARECIMENTO PESSOA DA FAMILIA',     '00341'),
+    ('EXAME MEDICO PREV/PERIOD ART','EXAME MEDICO PREV/PERIOD ART 62 LEI COMP',      '00118');
+
 -- Tabela de Lançamentos Diários (lancamentos_diarios)
 CREATE TABLE IF NOT EXISTS lancamentos_diarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
     folha_ponto_id INT NOT NULL,
     dia INT NOT NULL,
-    tipo ENUM('TRABALHO', 'FERIAS', 'RECESSO', 'ATESTADO', 'LICENCA', 'FALTA', 'TRE', 'ABONO', 'CPIP', 'CURSO', 'ABONO_NIVER', 'FERIADO', 'ABONO DE PONTO ART 151 LEI', 'FALTA PARALISAÇÃO', 'ATESTADO DE COMPARECIMENTO') NOT NULL DEFAULT 'TRABALHO',
-    tipo_turno2 ENUM('TRABALHO', 'FERIAS', 'RECESSO', 'ATESTADO', 'LICENCA', 'FALTA', 'TRE', 'ABONO', 'CPIP', 'CURSO', 'ABONO_NIVER', 'FERIADO', 'ABONO DE PONTO ART 151 LEI', 'FALTA PARALISAÇÃO', 'ATESTADO DE COMPARECIMENTO') NULL,
+    tipo VARCHAR(80) NOT NULL DEFAULT 'TRABALHO',
+    tipo_turno2 VARCHAR(80) NULL,
     observacao TEXT,
     observacao_turno2 TEXT NULL,
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

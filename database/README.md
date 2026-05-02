@@ -13,8 +13,9 @@ O banco de dados `folhaponto_db` utiliza um modelo estruturado para representar 
 
 1.  **`profissionais`**: Entidade central que mapeia os dados cadastrais (Matrícula, Nome, UA, Exercício, Lotação, Carga Horária e Turnos).
 2.  **`folhas_ponto`**: Vincula um profissional a um período específico (Mês/Ano). É o container principal dos lançamentos.
-3.  **`lancamentos_diarios`**: Armazena as ocorrências de cada dia do mês, selecionando tipos predefinidos para cada turno. ENUM completo: `TRABALHO`, `FERIAS`, `RECESSO`, `ATESTADO`, `LICENCA`, `FALTA`, `TRE`, `ABONO`, `CPIP`, `CURSO`, `ABONO_NIVER`, `FERIADO`, `ABONO DE PONTO ART 151 LEI`, `SUSPENSAO`, `FALTA PARALISAÇÃO`, `ATESTADO DE COMPARECIMENTO`, `AFAST DOACAO SANGUE ART 62`, `LIC. ACOMP. PESSOA DOENTE`, `ABONO DE PONTO BIMESTRAL LEI`. Inclui suporte a `tipo_turno2` e `observacao_turno2` para lançamentos independentes por turno.
-4.  **`resumo_folha`**: Contém as entradas do "Resumo de Frequência" (Página 2), mapeando códigos de operação (I/A/E), códigos de ocorrência e períodos.
+3.  **`lancamentos_diarios`**: Armazena as ocorrências de cada dia do mês. O campo `tipo` (e `tipo_turno2`) é `VARCHAR(80)` vinculado à tabela `tipos_lancamento`. Tipos válidos: `TRABALHO`, `FERIAS`, `ATESTADO MEDICO DE ATE 03`, `LICENCA MEDICA OU`, `FALTA`, `Abono TRE`, `ABONO DE PONTO ART 151 LEI`, `CPIP`, `CURSO`, `ABONO_NIVER`, `FERIADO`, `FALTA PARALISAÇÃO`, `ATESTADO DE COMPARECIMENTO`, `LIC. ACOMP. PESSOA DOENTE`, `AFAST DOACAO SANGUE ART 62`, `ABONO DE PONTO BIMESTRAL LEI`, `RECESSO`, `PONTO FACULTATIVO`, `ATESTADO COMPARECIMENTO A`, `ATESTADO COMPARECIMENTO P.`, `EXAME MEDICO PREV/PERIOD ART`. Inclui suporte a `tipo_turno2` e `observacao_turno2` para lançamentos independentes por turno.
+4.  **`tipos_lancamento`**: Tabela lookup com todos os tipos de lançamento válidos (`valor`, `label`, `codigo`). Fonte de verdade para os tipos — sempre consultar esta tabela ao adicionar novos tipos.
+5.  **`resumo_folha`**: Contém as entradas do "Resumo de Frequência" (Página 2), mapeando códigos de operação (I/A/E), códigos de ocorrência e períodos.
 
 ## Arquivo de Inicialização Docker
 

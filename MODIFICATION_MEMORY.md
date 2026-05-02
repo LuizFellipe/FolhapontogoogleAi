@@ -1,5 +1,48 @@
 # Memória de Modificações do Projeto
 
+## [2026-05-01] Refatoração Completa dos Tipos de Lançamento
+
+### Arquivos Modificados/Criados:
+- [src/types.ts](src/types.ts)
+- [add_entry_type.py](add_entry_type.py)
+- [database/migrations/010_refactor_tipos_lancamento.sql](database/migrations/010_refactor_tipos_lancamento.sql) (novo)
+- [database/full_setup.sql](database/full_setup.sql)
+- [database/migrations/001_create_tables.sql](database/migrations/001_create_tables.sql)
+- [database/README.md](database/README.md)
+
+### Alterações:
+
+#### 1. `src/types.ts` — Atualização completa de EntryType e ENTRY_TYPES
+- **`EntryType` union type**: atualizado com 21 valores (4 values antigos renomeados, 4 novos adicionados, 1 removido por merge)
+- **`ENTRY_TYPES`**: adicionado campo `code: string | null` a cada entrada
+- Values renomeados: `ATESTADO` → `ATESTADO MEDICO DE ATE 03`, `LICENCA` → `LICENCA MEDICA OU`, `TRE` → `Abono TRE`
+- Merge: `ABONO` eliminado — registros migrados para `ABONO DE PONTO ART 151 LEI`
+- Novos types: `PONTO FACULTATIVO`, `ATESTADO COMPARECIMENTO A`, `ATESTADO COMPARECIMENTO P.`, `EXAME MEDICO PREV/PERIOD ART`
+- Labels atualizadas para refletir nomenclatura oficial dos formulários
+
+#### 2. `add_entry_type.py` — Correção do gerador de entries
+- **Antes**: `new_entry = f"  {{ value: '{value}', label: '{label}' }}"` — gerava entry sem o campo `code`
+- **Depois**: inclui `code: null` — compatível com o novo tipo `ENTRY_TYPES`
+- Sem esta correção, usar o script adicionaria um tipo com estrutura inválida, quebrando o TypeScript
+
+#### 3. Migration 010 — Banco de dados
+- Tabela `tipos_lancamento` criada (lookup com valor, label, codigo)
+- `lancamentos_diarios.tipo` e `tipo_turno2`: ENUM → VARCHAR(80)
+- Registros existentes migrados com novos values (ver `database/MODIFICATION_MEMORY.md`)
+- 3 registros no seed data do `full_setup.sql` corrigidos (`LICENCA` → `LICENCA MEDICA OU`)
+
+### Varredura de impacto realizada:
+- `src/App.tsx`: sem hardcoded types (usa `'TRABALHO'` como fallback — inalterado) ✅
+- `src/components/TimesheetGrid.tsx`: iteração dinâmica via `ENTRY_TYPES.map()` ✅
+- `src/components/TimesheetPreview.tsx`: usa `ENTRY_TYPES.find()` — sem values hardcoded ✅
+- `backend/app.py`: sem validação de tipos — passa valor diretamente ao banco ✅
+- `src/components/TimesheetSummaryPreview.tsx`: referência a `'TRE'` como texto descritivo cosmético (não é validação) ✅
+
+### Objetivo:
+Associar códigos oficiais de ocorrência (ex: 99902 para FÉRIAS, 00294 para ATESTADO) aos tipos de lançamento para suporte a geração de relatórios e conformidade com os formulários da SEE. Modernizar o schema eliminando ENUM hardcoded.
+
+---
+
 ## [2026-05-01] Tema Cyberpunk para Menu do Sistema
 
 ### Arquivos Modificados:

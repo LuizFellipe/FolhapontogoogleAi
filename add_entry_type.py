@@ -62,7 +62,7 @@ def update_types_ts(value: str, label: str, type_values: list, text: str):
     text = text.replace(old_union, new_union)
 
     # Adiciona ao ENTRY_TYPES: garante vírgula na última entrada existente e insere o novo item
-    new_entry = f"  {{ value: '{value}', label: '{label}' }}"
+    new_entry = f"  {{ value: '{value}', label: '{label}', code: null }}"
     # Adiciona vírgula na última linha que termina com '}' sem vírgula, depois insere o novo item antes de '];'
     text = re.sub(r"(\})\s*\n(\];)$", f"\\1,\n{new_entry}\n\\2", text, flags=re.MULTILINE)
 
