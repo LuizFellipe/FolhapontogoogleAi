@@ -4,6 +4,29 @@ Este arquivo registra as modificações significativas realizadas nos componente
 
 ---
 
+## [2026-05-01] - Correção: SummaryForm sem linhas em folhas sem resumo salvo
+
+### 🔴 Problema Identificado
+Ao navegar para folhas onde `resumo_folha` possuía 0 registros (folhas criadas antes da implementação do save de resumo, geradas em lote ou inseridas manualmente), o `SummaryForm` renderizava 0 linhas, impossibilitando o preenchimento do Resumo da Frequência.
+
+### 🔍 Causa Raiz
+`src/App.tsx:415` — quando `loadCompleteTimesheet` encontra a folha mas `resumo_folha` retorna array vazio, `setSummaryEntries([])` era chamado sem fallback. O branch `else` (folha inexistente) já usava `initialSummary`, mas o caminho "folha existe + resumo vazio" não tinha tratamento.
+
+### ✅ Solução Aplicada
+
+#### `src/App.tsx` — linha 415
+```typescript
+// Antes:
+setSummaryEntries(timesheetData.summaryEntries);
+// Depois:
+setSummaryEntries(timesheetData.summaryEntries.length > 0 ? timesheetData.summaryEntries : initialSummary);
+```
+
+### 🎯 Objetivo
+Garantir que o SummaryForm sempre exiba 8 linhas editáveis, mesmo quando a tabela `resumo_folha` não possui entradas para o `folha_ponto_id` consultado.
+
+---
+
 ## [2026-05-01] - Auditoria: Impacto da Refatoração de Tipos de Lançamento
 
 ### Contexto
