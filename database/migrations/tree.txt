@@ -6,4 +6,6 @@
 ├── 005_add_type_falta_paralisação.sql
 ├── 006_add_type_atestado_de_comparecimento.sql
 ├── 007_add_type_lic_acomp_pessoa_doente.sql
+├── 008_add_type_abono_de_ponto_bimestral_lei.sql
+├── 009_add_type_afast_doacao_sangue_art_62.sql
 └── README.md

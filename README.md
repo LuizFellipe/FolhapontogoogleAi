@@ -152,6 +152,7 @@ FolhapontogoogleAi/
 ├── 📄 README_SETUP.md    # Guia de configuração
 ├── 📄 requirements.txt   # Dependências Python do backend
 ├── 📄 start_backend.sh   # Script de inicialização unificado
+├── 📄 folha_manager.sh   # Script de gerenciamento do sistema (tema cyberpunk)
 ├── 📄 tree.txt           # Estrutura de arquivos do projeto
 ├── 📄 tsconfig.json      # Configuração TypeScript
 ├── 📄 update_tree.py     # Script para atualizar tree.txt

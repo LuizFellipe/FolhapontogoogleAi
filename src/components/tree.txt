@@ -7,5 +7,4 @@
 ├── SummaryForm.tsx
 ├── TimesheetGrid.tsx
 ├── TimesheetPreview.tsx
-├── TimesheetSummaryPreview.tsx
-└── tree.txt
+└── TimesheetSummaryPreview.tsx

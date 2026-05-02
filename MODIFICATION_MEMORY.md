@@ -1,5 +1,40 @@
 # Memória de Modificações do Projeto
 
+## [2026-05-01] Tema Cyberpunk para Menu do Sistema
+
+### Arquivos Modificados:
+- [folha_manager.sh](folha_manager.sh)
+
+### Alterações:
+
+#### 1. Transformação Visual Completa
+- **Cabeçalho**: Substituído tema "Alice in Wonderland" por tema cyberpunk/retro terminal
+- **ASCII Art**: Novo banner "GESTOR FOLHA PONTO" com estilo cyberpunk
+- **Cores**: Paleta atualizada para neon greens, blues, e whites (cyberpunk style)
+- **Menu**: Redesenho para layout tradicional com bordas limpas e bem formatadas
+
+#### 2. Elementos Visuais Atualizados
+- **Header**: ASCII art cyberpunk com "GESTOR FOLHA PONTO" centralizado
+- **Welcome Message**: "Welcome Netrunner, choose an option"
+- **Menu Layout**: Design tradicional com bordas `=` e opções numeradas `[ 1 ]` a `[ 9 ]`
+- **Color Scheme**: Mantidos cores cyberpunk mas com layout mais tradicional e bonito
+
+#### 3. Mensagens do Sistema
+- **Status Messages**: Formatadas como `[SYSTEM ONLINE]`/`[SYSTEM OFFLINE]`
+- **Action Messages**: `[SUCCESS]`, `[ERROR]`, `[WARNING]`, `[INFO]` com estilo bracketed
+- **Prompts**: `[SELECT OPTION 1-9]:` e `[PRESS ENTER TO CONTINUE]`
+- **Exit Messages**: `[SYSTEM SHUTDOWN]` e `[DISCONNECTED]`
+
+#### 4. Funcionalidade Preservada
+- Todas as 9 opções do menu mantidas com mesma funcionalidade
+- Sistema de gerenciamento de processos background intacto
+- Compatibilidade total com operações existentes
+
+### Objetivo:
+Modernizar a interface visual do script de gerenciamento mantendo toda a funcionalidade existente, proporcionando uma experiência mais atraente e profissional com tema cyberpunk mas com design tradicional e bem formatado.
+
+---
+
 ## [2026-04-29] Correção: Algoritmo de Pré Preenchimento CPIP/CURSO
 
 ### Arquivos Modificados:
