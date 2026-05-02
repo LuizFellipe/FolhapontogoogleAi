@@ -412,7 +412,7 @@ export default function App() {
       if (timesheetData) {
         setEmployee(timesheetData.employee);
         setEntries(timesheetData.entries);
-        setSummaryEntries(timesheetData.summaryEntries);
+        setSummaryEntries(timesheetData.summaryEntries.length > 0 ? timesheetData.summaryEntries : initialSummary);
         setObservations(timesheetData.observations);
         
         // Buscar o ID da folha
