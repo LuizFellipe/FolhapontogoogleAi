@@ -86,7 +86,7 @@ def create_backup():
         # Obter contagem de registros das tabelas
         print_progress("Obtendo contagem de registros")
         
-        tabelas = ['folhas_ponto', 'lancamentos_diarios', 'profissionais', 'resumo_folha']
+        tabelas = ['folhas_ponto', 'lancamentos_diarios', 'profissionais', 'resumo_folha','feriados','tipos_lancamento']
         contagem_registros = {}
         
         for tabela in tabelas:
