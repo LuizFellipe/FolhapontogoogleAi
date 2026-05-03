@@ -57,11 +57,17 @@ cleanup() {
 # Configurar trap para capturar Ctrl+C
 trap cleanup SIGINT SIGTERM
 
+# Matar processo anterior na porta 5000 se existir
+if lsof -ti :5000 >/dev/null 2>&1; then
+    echo "Porta 5000 em uso. Encerrando processo anterior..."
+    lsof -ti :5000 | xargs kill -9
+    sleep 1
+fi
+
 # Iniciar o backend em background
 echo "Iniciando servidor Flask na porta 5000..."
 cd backend
-flask run --host=0.0.0.0 --port=5000 &
-#python3 app.py --host=0.0.0.0 &
+FLASK_APP=app.py flask run --host=0.0.0.0 --port=5000 &
 BACKEND_PID=$!
 
 # Voltar para o diretório raiz
