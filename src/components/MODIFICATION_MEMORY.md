@@ -4,6 +4,48 @@ Este arquivo registra as modificações significativas realizadas nos componente
 
 ---
 
+## [2026-05-03] - Refatoração: Persistência de Feriados no Banco de Dados
+
+### 🔍 Alterações Realizadas
+
+#### 1. Banco de Dados e Backend
+- Criada nova tabela `feriados` no MySQL (`database/migrations/011_create_feriados_table.sql`).
+- Implementados endpoints de CRUD (`GET`, `POST`, `DELETE`) em `backend/app.py`.
+
+#### 2. Integração Frontend
+- Atualizado `api.ts` com os novos métodos para a entidade Feriados.
+- `HolidayModal.tsx` modificado para buscar, criar e excluir feriados via API em vez de `localStorage`.
+
+### 🎯 Objetivo
+Garantir a consistência e persistência centralizada dos dados de feriados entre sessões e usuários.
+
+---
+
+## [2026-05-03] - Funcionalidade: Lançamento de Feriados (HolidayModal)
+
+### 🔍 Alterações Realizadas
+
+#### 1. HolidayModal.tsx — Novo componente
+- Modal dedicado à gestão de feriados locais/específicos:
+  - **Inputs**: Dia, Mês, Ano e Nome do Feriado.
+  - **Lista**: Exibe os feriados cadastrados para o ano selecionado.
+  - **Ações**: "Aplicar" atualiza o dia na grade de lançamentos com o `tipo` 'FERIADO' e a `observacao` com o nome inserido. "Reverter" desfaz a alteração voltando o dia para 'TRABALHO NORMAL'. "Excluir" remove o feriado do registro.
+  - **Armazenamento**: Feriados cadastrados ficam persistidos no `localStorage`.
+
+#### 2. App.tsx e EmployeeNavigator.tsx — Integração
+- **`EmployeeNavigator.tsx`**: Adicionado botão "Feriados" (ícone Calendar) que chama a prop `onOpenHolidayModal`.
+- **`App.tsx`**: Inclusão dos estados do modal, renderização do `<HolidayModal />` e métodos `handleApplyHoliday` e `handleRemoveHolidayEffect` que alteram localmente a lista de `entries`.
+
+### ✅ Arquivos Modificados
+- `src/components/HolidayModal.tsx` *(novo)*
+- `src/components/EmployeeNavigator.tsx`
+- `src/App.tsx`
+
+### 🎯 Objetivo
+Permitir aos usuários cadastrar feriados e aplicá-los rapidamente nas folhas de ponto com observações customizadas.
+
+---
+
 ## [2026-05-02] - Melhoria: Proporção dos boxes no Resumo da Frequência
 
 ### 🔍 Alterações Realizadas

@@ -6,6 +6,7 @@ import { TimesheetSummaryPreview } from './components/TimesheetSummaryPreview';
 import { SummaryForm } from './components/SummaryForm';
 import { EmployeeNavigator } from './components/EmployeeNavigator';
 import { BatchTimesheetModal } from './components/BatchTimesheetModal';
+import { HolidayModal, Holiday } from './components/HolidayModal';
 import { TimesheetData, EmployeeData, DailyEntry, EntryType, SummaryEntry, MONTHS, ENTRY_TYPES } from './types';
 import { Printer, FileText, Settings, Download, Save, Database } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -112,6 +113,9 @@ export default function App() {
   const [isGeneratingBatch, setIsGeneratingBatch] = useState(false);
   const [batchProgress, setBatchProgress] = useState<{ current: number; total: number; currentName: string } | undefined>();
   const [batchTimesheets, setBatchTimesheets] = useState<TimesheetData[]>([]);
+
+  // Estados para Modal de Feriados
+  const [showHolidayModal, setShowHolidayModal] = useState(false);
 
   // Carregar profissionais na inicialização
   useEffect(() => {
@@ -389,6 +393,94 @@ export default function App() {
     } finally {
       setIsGeneratingBatch(false);
       setBatchProgress(undefined);
+    }
+  };
+
+  // Feriados: Aplicar na folha atual
+  const handleApplyHoliday = async (holiday: Holiday) => {
+    if (month === holiday.month && year === holiday.year) {
+      const newEntries = [...entries];
+      const entryIndex = newEntries.findIndex(e => e.day === holiday.day);
+      if (entryIndex !== -1) {
+        newEntries[entryIndex] = {
+          ...newEntries[entryIndex],
+          type: 'FERIADO',
+          type_turno2: 'FERIADO',
+          observation: holiday.label,
+          observation_turno2: holiday.label
+        };
+        handleEntriesChange(newEntries);
+
+        // Auto-save
+        if (employee.name) {
+          setSaveStatus('saving');
+          try {
+            const dataToSave: TimesheetData = {
+              month,
+              year,
+              employee,
+              entries: newEntries,
+              summaryEntries: computeSummaryFromEntries(newEntries, employee.ch),
+              observations
+            };
+            const result = await apiService.saveCompleteTimesheet(dataToSave);
+            if (result.success) {
+              if (result.folhaPontoId) setCurrentTimesheetId(result.folhaPontoId);
+              setSaveStatus('saved');
+              setTimeout(() => setSaveStatus('idle'), 3000);
+            }
+          } catch (error) {
+            console.error('Erro ao auto-salvar folha de ponto após aplicar feriado:', error);
+            setSaveStatus('error');
+            setTimeout(() => setSaveStatus('idle'), 3000);
+          }
+        }
+      }
+    } else {
+      alert('O feriado selecionado não pertence ao mês/ano da folha atual.');
+    }
+  };
+
+  // Feriados: Reverter efeito na folha atual
+  const handleRemoveHolidayEffect = async (holiday: Holiday) => {
+    if (month === holiday.month && year === holiday.year) {
+      const newEntries = [...entries];
+      const entryIndex = newEntries.findIndex(e => e.day === holiday.day);
+      if (entryIndex !== -1 && newEntries[entryIndex].type === 'FERIADO') {
+        newEntries[entryIndex] = {
+          ...newEntries[entryIndex],
+          type: 'TRABALHO',
+          type_turno2: 'TRABALHO',
+          observation: '',
+          observation_turno2: ''
+        };
+        handleEntriesChange(newEntries);
+
+        // Auto-save
+        if (employee.name) {
+          setSaveStatus('saving');
+          try {
+            const dataToSave: TimesheetData = {
+              month,
+              year,
+              employee,
+              entries: newEntries,
+              summaryEntries: computeSummaryFromEntries(newEntries, employee.ch),
+              observations
+            };
+            const result = await apiService.saveCompleteTimesheet(dataToSave);
+            if (result.success) {
+              if (result.folhaPontoId) setCurrentTimesheetId(result.folhaPontoId);
+              setSaveStatus('saved');
+              setTimeout(() => setSaveStatus('idle'), 3000);
+            }
+          } catch (error) {
+            console.error('Erro ao auto-salvar folha de ponto após remover feriado:', error);
+            setSaveStatus('error');
+            setTimeout(() => setSaveStatus('idle'), 3000);
+          }
+        }
+      }
     }
   };
 
@@ -682,6 +774,7 @@ export default function App() {
                     onPreFill={handlePreFill}
                     onClear={handleClearEntries}
                     onBatchGenerate={() => setShowBatchModal(true)}
+                    onOpenHolidayModal={() => setShowHolidayModal(true)}
                     isPreFilling={isPreFilling}
                   />
                 </div>
@@ -769,6 +862,15 @@ export default function App() {
         onGenerate={handleBatchGenerate}
         isGenerating={isGeneratingBatch}
         progress={batchProgress}
+      />
+
+      <HolidayModal
+        isOpen={showHolidayModal}
+        onClose={() => setShowHolidayModal(false)}
+        onApply={handleApplyHoliday}
+        onRemoveEffect={handleRemoveHolidayEffect}
+        currentMonth={month}
+        currentYear={year}
       />
     </div>
   );

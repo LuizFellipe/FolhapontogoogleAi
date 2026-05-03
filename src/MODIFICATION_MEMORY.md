@@ -1,5 +1,21 @@
 # Memória de Modificação - Frontend (src/)
 
+## [2026-05-03] Funcionalidade: Auto-save de Feriados na Folha de Ponto
+
+### Arquivos Modificados:
+- **App.tsx**
+
+### Alterações Detalhadas:
+
+#### 1. `handleApplyHoliday` e `handleRemoveHolidayEffect`
+- Implementado auto-salvamento imediato (`apiService.saveCompleteTimesheet`) na folha de ponto sempre que um feriado é aplicado ou revertido na grade de horários.
+- Adicionado estado de salvamento visual (`setSaveStatus('saving')` e `'saved'`) transparente ao usuário, garantindo persistência sem depender do clique no botão "Salvar".
+
+### 🎯 Objetivo
+Evitar a perda da aplicação do feriado ao recarregar a página ou navegar de profissional sem antes salvar manualmente, garantindo persistência em banco de dados em tempo real.
+
+---
+
 ## [2026-05-03] Funcionalidade: Auto-preenchimento do Resumo da Frequência (Página 2)
 
 ### Arquivos Modificados:

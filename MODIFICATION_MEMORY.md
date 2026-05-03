@@ -1,5 +1,42 @@
 # Memória de Modificações do Projeto
 
+## [2026-05-03] Refatoração: Persistência de Feriados no Banco de Dados
+
+### Arquivos Modificados/Criados:
+- `database/migrations/011_create_feriados_table.sql` *(novo)*
+- `backend/app.py`
+- `src/services/api.ts`
+- `src/components/HolidayModal.tsx`
+- `database/full_setup.sql`
+
+### Alterações:
+1. **Banco de Dados**: Criação da tabela `feriados` com os campos `id`, `dia`, `mes`, `ano` e `label`. Adicionada `UNIQUE KEY` para `(dia, mes, ano)`. O `full_setup.sql` foi atualizado para contemplar a tabela.
+2. **Backend (app.py)**: Adicionados endpoints REST para interagir com a tabela (`GET /api/feriados`, `POST /api/feriados`, `DELETE /api/feriados/<id>`).
+3. **Frontend**: Remoção do armazenamento local via `localStorage`. Agora o `HolidayModal.tsx` realiza as requisições API para recuperar, cadastrar e excluir as informações globalmente.
+
+---
+
+### Arquivos Modificados/Criados:
+- [src/components/HolidayModal.tsx](src/components/HolidayModal.tsx) *(novo)*
+- [src/components/EmployeeNavigator.tsx](src/components/EmployeeNavigator.tsx)
+- [src/App.tsx](src/App.tsx)
+
+### Alterações:
+
+#### 1. Criação do Componente `HolidayModal`
+- Interface modal contendo formulário (Dia, Mês, Ano e Nome) para cadastrar feriados.
+- Listagem dos feriados do ano com botões para "Aplicar", "Reverter" e "Excluir".
+- Feriados são armazenados no `localStorage` do navegador para manter o histórico entre sessões.
+
+#### 2. Atualização em `App.tsx` e UI
+- Inclusão do botão "Feriados" (ícone de Calendário) no `EmployeeNavigator`.
+- Lógica no `App.tsx` para interceptar a ação de aplicar/reverter feriado e atualizar instantaneamente o vetor de lançamentos (`entries`) da folha em edição (mudando o dia selecionado para `FERIADO` em ambos os turnos e inserindo o nome do feriado no campo de observação).
+
+### Objetivo:
+Prover uma forma ágil e centralizada para o usuário marcar dias como feriado com suas devidas descrições na folha de ponto atual sem a necessidade de preencher cada select manualmente no `TimesheetGrid`.
+
+---
+
 ## [2026-05-03] Funcionalidade: Auto-preenchimento do Resumo da Frequência e Backfill
 
 ### Arquivos Modificados/Criados:

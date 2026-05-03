@@ -8,4 +8,5 @@
 ├── 007_add_type_lic_acomp_pessoa_doente.sql
 ├── 008_add_type_abono_de_ponto_bimestral_lei.sql
 ├── 009_add_type_afast_doacao_sangue_art_62.sql
+├── 010_refactor_tipos_lancamento.sql
 └── README.md

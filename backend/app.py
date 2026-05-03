@@ -393,6 +393,61 @@ def create_resumo_folha(folha_ponto_id):
     finally:
         connection.close()
 
+# Rotas para Feriados
+@app.route('/api/feriados', methods=['GET'])
+def get_feriados():
+    """Lista todos os feriados, opcionalmente filtrados por ano"""
+    ano = request.args.get('ano')
+    query = "SELECT * FROM feriados"
+    params = []
+    
+    if ano:
+        query += " WHERE ano = %s"
+        params.append(ano)
+        
+    query += " ORDER BY ano DESC, mes, dia"
+    
+    feriados = execute_query(query, params)
+    return jsonify(feriados or [])
+
+@app.route('/api/feriados', methods=['POST'])
+def create_feriado():
+    """Cria um novo feriado"""
+    data = request.get_json()
+    
+    query = """
+    INSERT INTO feriados (dia, mes, ano, label)
+    VALUES (%s, %s, %s, %s)
+    """
+    
+    params = (
+        data.get('dia'),
+        data.get('mes'),
+        data.get('ano'),
+        data.get('label')
+    )
+    
+    try:
+        result = execute_query(query, params, fetch=False, return_lastrowid=True)
+        if result:
+            return jsonify({'id': result, 'message': 'Feriado criado com sucesso'}), 201
+        return jsonify({'error': 'Erro ao criar feriado'}), 500
+    except Exception as e:
+        # Pega erro de duplicidade
+        if 'Duplicate entry' in str(e):
+            return jsonify({'error': 'Já existe um feriado para esta data.'}), 400
+        return jsonify({'error': f'Erro ao criar feriado: {e}'}), 500
+
+@app.route('/api/feriados/<int:id>', methods=['DELETE'])
+def delete_feriado(id):
+    """Exclui um feriado"""
+    query = "DELETE FROM feriados WHERE id = %s"
+    result = execute_query(query, (id,), fetch=False)
+    
+    if result:
+        return jsonify({'message': 'Feriado excluído com sucesso'})
+    return jsonify({'error': 'Erro ao excluir feriado'}), 500
+
 # Rota de saúde
 @app.route('/api/health', methods=['GET'])
 def health_check():

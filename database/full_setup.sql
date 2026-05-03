@@ -55,6 +55,25 @@ LOCK TABLES `folhas_ponto` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `feriados`
+--
+
+DROP TABLE IF EXISTS `feriados`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `feriados` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `dia` int NOT NULL,
+  `mes` int NOT NULL,
+  `ano` int NOT NULL,
+  `label` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_feriado_dia` (`dia`,`mes`,`ano`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `tipos_lancamento`
 --
 

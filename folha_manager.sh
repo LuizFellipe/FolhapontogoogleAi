@@ -196,7 +196,11 @@ start_backend() {
     # Iniciar o backend em background
     info "Iniciando servidor Flask na porta 5000..."
     cd backend
-    nohup flask run --host=0.0.0.0 --port=5000 > ../backend.log 2>&1 &
+    if lsof -ti :5000 >/dev/null 2>&1; then
+        lsof -ti :5000 | xargs kill -9
+        sleep 1
+    fi
+    FLASK_APP=app.py nohup flask run --host=0.0.0.0 --port=5000 > ../backend.log 2>&1 &
     BACKEND_PID=$!
     echo "BACKEND_PID=$BACKEND_PID" > "$PID_FILE"
 

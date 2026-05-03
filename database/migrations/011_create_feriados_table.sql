@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS feriados (
+  id INT NOT NULL AUTO_INCREMENT,
+  dia INT NOT NULL,
+  mes INT NOT NULL,
+  ano INT NOT NULL,
+  label VARCHAR(255) NOT NULL,
+  criado_em TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY unique_feriado_dia (dia, mes, ano)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

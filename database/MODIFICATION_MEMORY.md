@@ -1,5 +1,23 @@
 # Memória de Modificação - Database (database/)
 
+## [2026-05-03] Criação da Tabela de Feriados (Migration 011)
+
+### Arquivos Modificados/Criados:
+- **migrations/011_create_feriados_table.sql**: Nova migration criada
+- **full_setup.sql**: Tabela `feriados` adicionada
+
+### Alterações:
+#### 1. Nova tabela `feriados`
+- Criada com colunas `id INT PK AUTO_INCREMENT`, `dia INT`, `mes INT`, `ano INT`, `label VARCHAR(255)` e `criado_em TIMESTAMP`.
+- Definida `UNIQUE KEY` para a composição `(dia, mes, ano)` evitando feriados duplicados no mesmo dia.
+- Esta tabela permitirá que o sistema gerencie (CRUD) os feriados de forma centralizada e persistente na base de dados em vez de depender de `localStorage`.
+
+### Validação:
+- Script `full_setup.sql` atualizado e validado.
+- Tabela inserida com sucesso no banco de dados.
+
+---
+
 ## [2026-05-01] Refatoração Completa dos Tipos de Lançamento (Migration 010)
 
 ### Arquivos Modificados/Criados:

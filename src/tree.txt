@@ -6,6 +6,7 @@
 │   ├── BatchTimesheetModal.tsx
 │   ├── EmployeeForm.tsx
 │   ├── EmployeeNavigator.tsx
+│   ├── HolidayModal.tsx
 │   ├── MODIFICATION_MEMORY.md
 │   ├── README.md
 │   ├── SummaryForm.tsx

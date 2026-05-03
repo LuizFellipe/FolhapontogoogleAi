@@ -1,5 +1,21 @@
 # Memória de Modificação - Backend (backend/)
 
+## [2026-05-03] Persistência de Feriados no Banco de Dados
+
+### Arquivos Modificados:
+- **app.py**: Adicionados os endpoints REST para interagir com a tabela `feriados`.
+
+### Alterações:
+- **Novos Endpoints**:
+  - `GET /api/feriados`: Lista todos os feriados, com suporte ao parâmetro de query opcional `ano`.
+  - `POST /api/feriados`: Insere um novo feriado (dia, mês, ano, label). Lida com erros de duplicidade (Error 400).
+  - `DELETE /api/feriados/<int:id>`: Remove um feriado do banco usando o ID.
+
+### Objetivo:
+Mover a responsabilidade de armazenamento de feriados do navegador (localStorage) para a API, centralizando a informação.
+
+---
+
 ## [2026-04-26] Correção de Serialização JSON e Validação de Matrícula
 
 ### Arquivos Modificados:

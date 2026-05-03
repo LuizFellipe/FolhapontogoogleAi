@@ -26,6 +26,8 @@ O backend atua como intermediário entre o frontend React e o banco de dados MyS
 | `/api/folhas-ponto/<id>` | GET, PUT, DELETE | Busca completa (folha + lançamentos + resumo), atualização e exclusão. |
 | `/api/folhas-ponto/<id>/lancamentos` | POST | Salva múltiplos lançamentos diários em lote (incluindo tipo_turno2 e observacao_turno2). |
 | `/api/folhas-ponto/<id>/resumo` | POST | Salva as entradas da tabela de resumo em lote. |
+| `/api/feriados` | GET, POST | Consulta e inserção de feriados (dia, mês, ano e label). |
+| `/api/feriados/<id>` | DELETE | Remoção de um feriado. |
 | `/api/health` | GET | Verifica se a API e o banco de dados estão operacionais. |
 
 ## Tecnologias Utilizadas

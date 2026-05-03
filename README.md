@@ -16,6 +16,7 @@ Um sistema moderno e intuitivo desenvolvido para facilitar a geração e o geren
 - **⚡ Pré Preenchimento Inteligente**: Detecta automaticamente padrões de CPIP e CURSO FORMAÇÃO CONTINUADA de folhas anteriores e replica no novo mês. O algoritmo mapeia por **posição semanal + dia da semana** (ex: 3ª segunda ≠ 4ª segunda), garantindo precisão quando diferentes tipos de lançamento ocorrem na mesma semana do mês.
 - **🧹 Limpar Lançamentos**: Botão para resetar todos os dias do mês para **TRABALHO NORMAL** com um clique.
 - **📦 Geração em Lote**: Gera e imprime folhas de ponto de múltiplos profissionais de uma só vez para um mês/ano selecionado. Aplica pré-preenchimento de CPIP/CURSO automaticamente quando a folha ainda não existe. Filtro por cargo, seleção individual ou em massa via checkboxes e barra de progresso durante o processamento.
+- **📅 Gerenciamento de Feriados**: Modal exclusivo para adicionar, aplicar e reverter feriados diretamente na grade de forma dinâmica. Feriados ficam salvos no banco de dados para rápida reutilização no mesmo ano.
 - **🛠️ Sistema Simplificado de Lançamentos**:
   - Apenas **Dia + Tipo de Lançamento** (sem campos de horário)
   - Trabalho Normal (padrão automático)
@@ -173,6 +174,7 @@ FolhapontogoogleAi/
     │   ├── 📄 BatchTimesheetModal.tsx # Modal de geração em lote
     │   ├── 📄 EmployeeForm.tsx      # Formulário de servidor
     │   ├── 📄 EmployeeNavigator.tsx # Navegação entre profissionais
+    │   ├── 📄 HolidayModal.tsx      # Modal de feriados
     │   ├── 📄 MODIFICATION_MEMORY.md # Histórico de alterações dos componentes
     │   ├── 📄 README.md             # Documentação dos componentes
     │   ├── 📄 SummaryForm.tsx       # Formulário de resumo

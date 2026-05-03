@@ -118,6 +118,25 @@ class ApiService {
     });
   }
 
+  // Feriados
+  async getFeriados(ano?: number) {
+    const url = ano ? `/feriados?ano=${ano}` : '/feriados';
+    return this.request<any[]>(url);
+  }
+
+  async createFeriado(data: any) {
+    return this.request<any>('/feriados', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteFeriado(id: number) {
+    return this.request<any>(`/feriados/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
   // Saúde da API
   async healthCheck() {
     return this.request<{ status: string; database: string }>('/health');

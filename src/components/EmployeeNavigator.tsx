@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, ChevronRight, User, Trash2, ClipboardList, X, Printer } from 'lucide-react';
+import { ChevronLeft, ChevronRight, User, Trash2, ClipboardList, X, Printer, Calendar } from 'lucide-react';
 
 interface Profissional {
   id: number;
@@ -17,6 +17,7 @@ interface Props {
   onPreFill?: () => void;
   onClear?: () => void;
   onBatchGenerate?: () => void;
+  onOpenHolidayModal?: () => void;
   isPreFilling?: boolean;
 }
 
@@ -30,6 +31,7 @@ export const EmployeeNavigator: React.FC<Props> = ({
   onPreFill,
   onClear,
   onBatchGenerate,
+  onOpenHolidayModal,
   isPreFilling = false,
 }) => {
   const canGoPrevious = currentIndex > 0;
@@ -184,6 +186,16 @@ export const EmployeeNavigator: React.FC<Props> = ({
             >
               <X className="w-4 h-4" />
               Limpar Lançamentos
+            </button>
+          )}
+          {onOpenHolidayModal && (
+            <button
+              onClick={onOpenHolidayModal}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-all"
+              title="Lançar Feriados"
+            >
+              <Calendar className="w-4 h-4" />
+              Feriados
             </button>
           )}
           {onBatchGenerate && (
