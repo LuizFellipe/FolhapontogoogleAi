@@ -1,5 +1,17 @@
 # Memória de Modificações do Projeto
 
+## [2026-05-03] Melhoria: Impressão Isolada e Limpeza de Seleção em Lote
+
+### Arquivos Modificados/Criados:
+- `src/components/BatchTimesheetModal.tsx`
+- `src/App.tsx`
+
+### Alterações:
+1. **BatchTimesheetModal**: Adição dos botões "Imprimir" (que aciona apenas a renderização temporária) e "Limpar Seleção" (que desmarca as checkboxes rapidamente).
+2. **App.tsx**: Implementada a lógica `handleBatchPrintOnly` que carrega do banco de dados ou gera modelos vazios em memória, sem acionar `computePreFillEntries` nem efetuar salvamento automático (`saveLancamentosDiarios`), voltada apenas para leitura e impressão rápida em lote.
+
+---
+
 ## [2026-05-03] Refatoração: Persistência de Feriados no Banco de Dados
 
 ### Arquivos Modificados/Criados:

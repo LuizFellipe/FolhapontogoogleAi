@@ -322,3 +322,9 @@ SELECT f.*, p.nome as profissional_nome, p.nome, p.matricula ...
 
 > [!NOTE]
 > Estas alterações garantem o funcionamento correto do layout oficial da folha de ponto e a persistência dos dados do servidor.
+
+### Ajustes na Geração em Lote
+- **Data**: 2026-05-03
+- **Arquivo**: `BatchTimesheetModal.tsx`, `App.tsx`
+- **Descrição**: Adição do botão de "Imprimir" isolado da lógica de pré-preenchimento, e botão "Limpar Seleção" no modal de geração em lote.
+- **Motivo**: Permitir imprimir as folhas sem forçar a aplicação de pré-preenchimento e melhorar usabilidade na hora de desmarcar itens.

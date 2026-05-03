@@ -396,6 +396,68 @@ export default function App() {
     }
   };
 
+  // Impressão em lote: apenas carrega e imprime, sem gerar (pré-preenchimento) ou salvar
+  const handleBatchPrintOnly = async (selectedIds: number[], mes: number, ano: number) => {
+    setIsGeneratingBatch(true);
+    const results: TimesheetData[] = [];
+
+    try {
+      for (let i = 0; i < selectedIds.length; i++) {
+        const profId = selectedIds[i];
+        const prof = profissionais.find((p: any) => p.id === profId);
+        setBatchProgress({ current: i + 1, total: selectedIds.length, currentName: prof?.nome || '' });
+
+        const folhas = await apiService.getFolhasPonto({ profissional_id: profId, mes, ano });
+
+        if (folhas.length > 0) {
+          const data = await apiService.loadCompleteTimesheet(profId, mes, ano);
+          if (data) results.push(data);
+        } else {
+          // Cria folha vazia temporária para impressão (não salva)
+          const employeeData = apiService.convertProfissionalToEmployee(prof);
+          const daysInMonth = new Date(ano, mes + 1, 0).getDate();
+          const emptyEntries = Array.from({ length: daysInMonth }, (_, j) => ({
+            day: j + 1, type: 'TRABALHO' as any, type_turno2: 'TRABALHO' as any,
+            entry1: '', exit1: '', entry2: '', exit2: '',
+            observation: '', observation_turno2: ''
+          }));
+          
+          results.push({
+            month: mes,
+            year: ano,
+            employee: employeeData,
+            entries: emptyEntries,
+            summaryEntries: Array.from({ length: 8 }, () => ({
+              operation: '', code: '', carga: '', months: '', hoursDays: '', startDay: '', endDay: ''
+            })),
+            observations: ''
+          });
+        }
+      }
+
+      setBatchTimesheets(results);
+      setShowBatchModal(false);
+
+      // Aguarda renderização e dispara impressão
+      setTimeout(() => {
+        document.body.classList.add('batch-printing');
+        window.print();
+        const cleanup = () => {
+          document.body.classList.remove('batch-printing');
+          setBatchTimesheets([]);
+          window.removeEventListener('afterprint', cleanup);
+        };
+        window.addEventListener('afterprint', cleanup);
+      }, 100);
+    } catch (error) {
+      console.error('Erro na impressão em lote:', error);
+      alert('Erro ao imprimir folhas em lote.');
+    } finally {
+      setIsGeneratingBatch(false);
+      setBatchProgress(undefined);
+    }
+  };
+
   // Feriados: Aplicar na folha atual
   const handleApplyHoliday = async (holiday: Holiday) => {
     if (month === holiday.month && year === holiday.year) {
@@ -860,6 +922,7 @@ export default function App() {
         profissionais={profissionais}
         onClose={() => setShowBatchModal(false)}
         onGenerate={handleBatchGenerate}
+        onPrintOnly={handleBatchPrintOnly}
         isGenerating={isGeneratingBatch}
         progress={batchProgress}
       />

@@ -14,6 +14,7 @@ interface Props {
   profissionais: Profissional[];
   onClose: () => void;
   onGenerate: (selectedIds: number[], mes: number, ano: number) => void;
+  onPrintOnly?: (selectedIds: number[], mes: number, ano: number) => void;
   isGenerating: boolean;
   progress?: { current: number; total: number; currentName: string };
 }
@@ -23,6 +24,7 @@ export const BatchTimesheetModal: React.FC<Props> = ({
   profissionais,
   onClose,
   onGenerate,
+  onPrintOnly,
   isGenerating,
   progress,
 }) => {
@@ -208,24 +210,42 @@ export const BatchTimesheetModal: React.FC<Props> = ({
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-stone-200">
-          <button
-            onClick={onClose}
-            disabled={isGenerating}
-            className="px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 rounded-lg transition-all disabled:opacity-50"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={() => onGenerate([...selectedIds], selectedMes, selectedAno)}
-            disabled={selectedIds.size === 0 || isGenerating}
-            className="flex items-center gap-2 px-5 py-2 bg-stone-900 text-white text-sm font-medium rounded-lg hover:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-          >
-            <Printer className="w-4 h-4" />
-            {isGenerating
-              ? 'Gerando...'
-              : `Gerar (${selectedIds.size} selecionado${selectedIds.size !== 1 ? 's' : ''})`}
-          </button>
+        <div className="flex items-center justify-between px-6 py-4 border-t border-stone-200">
+          <div>
+            <button
+              onClick={() => setSelectedIds(new Set())}
+              disabled={selectedIds.size === 0 || isGenerating}
+              className="px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 rounded-lg transition-all disabled:opacity-50"
+            >
+              Limpar Seleção
+            </button>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onClose}
+              disabled={isGenerating}
+              className="px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 rounded-lg transition-all disabled:opacity-50"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={() => onGenerate([...selectedIds], selectedMes, selectedAno)}
+              disabled={selectedIds.size === 0 || isGenerating}
+              className="flex items-center gap-2 px-4 py-2 bg-stone-100 text-stone-700 text-sm font-medium rounded-lg hover:bg-stone-200 disabled:opacity-50 transition-all"
+            >
+              Gerar c/ Pré-preenchimento
+            </button>
+            <button
+              onClick={() => onPrintOnly && onPrintOnly([...selectedIds], selectedMes, selectedAno)}
+              disabled={selectedIds.size === 0 || isGenerating}
+              className="flex items-center gap-2 px-5 py-2 bg-stone-900 text-white text-sm font-medium rounded-lg hover:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              <Printer className="w-4 h-4" />
+              {isGenerating
+                ? 'Processando...'
+                : `Imprimir (${selectedIds.size} selecionado${selectedIds.size !== 1 ? 's' : ''})`}
+            </button>
+          </div>
         </div>
       </div>
     </div>
