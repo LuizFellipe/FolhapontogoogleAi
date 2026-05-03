@@ -6,10 +6,61 @@ import { TimesheetSummaryPreview } from './components/TimesheetSummaryPreview';
 import { SummaryForm } from './components/SummaryForm';
 import { EmployeeNavigator } from './components/EmployeeNavigator';
 import { BatchTimesheetModal } from './components/BatchTimesheetModal';
-import { TimesheetData, EmployeeData, DailyEntry, EntryType, SummaryEntry, MONTHS } from './types';
+import { TimesheetData, EmployeeData, DailyEntry, EntryType, SummaryEntry, MONTHS, ENTRY_TYPES } from './types';
 import { Printer, FileText, Settings, Download, Save, Database } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { apiService } from './services/api';
+
+const computeSummaryFromEntries = (entries: DailyEntry[], ch: string): SummaryEntry[] => {
+  const cargaValue = String(ch || '').toLowerCase().includes('40') ? '3' : '1';
+
+  const seen = new Set<string>();
+  const codeDays: { code: string; day: number }[] = [];
+
+  for (const entry of entries) {
+    const t1 = ENTRY_TYPES.find(t => t.value === entry.type);
+    if (t1?.code != null) {
+      const key = `${t1.code}-${entry.day}`;
+      if (!seen.has(key)) { seen.add(key); codeDays.push({ code: t1.code, day: entry.day }); }
+    }
+    const t2 = ENTRY_TYPES.find(t => t.value === entry.type_turno2);
+    if (t2?.code != null) {
+      const key = `${t2.code}-${entry.day}`;
+      if (!seen.has(key)) { seen.add(key); codeDays.push({ code: t2.code, day: entry.day }); }
+    }
+  }
+
+  const codeMap = new Map<string, number[]>();
+  for (const { code, day } of codeDays) {
+    if (!codeMap.has(code)) codeMap.set(code, []);
+    codeMap.get(code)!.push(day);
+  }
+
+  const rows: SummaryEntry[] = [];
+  for (const [code, days] of codeMap) {
+    days.sort((a, b) => a - b);
+    let i = 0;
+    while (i < days.length) {
+      let j = i;
+      while (j + 1 < days.length && days[j + 1] === days[j] + 1) j++;
+      rows.push({
+        operation: 'I',
+        code,
+        carga: cargaValue,
+        months: '01',
+        hoursDays: String(j - i + 1).padStart(5, '0'),
+        startDay: String(days[i]).padStart(2, '0'),
+        endDay: String(days[j]).padStart(2, '0'),
+      });
+      i = j + 1;
+    }
+  }
+
+  while (rows.length < 8) {
+    rows.push({ operation: '', code: '', carga: '', months: '', hoursDays: '', startDay: '', endDay: '' });
+  }
+  return rows.slice(0, 8);
+};
 
 const initialEmployee: EmployeeData = {
   name: '',
@@ -155,9 +206,16 @@ export default function App() {
     }
   };
 
+  const handleEntriesChange = (newEntries: DailyEntry[]) => {
+    setEntries(newEntries);
+    setSummaryEntries(computeSummaryFromEntries(newEntries, employee.ch));
+  };
+
   // Limpar todos os lançamentos para TRABALHO NORMAL
   const handleClearEntries = () => {
-    setEntries(prev => prev.map(e => ({ ...e, type: 'TRABALHO' as const, type_turno2: 'TRABALHO' as const })));
+    const cleared = entries.map(e => ({ ...e, type: 'TRABALHO' as const, type_turno2: 'TRABALHO' as const }));
+    setEntries(cleared);
+    setSummaryEntries(initialSummary);
   };
 
   // Calcula entradas com pré preenchimento de CPIP/CURSO de folha anterior do mesmo ano.
@@ -262,8 +320,8 @@ export default function App() {
         return;
       }
 
-      setEntries(newEntries);
-      
+      handleEntriesChange(newEntries);
+
       const obsText = "CURSO FORMACAO CONTINUADA DE ACORDO MEMORANDO/CIRC 59/2025 - SEE/SUBEB DE 18/02/2025 - SEI 00080.00049147/2025-76";
       setObservations(prev => {
         if (!prev.includes(obsText)) {
@@ -640,11 +698,11 @@ export default function App() {
 
               <EmployeeForm data={employee} onChange={setEmployee} />
               
-              <TimesheetGrid 
-                entries={entries} 
-                month={month} 
-                year={year} 
-                onChange={setEntries} 
+              <TimesheetGrid
+                entries={entries}
+                month={month}
+                year={year}
+                onChange={handleEntriesChange}
                 employeeCh={employee.ch}
               />
 

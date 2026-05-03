@@ -12,6 +12,7 @@ Esta pasta concentra toda a lógica de aplicação e componentes da interface do
     - **Validação**: Verifica nome obrigatório antes de salvar.
     - **Integração**: Recarrega lista de profissionais após criar/excluir.
     - **Segundo Turno**: Inicializa entries com `type_turno2: 'TRABALHO'` e passa carga horária para controle de colunas.
+    - **Auto-resumo**: `computeSummaryFromEntries(entries, ch)` — função pura (fora do componente) que recalcula automaticamente o `summaryEntries` (Página 2) sempre que os lançamentos diários são alterados. Agrupa dias consecutivos com o mesmo código, deduplica turno1/turno2 no mesmo dia e define `carga` conforme a carga horária (`1` para 20h, `3` para 40h).
 -   **`main.tsx`**: Ponto de entrada oficial da aplicação React montando a estrutura do DOM no `index.html`.
 -   **`index.css`**: Contém todas as declarações de estilos globais, configurações do Tailwind CSS e definições de layout para impressão (como quebras de página controladas).
 -   **`logo.png`**: Logotipo utilizado no cabeçalho e na folha de ponto oficial.

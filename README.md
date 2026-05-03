@@ -23,6 +23,7 @@ Um sistema moderno e intuitivo desenvolvido para facilitar a geração e o geren
   - **Suporte a Dois Turnos**: Controle independente por turno (matutino/vespertino)
   - **Controle por Carga horária**: Segundo turno habilitado automaticamente para 40h
 - **📄 Página 2 (Resumo da Frequência)**: 
+  - **Auto-preenchimento**: Ao selecionar lançamentos com código oficial (ex: Abono TRE, FÉRIAS, Atestado), o Resumo da Frequência é preenchido automaticamente com operação `I`, código, carga horária, meses e intervalo de dias consecutivos.
   - Tabela de resumo com preenchimento de códigos de operação (Inclusão, Alteração, Exclusão).
   - **Renderização Técnica**: Números exibidos em formato "U" (`|_|`), fiel ao formulário oficial.
   - **Tabela de Códigos Integrada**: Referência rápida para gratificações e ocorrências.
@@ -137,6 +138,7 @@ FolhapontogoogleAi/
 ├── 📄 .env.example       # Exemplo de variáveis de ambiente
 ├── 📄 .gitignore         # Arquivos ignorados pelo Git
 ├── � add_entry_type.py  # Script para adicionar novos tipos de lançamento
+├── 📄 backfill_resumo.py # Script de backfill do resumo_folha para folhas existentes
 ├── 📄 backup.sql         # Backup do banco de dados
 ├── 📄 docker-compose.prod.yml  # Docker Compose para produção
 ├── 📄 docker-compose.yml        # Docker Compose para desenvolvimento

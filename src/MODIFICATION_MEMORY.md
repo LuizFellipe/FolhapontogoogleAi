@@ -1,5 +1,53 @@
 # Memória de Modificação - Frontend (src/)
 
+## [2026-05-03] Funcionalidade: Auto-preenchimento do Resumo da Frequência (Página 2)
+
+### Arquivos Modificados:
+- **App.tsx**
+
+### Alterações Detalhadas:
+
+#### 1. `computeSummaryFromEntries(entries, ch)` — nova função pura (fora do componente)
+- Recebe o array de `DailyEntry` e a carga horária (`ch`) do profissional.
+- Determina `carga`: `'3'` se `ch` contém `'40'`, senão `'1'`.
+- Para cada entry, verifica `type` (turno1) e `type_turno2` em `ENTRY_TYPES`; coleta apenas os que possuem `code != null`.
+- Deduplica pares `(codigo, dia)` — turno1 e turno2 no mesmo dia com o mesmo código contam como 1 dia.
+- Agrupa dias por código e detecta sequências consecutivas (ex: dias 3,4,5 → uma linha com `horas_dias='00003'`).
+- Para cada sequência gera 1 `SummaryEntry`: `operation='I'`, `code`, `carga`, `months='01'`, `hoursDays` zero-pad 5, `startDay/endDay` zero-pad 2.
+- Preenche sempre 8 linhas (vazias quando necessário) e retorna `rows.slice(0, 8)`.
+
+#### 2. `handleEntriesChange(newEntries)` — novo handler
+- Substitui o `onChange={setEntries}` direto do `TimesheetGrid`.
+- Chama `setEntries(newEntries)` + `setSummaryEntries(computeSummaryFromEntries(newEntries, employee.ch))`.
+- Garante que o Resumo da Frequência seja recalculado a cada alteração de lançamento.
+
+#### 3. `handleClearEntries` — atualizado
+- Após resetar entries para TRABALHO (código null), chama `setSummaryEntries(initialSummary)` diretamente (resultado equivalente ao compute, mas sem overhead).
+
+#### 4. `handlePreFill` — atualizado
+- Substituído `setEntries(newEntries)` por `handleEntriesChange(newEntries)`, recalculando o resumo após o pré-preenchimento.
+
+#### 5. Carregamento do banco (loadExistingTimesheet) — inalterado
+- Continua usando os dados de `resumo_folha` do banco. O auto-compute só age em alterações manuais via UI.
+
+### Comportamento por carga horária:
+| Carga | Campo `carga` no resumo |
+|-------|------------------------|
+| 20h   | `1`                    |
+| 40h   | `3`                    |
+
+### Exemplo:
+> Servidor 20h — Abono TRE (código `00256`) nos dias 5, 6 e 7:
+> → `{ operation:'I', code:'00256', carga:'1', months:'01', hoursDays:'00003', startDay:'05', endDay:'07' }`
+
+### ✅ Arquivos Modificados
+- `src/App.tsx`
+
+### 🎯 Objetivo
+Eliminar o preenchimento manual do Resumo da Frequência: ao selecionar lançamentos com código oficial na grade diária, a Página 2 é preenchida automaticamente com operação, código, carga, meses e intervalo de dias.
+
+---
+
 ## [2026-04-27] Funcionalidade: Geração em Lote de Folhas de Ponto
 
 ### Arquivos Modificados/Criados:

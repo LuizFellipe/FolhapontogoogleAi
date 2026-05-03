@@ -1,5 +1,39 @@
 # Memória de Modificações do Projeto
 
+## [2026-05-03] Funcionalidade: Auto-preenchimento do Resumo da Frequência e Backfill
+
+### Arquivos Modificados/Criados:
+- [src/App.tsx](src/App.tsx)
+- [backfill_resumo.py](backfill_resumo.py) *(novo)*
+
+### Alterações:
+
+#### 1. `src/App.tsx` — Auto-preenchimento do resumo ao alterar lançamentos
+
+- **`computeSummaryFromEntries(entries, ch)`** (função pura fora do componente): recebe os lançamentos diários e a carga horária, retorna 8 `SummaryEntry` calculados automaticamente.
+  - Coleta pares `(codigo, dia)` de turno1 e turno2, deduplica por dia.
+  - Agrupa por código e detecta sequências de dias consecutivos.
+  - `carga = '1'` para 20h, `'3'` para 40h. `operation = 'I'`, `months = '01'`.
+  - `hoursDays`, `startDay`, `endDay` em zero-pad conforme o intervalo.
+- **`handleEntriesChange`**: novo handler que encadeia `setEntries` + `setSummaryEntries(computeSummaryFromEntries(...))`.
+- **`TimesheetGrid onChange`**: atualizado de `setEntries` para `handleEntriesChange`.
+- **`handleClearEntries`**: atualizado para resetar `summaryEntries` para `initialSummary`.
+- **`handlePreFill`**: atualizado para chamar `handleEntriesChange` (recalcula resumo após pré-preenchimento).
+- Carregamento do banco (`loadExistingTimesheet`) **inalterado** — continua usando dados salvos.
+
+#### 2. `backfill_resumo.py` — Script de backfill para folhas existentes
+
+- Script Python standalone na raiz do projeto.
+- Usa as mesmas variáveis de ambiente do backend (`DB_HOST`, `DB_USER`, etc.) via `.env`.
+- **Lógica**: para cada `folha_ponto`, verifica se `resumo_folha` já tem linhas com `codigo != ''`. Se sim, pula (preserva dados manuais). Se não, aplica o mesmo algoritmo de `computeSummaryFromEntries` em Python e insere as linhas.
+- Resultado da execução inicial: 245 folhas encontradas, 6 já tinham resumo (puladas), 217 sem lançamentos com código (puladas), **22 preenchidas com sucesso**, 0 erros.
+- Pode ser reexecutado a qualquer momento — folhas com resumo existente nunca são sobrescritas.
+
+### 🎯 Objetivo
+Automatizar o preenchimento da Página 2 (Resumo da Frequência) tanto em tempo real (UI) quanto retroativamente para todas as folhas já salvas no banco.
+
+---
+
 ## [2026-05-01] Refatoração Completa dos Tipos de Lançamento
 
 ### Arquivos Modificados/Criados:

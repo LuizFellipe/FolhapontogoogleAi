@@ -4,6 +4,7 @@
 📄 README.md
 📄 README_SETUP.md
 📄 add_entry_type.py
+📄 backfill_resumo.py
 📁 backend
 📄 backend.log
 📄 backup.folhaponto_db.01.05.2026.11.17.05.tar.gz
