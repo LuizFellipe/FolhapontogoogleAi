@@ -1,5 +1,35 @@
 # Memória de Modificação - Frontend (src/)
 
+## [2026-05-03] Funcionalidade: Modal de Relatórios Gerenciais (ReportsModal)
+
+### Arquivos Modificados/Criados:
+- **components/ReportsModal.tsx** *(novo)*
+- **components/EmployeeNavigator.tsx**
+- **App.tsx**
+
+### Alterações Detalhadas:
+
+#### 1. ReportsModal.tsx — Novo componente
+- Dois relatórios cobrindo **todos os profissionais** com folha no período selecionado (mês/ano):
+  - **Lançamentos Efetuados**: entries não-triviais (excluindo TRABALHO, CPIP, CURSO) agrupadas em ranges de dias consecutivos com mesmo tipo. Layout SIGFP: cabeçalho por profissional (matrícula + nome) + linhas de evento (Início / Fim / Obs).
+  - **Adicional Noturno**: filtra profissionais com "NOTURNO" em `turno1`/`turno2`; conta dias úteis (Seg–Sex) com tipo TRABALHO/CPIP/CURSO — 1 dia = 1 hora; exibe total por profissional e grand total.
+- Carregamento via `getFolhasPonto({ mes, ano })` + `Promise.all` para lancamentos; cross-referencia `profissional_id` com array `profissionais` para obter `turno1`/`turno2`.
+- Props: `{ isOpen, onClose, profissionais: any[], initialMonth, initialYear }`.
+- Botão "Imprimir" chama `window.print()`.
+
+#### 2. EmployeeNavigator.tsx — Nova prop e botão
+- Adicionada prop `onOpenReportsModal?: () => void`.
+- Botão **"Relatórios"** (`teal-700`, ícone `FileText`) inserido na linha 2, após "Gerar em Lote".
+
+#### 3. App.tsx — Integração
+- Estado `showReportsModal: boolean` criado.
+- `<ReportsModal>` renderizado com `profissionais`, `initialMonth` e `initialYear`.
+
+### Objetivo:
+Relatórios mensais consolidados: ocorrências de lançamentos especiais e horas de adicional noturno para todos os profissionais do período.
+
+---
+
 ## [2026-05-03] Funcionalidade: Auto-save de Feriados na Folha de Ponto
 
 ### Arquivos Modificados:

@@ -7,6 +7,7 @@ import { SummaryForm } from './components/SummaryForm';
 import { EmployeeNavigator } from './components/EmployeeNavigator';
 import { BatchTimesheetModal } from './components/BatchTimesheetModal';
 import { HolidayModal, Holiday } from './components/HolidayModal';
+import { ReportsModal } from './components/ReportsModal';
 import { TimesheetData, EmployeeData, DailyEntry, EntryType, SummaryEntry, MONTHS, ENTRY_TYPES } from './types';
 import { Printer, FileText, Settings, Download, Save, Database } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -116,6 +117,9 @@ export default function App() {
 
   // Estados para Modal de Feriados
   const [showHolidayModal, setShowHolidayModal] = useState(false);
+
+  // Estados para Modal de Relatórios
+  const [showReportsModal, setShowReportsModal] = useState(false);
 
   // Carregar profissionais na inicialização
   useEffect(() => {
@@ -837,6 +841,7 @@ export default function App() {
                     onClear={handleClearEntries}
                     onBatchGenerate={() => setShowBatchModal(true)}
                     onOpenHolidayModal={() => setShowHolidayModal(true)}
+                    onOpenReportsModal={() => setShowReportsModal(true)}
                     isPreFilling={isPreFilling}
                   />
                 </div>
@@ -934,6 +939,14 @@ export default function App() {
         onRemoveEffect={handleRemoveHolidayEffect}
         currentMonth={month}
         currentYear={year}
+      />
+
+      <ReportsModal
+        isOpen={showReportsModal}
+        onClose={() => setShowReportsModal(false)}
+        profissionais={profissionais}
+        initialMonth={month}
+        initialYear={year}
       />
     </div>
   );

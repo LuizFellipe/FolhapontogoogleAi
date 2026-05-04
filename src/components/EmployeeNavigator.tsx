@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, ChevronRight, User, Trash2, ClipboardList, X, Printer, Calendar } from 'lucide-react';
+import { ChevronLeft, ChevronRight, User, Trash2, ClipboardList, X, Printer, Calendar, FileText } from 'lucide-react';
 
 interface Profissional {
   id: number;
@@ -18,6 +18,7 @@ interface Props {
   onClear?: () => void;
   onBatchGenerate?: () => void;
   onOpenHolidayModal?: () => void;
+  onOpenReportsModal?: () => void;
   isPreFilling?: boolean;
 }
 
@@ -32,6 +33,7 @@ export const EmployeeNavigator: React.FC<Props> = ({
   onClear,
   onBatchGenerate,
   onOpenHolidayModal,
+  onOpenReportsModal,
   isPreFilling = false,
 }) => {
   const canGoPrevious = currentIndex > 0;
@@ -206,6 +208,16 @@ export const EmployeeNavigator: React.FC<Props> = ({
             >
               <Printer className="w-4 h-4" />
               Gerar em Lote
+            </button>
+          )}
+          {onOpenReportsModal && (
+            <button
+              onClick={onOpenReportsModal}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-teal-700 text-white hover:bg-teal-600 transition-all"
+              title="Relatórios do profissional"
+            >
+              <FileText className="w-4 h-4" />
+              Relatórios
             </button>
           )}
         </div>

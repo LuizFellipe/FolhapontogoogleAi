@@ -4,6 +4,39 @@ Este arquivo registra as modificações significativas realizadas nos componente
 
 ---
 
+## [2026-05-03] - Funcionalidade: Modal de Relatórios Gerenciais (ReportsModal)
+
+### 🔍 Alterações Realizadas
+
+#### 1. ReportsModal.tsx — Novo componente
+- Modal `max-w-5xl` com dois relatórios que cobrem **todos os profissionais** com folha no mês/ano selecionado:
+  - **Lançamentos Efetuados**: filtra entradas não-triviais (excluindo TRABALHO, CPIP, CURSO), agrupa dias consecutivos com mesmo tipo em ranges `{ diaInicio, diaFim }`, renderiza uma linha de cabeçalho por profissional (matrícula + nome) seguida de linhas de evento — layout SIGFP (Matrícula / Nome·Evento / Início / Fim / Obs).
+  - **Adicional Noturno**: filtra profissionais com "NOTURNO" em `turno1` ou `turno2`, conta dias úteis (Seg–Sex) onde `tipo ∈ { TRABALHO, CPIP, CURSO }` (1 dia = 1 hora), exibe total por profissional e grand total no `<tfoot>`.
+- **Carregamento**: `useEffect` dispara em `isOpen`/`filterMonth`/`filterYear` → `getFolhasPonto({ mes, ano })` (sem filtro de profissional) → `Promise.all` para buscar lancamentos de todas as folhas → cross-referencia `profissional_id` com array `profissionais` do App.tsx para obter `turno1`/`turno2`.
+- **Props**: `{ isOpen, onClose, profissionais: any[], initialMonth: number, initialYear: number }`.
+- **Interface `ProfData`**: `{ profissionalId, nome, matricula, turno1, turno2, lancamentos[] }`.
+- **Botão "Imprimir"**: chama `window.print()`.
+
+#### 2. EmployeeNavigator.tsx — Novo botão e prop
+- Adicionado `FileText` às importações do `lucide-react`.
+- Adicionada prop `onOpenReportsModal?: () => void` à interface `Props`.
+- Inserido botão **"Relatórios"** (fundo `teal-700`, ícone `FileText`) na linha 2 de ações, após "Gerar em Lote".
+
+#### 3. App.tsx — Integração do modal
+- Novo estado: `showReportsModal: boolean`.
+- Prop `onOpenReportsModal={() => setShowReportsModal(true)}` passada ao `EmployeeNavigator`.
+- Renderização de `<ReportsModal isOpen={showReportsModal} onClose={...} profissionais={profissionais} initialMonth={month} initialYear={year} />`.
+
+### ✅ Arquivos Modificados
+- `src/components/ReportsModal.tsx` *(novo)*
+- `src/components/EmployeeNavigator.tsx`
+- `src/App.tsx`
+
+### 🎯 Objetivo
+Oferecer relatórios gerenciais mensais com visão consolidada de todos os profissionais: ocorrências de lançamentos especiais e horas de adicional noturno.
+
+---
+
 ## [2026-05-03] - Refatoração: Persistência de Feriados no Banco de Dados
 
 ### 🔍 Alterações Realizadas

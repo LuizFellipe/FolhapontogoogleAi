@@ -15,6 +15,7 @@ Esta pasta concentra toda a lógica de aplicação e componentes da interface do
     - **Auto-resumo**: `computeSummaryFromEntries(entries, ch)` — função pura (fora do componente) que recalcula automaticamente o `summaryEntries` (Página 2) sempre que os lançamentos diários são alterados. Agrupa dias consecutivos com o mesmo código, deduplica turno1/turno2 no mesmo dia e define `carga` conforme a carga horária (`1` para 20h, `3` para 40h).
     - **Auto-save**: Persiste automaticamente as alterações da folha no banco de dados em tempo real sempre que um Feriado é aplicado ou revertido via modal.
     - **Impressão em Lote**: Implementa `handleBatchPrintOnly` para imprimir múltiplas folhas de ponto selecionadas sem forçar salvar no BD ou realizar pré-preenchimento.
+    - **Modal de Relatórios**: Estado `showReportsModal` controla o `<ReportsModal>` que recebe `profissionais` (array completo), `initialMonth` e `initialYear`. Relatórios operam sobre todas as folhas do período via API.
 -   **`main.tsx`**: Ponto de entrada oficial da aplicação React montando a estrutura do DOM no `index.html`.
 -   **`index.css`**: Contém todas as declarações de estilos globais, configurações do Tailwind CSS e definições de layout para impressão (como quebras de página controladas).
 -   **`logo.png`**: Logotipo utilizado no cabeçalho e na folha de ponto oficial.
