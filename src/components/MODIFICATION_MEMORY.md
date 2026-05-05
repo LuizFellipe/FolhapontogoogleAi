@@ -4,7 +4,32 @@ Este arquivo registra as modificações significativas realizadas nos componente
 
 ---
 
-## [2026-05-04] - Performance: Relatório de Lançamentos via View `vw_folhas_lancamento`
+## [2026-05-04] - Refatoração: Relatório de Adicional Noturno via View `vw_adicional_noturno`
+
+### 🔴 Problema
+Relatório de Adicional Noturno utilizava os dados do `vw_folhas_lancamento` (shared com Lançamentos) e aplicava filtros de turno/dias-úteis no frontend, lógica incorreta e acoplada.
+
+### ✅ Solução
+- **Backend** (`backend/app.py`): novo endpoint `GET /api/relatorio/adicional-noturno?mes=&ano=` consultando `vw_adicional_noturno`.
+- **API** (`src/services/api.ts`): novo método `getAdicionaNoturnoRelatorio(mes, ano)`.
+- **ReportsModal** (`src/components/ReportsModal.tsx`):
+  - State separado: `adicionaData / isLoadingAdiciona / nenhumaAdiciona`.
+  - `useEffect` independente — fetch só ocorre quando `reportType === 'adicional_noturno'`.
+  - `ReportAdicionaNoturno` reescrito: recebe `AdicionalNoturnoProf[]` agrupado por `fp.id`; `horas = count de linhas` (view já pré-filtra tudo via WHERE).
+
+### 📋 SQL da View (referência)
+```sql
+WHERE (ld.tipo IN ('TRABALHO','CPIP','CURSO') OR ld.tipo_turno2 IN ('TRABALHO','CPIP','CURSO'))
+  AND (p.turno1 = 'Noturno' OR p.turno2 = 'Noturno')
+```
+Cada linha = 1 lançamento válido = 1h de adicional noturno.
+
+### 🎯 Resultado
+Contagem correta e desacoplada. Relatório de Lançamentos não alterado.
+
+---
+
+
 
 ### 🔴 Problema
 Carregamento do relatório de lançamentos executava N+1 queries: `getFolhasPonto` → `Promise.all(N × getFolhaPonto)`. Com muitos profissionais, cada abertura do modal disparava dezenas de requisições.

@@ -142,6 +142,11 @@ class ApiService {
     return this.request<any[]>(`/relatorio/lancamentos?mes=${mes}&ano=${ano}`);
   }
 
+  // Relatórios — view vw_adicional_noturno
+  async getAdicionaNoturnoRelatorio(mes: number, ano: number) {
+    return this.request<any[]>(`/relatorio/adicional-noturno?mes=${mes}&ano=${ano}`);
+  }
+
   // Saúde da API
   async healthCheck() {
     return this.request<{ status: string; database: string }>('/health');

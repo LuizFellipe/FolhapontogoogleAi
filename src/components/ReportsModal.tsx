@@ -3,6 +3,7 @@ import { X, FileText, Printer, BarChart2 } from 'lucide-react';
 import { MONTHS, ENTRY_TYPES } from '../types';
 import { apiService } from '../services/api';
 
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface Lancamento {
@@ -20,6 +21,28 @@ interface ProfData {
   turno1: string;
   turno2: string;
   lancamentos: Lancamento[];
+}
+
+/** Uma linha retornada pela vw_adicional_noturno */
+interface AdicionalNoturnoRow {
+  id: number;        // fp.id (folha_ponto id)
+  nome: string;
+  matricula: string;
+  turno1: string;
+  turno2: string;
+  dia: number;
+  mes: number;
+  ano: number;
+}
+
+/** Profissional agrupado para o relatório de adicional noturno */
+interface AdicionalNoturnoProf {
+  profissionalId: number;
+  nome: string;
+  matricula: string;
+  turno1: string;
+  turno2: string;
+  horas: number; // count de lançamentos válidos na view
 }
 
 interface Props {
@@ -197,27 +220,18 @@ const ReportLancamentos: React.FC<{
 // ─── Report: Adicional Noturno ────────────────────────────────────────────────
 
 /**
- * Counts weekdays where at least one turno is a worked type.
- * Each qualifying weekday = 1h of nocturnal premium.
+ * Consome dados já agrupados vindos da vw_adicional_noturno.
+ * Cada linha na view = 1 lançamento válido = 1h de adicional noturno.
  */
-function countDiasUteisNocturno(lancamentos: Lancamento[], year: number, month: number): number {
-  return lancamentos.filter(
-    l =>
-      isWeekday(year, month, l.dia) &&
-      (WORKED_TYPES.has(l.tipo) || WORKED_TYPES.has(l.tipo_turno2))
-  ).length;
-}
-
 const ReportAdicionaNoturno: React.FC<{
-  allProfData: ProfData[];
+  adicionaData: AdicionalNoturnoProf[];
+  isLoading: boolean;
   filterMonth: number;
   filterYear: number;
-}> = ({ allProfData, filterMonth, filterYear }) => {
-  const comNoturno = allProfData.filter(
-    p => p.turno1.toUpperCase().includes('NOTURNO') || p.turno2.toUpperCase().includes('NOTURNO')
-  );
+}> = ({ adicionaData, isLoading, filterMonth, filterYear }) => {
+  if (isLoading) return null; // spinner já exibido pelo pai
 
-  if (comNoturno.length === 0) {
+  if (adicionaData.length === 0) {
     return (
       <div className="text-center py-8 text-stone-500 text-sm border border-dashed border-stone-200 rounded-lg">
         <BarChart2 className="w-8 h-8 mx-auto mb-2 text-stone-300" />
@@ -235,24 +249,23 @@ const ReportAdicionaNoturno: React.FC<{
           <th className="text-left py-1 px-2 font-semibold w-28">Matrícula</th>
           <th className="text-left py-1 px-2 font-semibold">Nome</th>
           <th className="text-left py-1 px-2 font-semibold w-40">Turno(s) Noturno</th>
-          <th className="text-right py-1 px-2 font-semibold w-24">Dias Úteis</th>
+          <th className="text-right py-1 px-2 font-semibold w-24">Lançamentos</th>
           <th className="text-right py-1 px-2 font-semibold w-24">Horas</th>
         </tr>
       </thead>
       <tbody>
-        {comNoturno.map(prof => {
-          const dias = countDiasUteisNocturno(prof.lancamentos, filterYear, filterMonth);
-          totalGeral += dias;
+        {adicionaData.map(prof => {
+          totalGeral += prof.horas;
           const turnos = [prof.turno1, prof.turno2]
-            .filter(t => t.toUpperCase().includes('NOTURNO'))
+            .filter(t => (t || '').toUpperCase().includes('NOTURNO'))
             .join(', ');
           return (
             <tr key={prof.profissionalId} className="border-b border-stone-100 hover:bg-stone-50">
               <td className="py-1.5 px-2">{prof.matricula || '—'}</td>
               <td className="py-1.5 px-2 uppercase font-medium">{prof.nome}</td>
-              <td className="py-1.5 px-2 text-xs uppercase">{turnos}</td>
-              <td className="py-1.5 px-2 text-right">{dias}</td>
-              <td className="py-1.5 px-2 text-right font-bold">{String(dias).padStart(3, '0')}:00</td>
+              <td className="py-1.5 px-2 text-xs uppercase">{turnos || '—'}</td>
+              <td className="py-1.5 px-2 text-right">{prof.horas}</td>
+              <td className="py-1.5 px-2 text-right font-bold">{String(prof.horas).padStart(3, '0')}:00</td>
             </tr>
           );
         })}
@@ -260,7 +273,7 @@ const ReportAdicionaNoturno: React.FC<{
       <tfoot>
         <tr className="border-t-2 border-stone-800">
           <td colSpan={4} className="py-2 px-2 text-xs text-stone-500 italic">
-            Dias úteis (seg–sex) com TRABALHO NORMAL, CPIP ou CURSO em qualquer turno. Cada dia = 1h de adicional noturno.
+            Lançamentos contados via vw_adicional_noturno. Cada lançamento = 1h de adicional noturno.
           </td>
           <td className="py-2 px-2 text-right font-bold text-stone-800">
             {String(totalGeral).padStart(3, '0')}:00
@@ -283,9 +296,16 @@ export const ReportsModal: React.FC<Props> = ({
   const [reportType, setReportType] = useState<'lancamentos' | 'adicional_noturno'>('lancamentos');
   const [filterMonth, setFilterMonth] = useState(initialMonth);
   const [filterYear, setFilterYear] = useState(initialYear);
+
+  // ── state: Relatório de Lançamentos ──────────────────────────────────────────
   const [allProfData, setAllProfData] = useState<ProfData[]>([]);
   const [isLoadingEntries, setIsLoadingEntries] = useState(false);
   const [nenhuma, setNenhuma] = useState(false);
+
+  // ── state: Relatório de Adicional Noturno ────────────────────────────────────
+  const [adicionaData, setAdicionaData] = useState<AdicionalNoturnoProf[]>([]);
+  const [isLoadingAdiciona, setIsLoadingAdiciona] = useState(false);
+  const [nenhumaAdiciona, setNenhumaAdiciona] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -294,16 +314,15 @@ export const ReportsModal: React.FC<Props> = ({
     }
   }, [isOpen, initialMonth, initialYear]);
 
+  // ── fetch: Lançamentos ───────────────────────────────────────────────────────
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || reportType !== 'lancamentos') return;
     const load = async () => {
       setIsLoadingEntries(true);
       setNenhuma(false);
       setAllProfData([]);
       try {
         // Uma única query via view vw_folhas_lancamento — sem N+1
-        // Campos da view: fp.id, p.nome, p.matricula, p.carga_horaria,
-        //   p.turno1, p.turno2, ld.dia, ld.tipo, ld.tipo_turno2, fp.mes, fp.ano
         const rows: any[] = await apiService.getLancamentosRelatorio(filterMonth, filterYear);
 
         if (!rows || rows.length === 0) {
@@ -311,27 +330,27 @@ export const ReportsModal: React.FC<Props> = ({
           return;
         }
 
-        // Agrupa por fp.id (folha_ponto id) — profissional_id não está na view
+        // Agrupa por fp.id (folha_ponto id)
         const map = new Map<number, ProfData>();
         for (const r of rows) {
-          const fid: number = r.id; // fp.id = folha_ponto id
+          const fid: number = r.id;
           if (!map.has(fid)) {
             map.set(fid, {
               profissionalId: fid,
-              nome: r.nome ?? '—',          // p.nome
-              matricula: r.matricula ?? '', // p.matricula
-              turno1: r.turno1 ?? '',       // p.turno1
-              turno2: r.turno2 ?? '',       // p.turno2
+              nome: r.nome ?? '—',
+              matricula: r.matricula ?? '',
+              turno1: r.turno1 ?? '',
+              turno2: r.turno2 ?? '',
               lancamentos: [],
             });
           }
           if (r.dia != null) {
             map.get(fid)!.lancamentos.push({
               dia: r.dia,
-              tipo: r.tipo || '',           // ld.tipo  (view já pré-filtra tipos especiais)
-              observation: '',              // não existe na view
-              tipo_turno2: r.tipo_turno2 || '',  // ld.tipo_turno2
-              observation_turno2: '',       // não existe na view
+              tipo: r.tipo || '',
+              observation: '',
+              tipo_turno2: r.tipo_turno2 || '',
+              observation_turno2: '',
             });
           }
         }
@@ -346,7 +365,56 @@ export const ReportsModal: React.FC<Props> = ({
       }
     };
     load();
-  }, [isOpen, filterMonth, filterYear]);
+  }, [isOpen, reportType, filterMonth, filterYear]);
+
+  // ── fetch: Adicional Noturno ─────────────────────────────────────────────────
+  useEffect(() => {
+    if (!isOpen || reportType !== 'adicional_noturno') return;
+    const load = async () => {
+      setIsLoadingAdiciona(true);
+      setNenhumaAdiciona(false);
+      setAdicionaData([]);
+      try {
+        // vw_adicional_noturno: só profissionais noturnos + só lançamentos válidos
+        // Cada linha = 1 lançamento = 1h de adicional noturno
+        const rows: AdicionalNoturnoRow[] = await apiService.getAdicionaNoturnoRelatorio(filterMonth, filterYear);
+
+        if (!rows || rows.length === 0) {
+          setNenhumaAdiciona(true);
+          return;
+        }
+
+        // Agrupa por fp.id, conta linhas (horas)
+        const map = new Map<number, AdicionalNoturnoProf>();
+        for (const r of rows) {
+          const fid = r.id;
+          if (!map.has(fid)) {
+            map.set(fid, {
+              profissionalId: fid,
+              nome: r.nome ?? '—',
+              matricula: r.matricula ?? '',
+              turno1: r.turno1 ?? '',
+              turno2: r.turno2 ?? '',
+              horas: 0,
+            });
+          }
+          // Conta só dias úteis (Seg–Sex); sábado e domingo descartados
+          if (r.dia != null && isWeekday(r.ano, r.mes, r.dia)) {
+            map.get(fid)!.horas += 1;
+          }
+        }
+
+        const valid = Array.from(map.values());
+        valid.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+        setAdicionaData(valid);
+      } catch {
+        setNenhumaAdiciona(true);
+      } finally {
+        setIsLoadingAdiciona(false);
+      }
+    };
+    load();
+  }, [isOpen, reportType, filterMonth, filterYear]);
 
   if (!isOpen) return null;
 
@@ -429,7 +497,7 @@ export const ReportsModal: React.FC<Props> = ({
 
         {/* Conteúdo */}
         <div className="overflow-y-auto flex-1 px-6 py-4 relative">
-          {isLoadingEntries && (
+          {(isLoadingEntries || isLoadingAdiciona) && (
             <div className="absolute inset-0 bg-white/60 flex items-center justify-center z-10">
               <div className="animate-spin w-6 h-6 border-2 border-stone-300 border-t-stone-600 rounded-full" />
             </div>
@@ -450,22 +518,31 @@ export const ReportsModal: React.FC<Props> = ({
             </p>
           </div>
 
-          {nenhuma ? (
-            <p className="text-center text-sm text-stone-400 py-8 border border-dashed border-stone-200 rounded-lg">
-              Nenhuma folha de ponto encontrada para {MONTHS[filterMonth]} de {filterYear}.
-            </p>
-          ) : reportType === 'lancamentos' ? (
-            <ReportLancamentos
-              allProfData={allProfData}
-              filterMonth={filterMonth}
-              filterYear={filterYear}
-            />
+          {reportType === 'lancamentos' ? (
+            nenhuma ? (
+              <p className="text-center text-sm text-stone-400 py-8 border border-dashed border-stone-200 rounded-lg">
+                Nenhuma folha de ponto encontrada para {MONTHS[filterMonth]} de {filterYear}.
+              </p>
+            ) : (
+              <ReportLancamentos
+                allProfData={allProfData}
+                filterMonth={filterMonth}
+                filterYear={filterYear}
+              />
+            )
           ) : (
-            <ReportAdicionaNoturno
-              allProfData={allProfData}
-              filterMonth={filterMonth}
-              filterYear={filterYear}
-            />
+            nenhumaAdiciona ? (
+              <p className="text-center text-sm text-stone-400 py-8 border border-dashed border-stone-200 rounded-lg">
+                Nenhum lançamento noturno encontrado para {MONTHS[filterMonth]} de {filterYear}.
+              </p>
+            ) : (
+              <ReportAdicionaNoturno
+                adicionaData={adicionaData}
+                isLoading={isLoadingAdiciona}
+                filterMonth={filterMonth}
+                filterYear={filterYear}
+              />
+            )
           )}
         </div>
 

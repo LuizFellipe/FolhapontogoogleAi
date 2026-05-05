@@ -448,6 +448,26 @@ def delete_feriado(id):
         return jsonify({'message': 'Feriado excluído com sucesso'})
     return jsonify({'error': 'Erro ao excluir feriado'}), 500
 
+# Rota de Relatório — consulta view vw_adicional_noturno
+@app.route('/api/relatorio/adicional-noturno', methods=['GET'])
+def get_relatorio_adicional_noturno():
+    """Retorna dados de adicional noturno consultando a view vw_adicional_noturno"""
+    mes = request.args.get('mes')
+    ano = request.args.get('ano')
+
+    if mes is None or ano is None:
+        return jsonify({'error': 'Parâmetros mes e ano são obrigatórios'}), 400
+
+    query = """
+    SELECT *
+    FROM vw_adicional_noturno
+    WHERE mes = %s AND ano = %s
+    ORDER BY nome, dia
+    """
+
+    rows = execute_query(query, (mes, ano))
+    return jsonify(rows or [])
+
 # Rota de Relatório — consulta view vw_folhas_lancamento
 @app.route('/api/relatorio/lancamentos', methods=['GET'])
 def get_relatorio_lancamentos():
