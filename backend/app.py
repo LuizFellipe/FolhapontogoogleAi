@@ -448,6 +448,26 @@ def delete_feriado(id):
         return jsonify({'message': 'Feriado excluído com sucesso'})
     return jsonify({'error': 'Erro ao excluir feriado'}), 500
 
+# Rota de Relatório — consulta view vw_folhas_lancamento
+@app.route('/api/relatorio/lancamentos', methods=['GET'])
+def get_relatorio_lancamentos():
+    """Retorna todos os lançamentos do período consultando a view vw_folhas_lancamento"""
+    mes = request.args.get('mes')
+    ano = request.args.get('ano')
+
+    if mes is None or ano is None:
+        return jsonify({'error': 'Parâmetros mes e ano são obrigatórios'}), 400
+
+    query = """
+    SELECT *
+    FROM vw_folhas_lancamento
+    WHERE mes = %s AND ano = %s
+    ORDER BY nome, dia
+    """
+
+    rows = execute_query(query, (mes, ano))
+    return jsonify(rows or [])
+
 # Rota de saúde
 @app.route('/api/health', methods=['GET'])
 def health_check():

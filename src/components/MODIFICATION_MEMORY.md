@@ -4,7 +4,62 @@ Este arquivo registra as modificações significativas realizadas nos componente
 
 ---
 
+## [2026-05-04] - Performance: Relatório de Lançamentos via View `vw_folhas_lancamento`
+
+### 🔴 Problema
+Carregamento do relatório de lançamentos executava N+1 queries: `getFolhasPonto` → `Promise.all(N × getFolhaPonto)`. Com muitos profissionais, cada abertura do modal disparava dezenas de requisições.
+
+### ✅ Solução
+- **Backend** (`backend/app.py`): novo endpoint `GET /api/relatorio/lancamentos?mes=&ano=` que consulta diretamente a view `vw_folhas_lancamento`, retornando todas as linhas do período em uma única query.
+- **Frontend API** (`src/services/api.ts`): novo método `getLancamentosRelatorio(mes, ano)`.
+- **ReportsModal** (`src/components/ReportsModal.tsx`): `useEffect` substituído — agrupa as linhas da view por `profissional_id` em memória, eliminando o loop de requisições individuais. Dependência `profissionais` removida do array do effect (a view já traz nome/matrícula/turnos).
+
+### 🎯 Resultado
+1 req no lugar de N+1. Relatório significativamente mais rápido para meses com muitos profissionais.
+
+---
+
+## [2026-05-04] - Correção: Filtro de Mês no Gerador de Relatórios
+
+### 🔴 Problema Identificado
+O filtro de mês no `ReportsModal` enviava `filterMonth + 1` para a API (`mes: filterMonth + 1`), mas o banco de dados armazena o mês com índice 0-based (Janeiro=0, Abril=3). O `+1` causava mismatch — selecionar Abril (index 3) enviava `mes=4` ao backend, retornando 0 resultados.
+
+### ✅ Solução Aplicada
+#### `src/components/ReportsModal.tsx` — linha ~282
+```diff
+- mes: filterMonth + 1,
++ mes: filterMonth,
+```
+
+### 🎯 Objetivo
+Alinhar o filtro da query com a convenção 0-indexed do banco de dados, igual ao que as demais partes do sistema já faziam corretamente.
+
+---
+
+## [2026-05-04] - Correção: Relatório de Lançamentos Efetuados
+
+### 🔴 Problemas Corrigidos
+
+#### 1. `EXCLUDED_FROM_REPORT` excluía tipos indevidos
+- `CURSO` e `FERIADO` estavam no set de exclusão — não deveriam estar.
+- SQL de referência exclui **apenas** `TRABALHO` e `CPIP`.
+- Agora: `const EXCLUDED_FROM_REPORT = new Set(['TRABALHO', 'CPIP'])`.
+
+#### 2. Profissionais sem ocorrências apareciam na tabela
+- Todos os profissionais com folha no período eram listados, mesmo sem eventos especiais.
+- Comportamento corrigido: filtragem via `profsComOcorrencia` — só exibe quem tem `ranges.length > 0`.
+- Mensagem "Nenhuma ocorrência especial registrada" exibida quando ninguém tem eventos.
+
+### ✅ Arquivos Modificados
+- `src/components/ReportsModal.tsx`
+
+### 🎯 Objetivo
+Alinhar o relatório de Lançamentos com o SQL de referência: exibir FERIADO, CURSO e demais tipos especiais; ocultar profissionais sem ocorrências.
+
+---
+
 ## [2026-05-03] - Funcionalidade: Modal de Relatórios Gerenciais (ReportsModal)
+
 
 ### 🔍 Alterações Realizadas
 

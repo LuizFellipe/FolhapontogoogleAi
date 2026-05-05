@@ -32,7 +32,7 @@ interface Props {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const EXCLUDED_FROM_REPORT = new Set(['TRABALHO', 'CPIP', 'CURSO', 'FERIADO']);
+const EXCLUDED_FROM_REPORT = new Set(['TRABALHO', 'CPIP', 'CURSO']);
 const WORKED_TYPES = new Set(['TRABALHO', 'CPIP', 'CURSO']);
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -67,7 +67,8 @@ function buildRangesLancamentos(lancamentos: Lancamento[]): EntryRange[] {
   const byTipo = new Map<string, { dia: number; observation: string }[]>();
 
   const addEntry = (dia: number, tipo: string, observation: string) => {
-    if (EXCLUDED_FROM_REPORT.has(tipo)) return;
+    if (!tipo) return;                      // tipo vazio (turno2 sem lançamento especial)
+    if (EXCLUDED_FROM_REPORT.has(tipo)) return; // segurança caso view seja alterada
     if (!byTipo.has(tipo)) byTipo.set(tipo, []);
     const list = byTipo.get(tipo)!;
     if (!list.some(e => e.dia === dia)) {
@@ -121,6 +122,19 @@ const ReportLancamentos: React.FC<{
     );
   }
 
+  // Só exibe profissionais com ao menos 1 ocorrência especial (espelha WHERE do SQL)
+  const profsComOcorrencia = allProfData
+    .map(prof => ({ prof, ranges: buildRangesLancamentos(prof.lancamentos) }))
+    .filter(({ ranges }) => ranges.length > 0);
+
+  if (profsComOcorrencia.length === 0) {
+    return (
+      <p className="text-center text-sm text-stone-400 py-8 border border-dashed border-stone-200 rounded-lg">
+        Nenhuma ocorrência especial registrada em {MONTHS[filterMonth]} de {filterYear}.
+      </p>
+    );
+  }
+
   return (
     <table className="w-full text-sm border-collapse">
       <thead>
@@ -133,38 +147,26 @@ const ReportLancamentos: React.FC<{
         </tr>
       </thead>
       <tbody>
-        {allProfData.map(prof => {
-          const ranges = buildRangesLancamentos(prof.lancamentos);
-          return (
-            <React.Fragment key={prof.profissionalId}>
-              <tr className="border-b border-stone-300 bg-stone-50">
-                <td className="py-1 px-2 font-medium">{prof.matricula || '—'}</td>
-                <td className="py-1 px-2 font-semibold uppercase">{prof.nome}</td>
+        {profsComOcorrencia.map(({ prof, ranges }) => (
+          <React.Fragment key={prof.profissionalId}>
+            <tr className="border-b border-stone-300 bg-stone-50">
+              <td className="py-1 px-2 font-medium">{prof.matricula || '—'}</td>
+              <td className="py-1 px-2 font-semibold uppercase">{prof.nome}</td>
+              <td className="py-1 px-2" />
+              <td className="py-1 px-2" />
+              <td className="py-1 px-2" />
+            </tr>
+            {ranges.map((r, i) => (
+              <tr key={i} className="border-b border-stone-100 hover:bg-stone-50">
                 <td className="py-1 px-2" />
-                <td className="py-1 px-2" />
-                <td className="py-1 px-2" />
+                <td className="py-1 px-2 uppercase">{r.label}</td>
+                <td className="py-1 px-2">{formatDate(r.diaInicio, filterMonth, filterYear)}</td>
+                <td className="py-1 px-2">{formatDate(r.diaFim, filterMonth, filterYear)}</td>
+                <td className="py-1 px-2 text-xs text-stone-500">{r.observation || ''}</td>
               </tr>
-              {ranges.length === 0 ? (
-                <tr className="border-b border-stone-100">
-                  <td className="py-1 px-2" />
-                  <td className="py-1 px-2 text-xs text-stone-400 italic" colSpan={4}>
-                    Sem ocorrências especiais
-                  </td>
-                </tr>
-              ) : (
-                ranges.map((r, i) => (
-                  <tr key={i} className="border-b border-stone-100 hover:bg-stone-50">
-                    <td className="py-1 px-2" />
-                    <td className="py-1 px-2 uppercase">{r.label}</td>
-                    <td className="py-1 px-2">{formatDate(r.diaInicio, filterMonth, filterYear)}</td>
-                    <td className="py-1 px-2">{formatDate(r.diaFim, filterMonth, filterYear)}</td>
-                    <td className="py-1 px-2 text-xs text-stone-500">{r.observation || ''}</td>
-                  </tr>
-                ))
-              )}
-            </React.Fragment>
-          );
-        })}
+            ))}
+          </React.Fragment>
+        ))}
       </tbody>
     </table>
   );
@@ -277,45 +279,42 @@ export const ReportsModal: React.FC<Props> = ({
       setNenhuma(false);
       setAllProfData([]);
       try {
-        const folhas: any[] = await apiService.getFolhasPonto({
-          mes: filterMonth + 1,
-          ano: filterYear,
-        });
+        // Uma única query via view vw_folhas_lancamento — sem N+1
+        // Campos da view: fp.id, p.nome, p.matricula, p.carga_horaria,
+        //   p.turno1, p.turno2, ld.dia, ld.tipo, ld.tipo_turno2, fp.mes, fp.ano
+        const rows: any[] = await apiService.getLancamentosRelatorio(filterMonth, filterYear);
 
-        if (!folhas || folhas.length === 0) {
+        if (!rows || rows.length === 0) {
           setNenhuma(true);
           return;
         }
 
-        const results = await Promise.all(
-          folhas.map(async (folha: any) => {
-            try {
-              const data = await apiService.getFolhaPonto(folha.id);
-              const raw: any[] = data.lancamentos || [];
-              // turno1/turno2 vêm do JOIN na folha_ponto; fallback para o prop
-              const fp = data.folha_ponto as any;
-              const profProp = profissionais.find((p: any) => p.id === folha.profissional_id);
-              return {
-                profissionalId: folha.profissional_id,
-                nome: fp?.profissional_nome || fp?.nome || profProp?.nome || '—',
-                matricula: fp?.matricula || profProp?.matricula || '',
-                turno1: fp?.turno1 || profProp?.turno1 || '',
-                turno2: fp?.turno2 || profProp?.turno2 || '',
-                lancamentos: raw.map((l: any) => ({
-                  dia: l.dia,
-                  tipo: l.tipo || 'TRABALHO',
-                  observation: l.observacao || '',
-                  tipo_turno2: l.tipo_turno2 || 'TRABALHO',
-                  observation_turno2: l.observacao_turno2 || '',
-                })),
-              } as ProfData;
-            } catch {
-              return null;
-            }
-          })
-        );
+        // Agrupa por fp.id (folha_ponto id) — profissional_id não está na view
+        const map = new Map<number, ProfData>();
+        for (const r of rows) {
+          const fid: number = r.id; // fp.id = folha_ponto id
+          if (!map.has(fid)) {
+            map.set(fid, {
+              profissionalId: fid,
+              nome: r.nome ?? '—',          // p.nome
+              matricula: r.matricula ?? '', // p.matricula
+              turno1: r.turno1 ?? '',       // p.turno1
+              turno2: r.turno2 ?? '',       // p.turno2
+              lancamentos: [],
+            });
+          }
+          if (r.dia != null) {
+            map.get(fid)!.lancamentos.push({
+              dia: r.dia,
+              tipo: r.tipo || '',           // ld.tipo  (view já pré-filtra tipos especiais)
+              observation: '',              // não existe na view
+              tipo_turno2: r.tipo_turno2 || '',  // ld.tipo_turno2
+              observation_turno2: '',       // não existe na view
+            });
+          }
+        }
 
-        const valid = results.filter((r): r is ProfData => r !== null);
+        const valid = Array.from(map.values());
         valid.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
         setAllProfData(valid);
       } catch {
@@ -325,7 +324,7 @@ export const ReportsModal: React.FC<Props> = ({
       }
     };
     load();
-  }, [isOpen, filterMonth, filterYear, profissionais]);
+  }, [isOpen, filterMonth, filterYear]);
 
   if (!isOpen) return null;
 
@@ -355,18 +354,16 @@ export const ReportsModal: React.FC<Props> = ({
             <div className="flex rounded-lg overflow-hidden border border-stone-200">
               <button
                 onClick={() => setReportType('lancamentos')}
-                className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors ${
-                  reportType === 'lancamentos' ? 'bg-stone-900 text-white' : 'bg-white text-stone-600 hover:bg-stone-100'
-                }`}
+                className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors ${reportType === 'lancamentos' ? 'bg-stone-900 text-white' : 'bg-white text-stone-600 hover:bg-stone-100'
+                  }`}
               >
                 <FileText className="w-3.5 h-3.5" />
                 Lançamentos
               </button>
               <button
                 onClick={() => setReportType('adicional_noturno')}
-                className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors border-l border-stone-200 ${
-                  reportType === 'adicional_noturno' ? 'bg-stone-900 text-white' : 'bg-white text-stone-600 hover:bg-stone-100'
-                }`}
+                className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors border-l border-stone-200 ${reportType === 'adicional_noturno' ? 'bg-stone-900 text-white' : 'bg-white text-stone-600 hover:bg-stone-100'
+                  }`}
               >
                 <BarChart2 className="w-3.5 h-3.5" />
                 Adicional Noturno
