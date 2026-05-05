@@ -2,6 +2,14 @@
 
 ## Registro de Alterações
 
+### 2026-05-04 - Atualização Completa da Documentação
+- **Motivo**: Documentação desatualizada em relação à implementação atual
+- **Ações**: 
+  - Atualizado README.md com todas as funcionalidades implementadas
+  - Removida referência à simplificação excessiva do sistema
+  - Adicionada documentação de funcionalidades expandidas
+  - Corrigido MODIFICATION_MEMORY.md para refletir estado atual
+
 ### 2026-04-26 - Verificação de Documentação
 - **Motivo**: Verificação inicial da documentação vs estrutura atual
 - **Ações**: 
@@ -9,11 +17,12 @@
   - Verificada consistência de README.md e tree.txt
   - Confirmada estrutura atual: README.md, api.ts, tree.txt
 
-### [Datas Anteriores - Simplificação do Sistema]
-- **api.ts**: Simplificado para suportar apenas dia + tipo de lançamento
-- **Removidos**: Campos de horário (entry1, exit1, entry2, exit2)
-- **Mantidos**: Funcionalidades essenciais de profissional e folha de ponto
-- **Compatibilidade**: Backend mantido para compatibilidade
+### [Datas Anteriores - Evolução do Sistema]
+- **api.ts**: Evoluído de sistema simplificado para suporte completo
+- **Implementados**: Suporte a dois turnos independentes (20h/40h)
+- **Adicionados**: CRUD completo, feriados, relatórios, health check
+- **Validações**: Prevenção de duplicação de matrícula
+- **Compatibilidade**: Mantida com backend e dados existentes
 
 ## Estrutura Atual
 
@@ -29,14 +38,37 @@ src/services/
 
 ### Gerenciamento de Profissionais
 - `getProfissionais()` - Lista todos os profissionais
+- `getProfissional(id)` - Busca profissional específico
 - `createProfissional()` - Cria novo profissional
 - `updateProfissional()` - Atualiza profissional existente
 - `deleteProfissional()` - Remove profissional
+- Validação automática de duplicação de matrícula
 
 ### Gerenciamento de Folhas de Ponto
 - `getFolhasPonto()` - Lista folhas (filtro: profissional, mês, ano)
 - `getFolhaPonto(id)` - Busca folha completa com lançamentos
+- `createFolhaPonto()` - Cria nova folha de ponto
+- `updateFolhaPonto()` - Atualiza folha existente
+- `deleteFolhaPonto()` - Remove folha de ponto
 - `saveCompleteTimesheet()` - Salva folha completa (profissional + lançamentos)
+- `loadCompleteTimesheet()` - Carrega folha completa com todos os dados
+
+### Persistência e Lançamentos
+- `saveLancamentosDiarios()` - Salva lançamentos diários em lote
+- `saveResumoFolha()` - Salva resumo da folha (página 2)
+- Suporte a dois turnos independentes (carga horária 20h/40h)
+
+### Gestão de Feriados
+- `getFeriados()` - Lista feriados (opcionalmente por ano)
+- `createFeriado()` - Cadastra novo feriado
+- `deleteFeriado()` - Remove feriado
+
+### Relatórios
+- `getLancamentosRelatorio()` - Relatório de lançamentos por período
+- `getAdicionaNoturnoRelatorio()` - Relatório de adicional noturno
+
+### Saúde da API
+- `healthCheck()` - Verifica status da API e conexão com banco
 
 ### Conversão de Dados
 - `convertEmployeeToProfissional()` - Frontend → Backend
@@ -48,7 +80,9 @@ src/services/
 - **Backend**: Flask API na porta 5000
 
 ## Notas de Manutenção
-- Sistema simplificado para apenas dia + tipo de lançamento
-- Campos de horário removidos da interface mas mantidos no backend para compatibilidade
-- Matrícula como chave primária para profissionais
-- Validação de duplicação de matrícula implementada
+- Sistema completo com suporte a dois turnos independentes
+- Campos de horário mantidos no backend para compatibilidade histórica
+- Matrícula como chave primária para profissionais com validação de duplicação
+- Padrão "TRABALHO NORMAL" para todos os lançamentos não especificados
+- Funcionalidades expandidas: feriados, relatórios, health check
+- Interface controla exibição do segundo turno por carga horária (20h/40h)

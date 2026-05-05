@@ -12,21 +12,43 @@ O serviço principal de comunicação com o backend, utilizando o padrão `ApiSe
 O `apiService` encapsula toda a lógica de persistência de dados:
 
 1.  **Gerenciamento de Profissionais**
-    -   `getProfissionais()`, `createProfissional()`, `updateProfissional()`, `deleteProfissional()`.
+    -   `getProfissionais()`: Lista todos os profissionais
+    -   `getProfissional(id)`: Busca profissional específico
+    -   `createProfissional()`: Cria novo profissional
+    -   `updateProfissional()`: Atualiza profissional existente
+    -   `deleteProfissional()`: Remove profissional
     -   Realiza busca e atualização baseada na matrícula única do servidor.
+    -   Validação automática de duplicação de matrícula.
 
 2.  **Gerenciamento de Folhas de Ponto**
     -   `getFolhasPonto()`: Filtra por Profissional, Mês e Ano.
     -   `getFolhaPonto(id)`: Busca uma folha completa com todos os lançamentos diários e resumo da página 2.
+    -   `createFolhaPonto()`: Cria nova folha de ponto
+    -   `updateFolhaPonto()`: Atualiza folha existente
+    -   `deleteFolhaPonto()`: Remove folha de ponto
 
 3.  **Persistência em Lote**
     -   `saveLancamentosDiarios()`: Envia todos os eventos da Página 1 para o servidor.
     -   `saveResumoFolha()`: Envia as entradas da Página 2 para o servidor.
+    -   Suporte a dois turnos independentes (carga horária 20h/40h).
 
-4.  **Helpers de Conversão**
+4.  **Gestão de Feriados**
+    -   `getFeriados()`: Lista feriados (opcionalmente por ano)
+    -   `createFeriado()`: Cadastra novo feriado
+    -   `deleteFeriado()`: Remove feriado
+
+5.  **Relatórios**
+    -   `getLancamentosRelatorio()`: Relatório de lançamentos por período
+    -   `getAdicionaNoturnoRelatorio()`: Relatório de adicional noturno
+
+6.  **Helpers de Conversão**
     -   `convertEmployeeToProfissional()`: Mapeia objetos do frontend para o formato aceito pelo banco de dados (MySQL).
     -   `convertProfissionalToEmployee()`: Converte do banco para o estado do React.
     -   `saveCompleteTimesheet()`: Orquestrador que agrupa a criação/atualização de profissional, folha, lançamentos e resumo em uma única chamada lógica para o usuário.
+    -   `loadCompleteTimesheet()`: Carrega folha completa com todos os dados associados.
+
+7.  **Saúde da API**
+    -   `healthCheck()`: Verifica status da API e conexão com banco de dados
 
 ## Configuração
 O serviço utiliza a variável de ambiente `VITE_API_URL` para definir o endereço do backend. Por padrão, usa o caminho relativo `/api`, que é roteado pelo proxy do Vite (em desenvolvimento) ou pelo proxy reverso do Nginx (em produção via Docker). Isso garante que o frontend funcione corretamente tanto em acesso local quanto em acesso remoto pela rede.
