@@ -34,59 +34,63 @@ export const TimesheetGrid: React.FC<Props> = ({ entries, month, year, onChange,
 
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-stone-200 overflow-x-auto">
-      <h2 className="text-lg font-semibold mb-4 text-stone-800 border-b pb-2">Lançamentos Diários</h2>
-      <table className="w-full text-sm text-left border-collapse">
-        <thead>
-          <tr className="bg-stone-50 text-stone-500 uppercase text-[10px] tracking-widest font-bold">
-            <th className="p-2 border border-stone-200 w-12 text-center">Dia</th>
-            <th className="p-2 border border-stone-200 min-w-[150px]">Tipo Turno 1</th>
-            {isSecondTurnEnabled() && (
-              <th className="p-2 border border-stone-200 min-w-[150px]">Tipo Turno 2</th>
-            )}
-          </tr>
-        </thead>
-        <tbody>
-          {entries.map((entry) => {
-            const weekend = isWeekend(entry.day);
-            const secondTurnEnabled = isSecondTurnEnabled();
-            return (
-              <tr 
-                key={entry.day} 
-                className={`${weekend ? 'bg-stone-100' : 'hover:bg-stone-50'} transition-colors`}
-              >
-                <td className="p-2 border border-stone-200 text-center font-mono font-medium">
-                  {String(entry.day).padStart(2, '0')}
-                </td>
-                <td className="p-2 border border-stone-200">
-                  <select
-                    value={entry.type}
-                    onChange={(e) => handleEntryChange(entry.day, 'type', e.target.value)}
-                    className="w-full bg-transparent focus:outline-none"
-                  >
-                    {ENTRY_TYPES.map((t) => (
-                      <option key={t.value} value={t.value}>{t.label}</option>
-                    ))}
-                  </select>
-                </td>
-                {secondTurnEnabled && (
-                  <td className="p-2 border border-stone-200">
+      <div className="flex items-center justify-between border-b border-stone-100 pb-4 mb-6">
+        <h2 className="text-lg font-semibold text-stone-800 tracking-tight">Lançamentos Diários</h2>
+      </div>
+      <div className="rounded-xl border border-stone-200 overflow-hidden">
+        <table className="w-full text-sm text-left">
+          <thead className="bg-stone-50/80 border-b border-stone-200">
+            <tr className="text-stone-500 uppercase text-[10px] tracking-wider font-semibold">
+              <th className="px-4 py-3 w-16 text-center whitespace-nowrap">Dia</th>
+              <th className="px-4 py-3 min-w-[150px]">Tipo Turno 1</th>
+              {isSecondTurnEnabled() && (
+                <th className="px-4 py-3 min-w-[150px]">Tipo Turno 2</th>
+              )}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-stone-100 bg-white">
+            {entries.map((entry) => {
+              const weekend = isWeekend(entry.day);
+              const secondTurnEnabled = isSecondTurnEnabled();
+              return (
+                <tr 
+                  key={entry.day} 
+                  className={`${weekend ? 'bg-amber-50/40' : 'hover:bg-stone-50/60'} transition-colors group`}
+                >
+                  <td className={`px-4 py-2 text-center font-mono font-medium ${weekend ? 'text-amber-700/60' : 'text-stone-500'}`}>
+                    {String(entry.day).padStart(2, '0')}
+                  </td>
+                  <td className="p-1.5">
                     <select
-                      value={entry.type_turno2 || 'TRABALHO'}
-                      onChange={(e) => handleEntryChange(entry.day, 'type_turno2', e.target.value)}
-                      className="w-full bg-transparent focus:outline-none"
-                      disabled={!secondTurnEnabled}
+                      value={entry.type}
+                      onChange={(e) => handleEntryChange(entry.day, 'type', e.target.value)}
+                      className={`w-full bg-transparent focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-md py-2 px-3 transition-all outline-none cursor-pointer ${weekend ? 'text-amber-900/80' : 'text-stone-700'}`}
                     >
                       {ENTRY_TYPES.map((t) => (
                         <option key={t.value} value={t.value}>{t.label}</option>
                       ))}
                     </select>
                   </td>
-                )}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                  {secondTurnEnabled && (
+                    <td className="p-1.5">
+                      <select
+                        value={entry.type_turno2 || 'TRABALHO'}
+                        onChange={(e) => handleEntryChange(entry.day, 'type_turno2', e.target.value)}
+                        className={`w-full bg-transparent focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-md py-2 px-3 transition-all outline-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${weekend ? 'text-amber-900/80' : 'text-stone-700'}`}
+                        disabled={!secondTurnEnabled}
+                      >
+                        {ENTRY_TYPES.map((t) => (
+                          <option key={t.value} value={t.value}>{t.label}</option>
+                        ))}
+                      </select>
+                    </td>
+                  )}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

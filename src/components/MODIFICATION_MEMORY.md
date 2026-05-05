@@ -4,6 +4,37 @@ Este arquivo registra as modificações significativas realizadas nos componente
 
 ---
 
+## [2026-05-04] - UX/UI: Melhoria Visual dos Formulários de Resumo e Lançamentos
+
+### 🔍 Alterações Realizadas
+
+#### 1. SummaryForm.tsx e TimesheetGrid.tsx — Modernização do UI
+- Reestruturação visual das tabelas adotando o padrão `divide-y` mais limpo e legível.
+- Cores de hover, bordas e fundos ajustadas com estilo moderno (`ui-ux-pro-max`).
+- Inclusão de transições suaves e anéis de foco (`focus:ring-2`, `focus:bg-white`) nos `selects` e `inputs` para feedback tátil aprimorado.
+- Melhoria no destaque visual aos fins de semana na grade de Lançamentos Diários (`bg-amber-50/40`, texto ambarino).
+- O layout geral e disposição (grids e items) permaneceram idênticos para evitar quebra de fluxo.
+
+### 🎯 Objetivo
+Elevar a estética e usabilidade da grade principal e do Resumo (Página 2), trazendo visual premium sem alterar a estrutura da aplicação.
+
+---
+## [2026-05-04] - UX/UI: Reorganização Visual do Formulário de Servidor
+
+### 🔍 Alterações Realizadas
+
+#### 1. EmployeeForm.tsx — Modernização do Formulário
+- Reestruturação completa do layout seguindo os padrões visuais do `EmployeeNavigator.tsx`.
+- Campos organizados em "cards" semânticos (`Identificação`, `Atuação e Lotação`, `Jornada e Turnos`) com bordas suaves (`border-stone-200`) e fundo leve (`bg-stone-50/50`).
+- Labels atualizadas para melhor legibilidade (`uppercase`, `tracking-wider`, `text-stone-500`).
+- Inputs e Selects atualizados para fundo branco (`bg-white`), bordas definidas (`border-stone-300`) e interações de foco consistentes.
+- Nenhuma funcionalidade ou mapeamento de dados foi alterado.
+
+### 🎯 Objetivo
+Melhorar a ergonomia visual do formulário de preenchimento, agrupando informações lógicas de forma intuitiva para o usuário, alinhando a estética com as diretrizes UI/UX estabelecidas nos demais componentes.
+
+---
+
 ## [2026-05-04] - Refatoração: Relatório de Adicional Noturno via View `vw_adicional_noturno`
 
 ### 🔴 Problema

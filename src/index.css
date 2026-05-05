@@ -102,3 +102,15 @@
     display: none !important;
   }
 }
+
+/* Relatório: impressão em janela separada — não afeta o modal */
+.report-print-page {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 15mm 18mm;
+  font-family: 'Inter', Arial, sans-serif;
+  font-size: 11px;
+  color: #1c1917;
+  background: white;
+  box-sizing: border-box;
+}
