@@ -54,55 +54,74 @@ interface EntryRange {
   diaInicio: number;
   diaFim: number;
   observation: string;
+  turnoLabel: string; // MAT | VESP | NOT
+}
+
+/** Abrevia o nome do turno para MAT / VESP / NOT */
+function abbreviateTurno(turno: string): string {
+  const u = (turno || '').toUpperCase();
+  if (u.includes('NOT')) return 'NOT';
+  if (u.includes('VESP')) return 'VESP';
+  return 'MAT';
+}
+
+/** Ordena e une turno labels em ordem canônica: MAT → VESP → NOT */
+function ordenarTurnos(turnos: Set<string>): string {
+  return ['MAT', 'VESP', 'NOT'].filter(t => turnos.has(t)).join(', ');
 }
 
 /**
- * Groups entries by tipo across both turnos, then builds consecutive day ranges per tipo.
- * Avoids the fragmentation bug that occurs when sorting only by dia and checking only the
- * last range element — entries of different tipos on the same day would break consecutive
- * merging for other tipos.
+ * Agrupa entradas por tipo, acumula turno labels por dia num Set e constrói
+ * ranges de dias consecutivos. Mesmo evento nos dois turnos → 1 linha "MAT, VESP".
  */
-function buildRangesLancamentos(lancamentos: Lancamento[]): EntryRange[] {
-  // Collect (dia, observation) keyed by tipo from both turnos
-  const byTipo = new Map<string, { dia: number; observation: string }[]>();
+function buildRangesLancamentos(
+  lancamentos: Lancamento[],
+  turno1: string,
+  turno2: string,
+): EntryRange[] {
+  const t1 = abbreviateTurno(turno1);
+  const t2 = abbreviateTurno(turno2);
 
-  const addEntry = (dia: number, tipo: string, observation: string) => {
-    if (!tipo) return;                      // tipo vazio (turno2 sem lançamento especial)
-    if (EXCLUDED_FROM_REPORT.has(tipo)) return; // segurança caso view seja alterada
-    if (!byTipo.has(tipo)) byTipo.set(tipo, []);
-    const list = byTipo.get(tipo)!;
-    if (!list.some(e => e.dia === dia)) {
-      list.push({ dia, observation });
-    }
+  // tipo → dia → Set<turnoLabel>
+  const byTipo = new Map<string, Map<number, Set<string>>>();
+
+  const addEntry = (dia: number, tipo: string, turnoLabel: string) => {
+    if (!tipo) return;
+    if (EXCLUDED_FROM_REPORT.has(tipo)) return;
+    if (!byTipo.has(tipo)) byTipo.set(tipo, new Map());
+    const diaMap = byTipo.get(tipo)!;
+    if (!diaMap.has(dia)) diaMap.set(dia, new Set());
+    diaMap.get(dia)!.add(turnoLabel);
   };
 
   for (const l of lancamentos) {
-    addEntry(l.dia, l.tipo, l.observation);
-    if (l.tipo_turno2) addEntry(l.dia, l.tipo_turno2, l.observation_turno2);
+    addEntry(l.dia, l.tipo, t1);
+    if (l.tipo_turno2) addEntry(l.dia, l.tipo_turno2, t2);
   }
 
-  // Build consecutive ranges per tipo
   const ranges: EntryRange[] = [];
 
-  for (const [tipo, entries] of byTipo.entries()) {
+  for (const [tipo, diaMap] of byTipo.entries()) {
     const label = ENTRY_TYPES.find(t => t.value === tipo)?.label ?? tipo;
-    entries.sort((a, b) => a.dia - b.dia);
+    const dias = Array.from(diaMap.keys()).sort((a, b) => a - b);
 
-    let start = entries[0].dia;
-    let end = entries[0].dia;
-    let obs = entries[0].observation;
+    let start = dias[0];
+    let end = dias[0];
+    const turnosRange = new Set<string>(diaMap.get(dias[0])!);
 
-    for (let i = 1; i < entries.length; i++) {
-      if (entries[i].dia === end + 1) {
-        end = entries[i].dia;
+    for (let i = 1; i < dias.length; i++) {
+      if (dias[i] === end + 1) {
+        end = dias[i];
+        diaMap.get(dias[i])!.forEach(t => turnosRange.add(t));
       } else {
-        ranges.push({ tipo, label, diaInicio: start, diaFim: end, observation: obs });
-        start = entries[i].dia;
-        end = entries[i].dia;
-        obs = entries[i].observation;
+        ranges.push({ tipo, label, diaInicio: start, diaFim: end, observation: '', turnoLabel: ordenarTurnos(turnosRange) });
+        start = dias[i];
+        end = dias[i];
+        turnosRange.clear();
+        diaMap.get(dias[i])!.forEach(t => turnosRange.add(t));
       }
     }
-    ranges.push({ tipo, label, diaInicio: start, diaFim: end, observation: obs });
+    ranges.push({ tipo, label, diaInicio: start, diaFim: end, observation: '', turnoLabel: ordenarTurnos(turnosRange) });
   }
 
   ranges.sort((a, b) => a.diaInicio - b.diaInicio || a.label.localeCompare(b.label, 'pt-BR'));
@@ -124,7 +143,7 @@ const ReportLancamentos: React.FC<{
 
   // Só exibe profissionais com ao menos 1 ocorrência especial (espelha WHERE do SQL)
   const profsComOcorrencia = allProfData
-    .map(prof => ({ prof, ranges: buildRangesLancamentos(prof.lancamentos) }))
+    .map(prof => ({ prof, ranges: buildRangesLancamentos(prof.lancamentos, prof.turno1, prof.turno2) }))
     .filter(({ ranges }) => ranges.length > 0);
 
   if (profsComOcorrencia.length === 0) {
@@ -141,6 +160,7 @@ const ReportLancamentos: React.FC<{
         <tr className="border-b-2 border-stone-800">
           <th className="text-left py-1 px-2 font-semibold w-28">Matrícula</th>
           <th className="text-left py-1 px-2 font-semibold">Nome / Evento</th>
+          <th className="text-left py-1 px-2 font-semibold w-16">Turno</th>
           <th className="text-left py-1 px-2 font-semibold w-28">Início</th>
           <th className="text-left py-1 px-2 font-semibold w-28">Fim</th>
           <th className="text-left py-1 px-2 font-semibold w-32">Obs</th>
@@ -155,11 +175,13 @@ const ReportLancamentos: React.FC<{
               <td className="py-1 px-2" />
               <td className="py-1 px-2" />
               <td className="py-1 px-2" />
+              <td className="py-1 px-2" />
             </tr>
             {ranges.map((r, i) => (
               <tr key={i} className="border-b border-stone-100 hover:bg-stone-50">
                 <td className="py-1 px-2" />
                 <td className="py-1 px-2 uppercase">{r.label}</td>
+                <td className="py-1 px-2 text-xs font-semibold text-stone-600">{r.turnoLabel}</td>
                 <td className="py-1 px-2">{formatDate(r.diaInicio, filterMonth, filterYear)}</td>
                 <td className="py-1 px-2">{formatDate(r.diaFim, filterMonth, filterYear)}</td>
                 <td className="py-1 px-2 text-xs text-stone-500">{r.observation || ''}</td>
