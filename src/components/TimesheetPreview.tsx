@@ -21,6 +21,9 @@ export const TimesheetPreview: React.FC<Props> = ({ data }) => {
     return `--- ${label} ---`;
   };
 
+  const isCh20 = String(data.employee.ch || '').trim() === '20';
+  const sigDashes = "-----------------------------";
+
   return (
     <div className="print-page bg-white p-4 sm:p-6 shadow-lg max-w-[210mm] mx-auto text-[10px] font-sans leading-tight border border-stone-300 break-after-page">
       {/* Header Box 1 */}
@@ -118,9 +121,9 @@ export const TimesheetPreview: React.FC<Props> = ({ data }) => {
                   <td className="border border-black py-[3px] px-1 text-center italic text-[8.5px] whitespace-nowrap overflow-hidden">{display1}</td>
                   <td className="border border-black py-[3px] px-1 text-center tracking-widest whitespace-nowrap overflow-hidden">{isWork1 ? entry.entry1 : (display1 ? dashes : '')}</td>
                   <td className="border border-black py-[3px] px-1 text-center tracking-widest whitespace-nowrap overflow-hidden">{isWork1 ? entry.exit1 : (display1 ? dashes : '')}</td>
-                  <td className="border border-black py-[3px] px-1 text-center italic text-[8.5px] whitespace-nowrap overflow-hidden">{display2}</td>
-                  <td className="border border-black py-[3px] px-1 text-center tracking-widest whitespace-nowrap overflow-hidden">{isWork2 ? entry.entry2 : (display2 ? dashes : '')}</td>
-                  <td className="border border-black py-[3px] px-1 text-center tracking-widest whitespace-nowrap overflow-hidden">{isWork2 ? entry.exit2 : (display2 ? dashes : '')}</td>
+                  <td className="border border-black py-[3px] px-1 text-center tracking-widest whitespace-nowrap overflow-hidden">{isCh20 ? sigDashes : display2}</td>
+                  <td className="border border-black py-[3px] px-1 text-center tracking-widest whitespace-nowrap overflow-hidden">{isCh20 ? dashes : (isWork2 ? entry.entry2 : (display2 ? dashes : ''))}</td>
+                  <td className="border border-black py-[3px] px-1 text-center tracking-widest whitespace-nowrap overflow-hidden">{isCh20 ? dashes : (isWork2 ? entry.exit2 : (display2 ? dashes : ''))}</td>
                 </tr>
               );
             })}

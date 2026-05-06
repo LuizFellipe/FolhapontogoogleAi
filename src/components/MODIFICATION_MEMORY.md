@@ -4,6 +4,26 @@ Este arquivo registra as modificações significativas realizadas nos componente
 
 ---
 
+## [2026-05-06] - Melhoria: 2º Turno com Traços para Profissionais CH=20
+
+### 🔍 Alterações Realizadas
+
+#### 1. TimesheetPreview.tsx — Preenchimento do 2º Turno com traços
+
+- Adicionadas constantes `isCh20` e `sigDashes` antes do `return`.
+- Quando `data.employee.ch === '20'`, as células do Turno 2 passam a exibir traços em todas as linhas:
+  - **Assinatura do Servidor**: `"-- -- -- -- -- -- -- -- -- --"` com `tracking-widest` (preenche a coluna larga w-40).
+  - **Entrada / Saída**: `"------"` (constante `dashes` já existente).
+- Para CH=40, o comportamento permanece inalterado.
+
+### ✅ Arquivos Modificados
+- `src/components/TimesheetPreview.tsx`
+
+### 🎯 Objetivo
+Indicar visualmente que o 2º turno não se aplica ao profissional de 20 horas, alinhando o layout ao documento oficial onde campos sem turno são preenchidos com traços ao invés de ficarem em branco.
+
+---
+
 ## [2026-05-04] - UX/UI: Melhoria Visual dos Formulários de Resumo e Lançamentos
 
 ### 🔍 Alterações Realizadas

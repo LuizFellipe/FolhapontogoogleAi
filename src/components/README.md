@@ -22,6 +22,7 @@ Esta pasta contém todos os componentes React modulares utilizados para construi
 -   **`TimesheetPreview.tsx`**: Renderiza a **Página 1** da folha de ponto seguindo o layout oficial da Secretaria de Educação.
     -   **Preenchimento A4 Completo**: Em modo de impressão, ocupa toda a página A4 via classes CSS `print-page` + `print-page-table-section`, distribuindo as 31 linhas da tabela uniformemente com o trick `tbody tr { height: 1% }`.
     -   **Preenchimento**: Invalida automaticamente campos de entrada/saída com travessões (`---`) em dias de lançamentos especiais.
+    -   **CH=20 — 2º Turno bloqueado**: Quando `data.employee.ch === '20'`, as colunas do Turno 2 (Assinatura, Entrada, Saída) são preenchidas com traços (`-- -- -- ...` e `------`) em todas as linhas, indicando que o 2º turno não se aplica ao profissional.
     -   **Quebra de Página**: Usa `break-after-page` para forçar a Página 2 em uma nova folha ao imprimir.
 -   **`TimesheetSummaryPreview.tsx`**: Renderiza a **Página 2** (Resumo) e a **Tabela de Códigos**. Utiliza estilização específica para os números em formato "U" (`|_|`) e linhas de tabela oficiais.
     -   **Preenchimento A4 Completo**: Em modo de impressão, ocupa toda a página A4 via classe `print-page-2`. A caixa MENSAGEM cresce (`flex: 1`) para preencher o espaço restante.
