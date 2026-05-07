@@ -19,7 +19,8 @@ export type EntryType =
   | 'PONTO FACULTATIVO'
   | 'ATESTADO COMPARECIMENTO A'
   | 'ATESTADO COMPARECIMENTO P.'
-  | 'EXAME MEDICO PREV/PERIOD ART';
+  | 'EXAME MEDICO PREV/PERIOD ART'
+  | 'TRACEJADO';
 
 export interface DailyEntry {
   day: number;
@@ -92,4 +93,5 @@ export const ENTRY_TYPES: { value: EntryType; label: string; code: string | null
   { value: 'ATESTADO COMPARECIMENTO A',   label: 'ATESTADO COMPARECIMENTO A SUBSAUDE',           code: '00343' },
   { value: 'ATESTADO COMPARECIMENTO P.',  label: 'ATESTADO COMPARECIMENTO PESSOA DA FAMILIA',    code: '00341' },
   { value: 'EXAME MEDICO PREV/PERIOD ART',label: 'EXAME MEDICO PREV/PERIOD ART 62 LEI COMP',     code: '00118' },
+  { value: 'TRACEJADO',                   label: '--- (Tracejado)',                               code: null    },
 ];

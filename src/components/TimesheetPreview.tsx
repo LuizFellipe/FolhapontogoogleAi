@@ -13,16 +13,16 @@ export const TimesheetPreview: React.FC<Props> = ({ data }) => {
     return dayOfWeek === 0 || dayOfWeek === 6;
   };
 
+  const isCh20 = String(data.employee.ch || '').trim() === '20';
+
   const getEntryDisplay = (entry: any, turnNumber: 1 | 2) => {
     const type = turnNumber === 1 ? entry.type : (entry.type_turno2 || 'TRABALHO');
     if (!type || type === 'TRABALHO') return '';
+    if (type === 'TRACEJADO') return '__tracejado__'; // sentinel: célula assinatura usa dashLine; entrada/saída usa dashes via display != ''
     const typeOption = ENTRY_TYPES.find(t => t.value === type);
     const label = typeOption ? typeOption.label : type;
     return `--- ${label} ---`;
   };
-
-  const isCh20 = String(data.employee.ch || '').trim() === '20';
-  const sigDashes = "-----------------------------";
 
   return (
     <div className="print-page bg-white p-4 sm:p-6 shadow-lg max-w-[210mm] mx-auto text-[10px] font-sans leading-tight border border-stone-300 break-after-page">
@@ -113,15 +113,18 @@ export const TimesheetPreview: React.FC<Props> = ({ data }) => {
               const display2 = getEntryDisplay(entry, 2);
               const isWork1 = entry.type === 'TRABALHO';
               const isWork2 = (entry.type_turno2 || 'TRABALHO') === 'TRABALHO';
+              const isTracejado1 = entry.type === 'TRACEJADO';
+              const isTracejado2 = (entry.type_turno2 || 'TRABALHO') === 'TRACEJADO';
               const dashes = "------";
+              const dashLine = <div className="w-full border-b border-black" />;
 
               return (
                 <tr key={entry.day} className={weekend ? 'bg-stone-300' : ''}>
                   <td className="border border-black py-[3px] px-1 text-center font-bold">{String(entry.day).padStart(2, '0')}</td>
-                  <td className="border border-black py-[3px] px-1 text-center italic text-[8.5px] whitespace-nowrap overflow-hidden">{display1}</td>
+                  <td className="border border-black py-[3px] px-1 text-center italic text-[8.5px] whitespace-nowrap overflow-hidden">{isTracejado1 ? dashLine : display1}</td>
                   <td className="border border-black py-[3px] px-1 text-center tracking-widest whitespace-nowrap overflow-hidden">{isWork1 ? entry.entry1 : (display1 ? dashes : '')}</td>
                   <td className="border border-black py-[3px] px-1 text-center tracking-widest whitespace-nowrap overflow-hidden">{isWork1 ? entry.exit1 : (display1 ? dashes : '')}</td>
-                  <td className="border border-black py-[3px] px-1 text-center italic text-[8.5px] whitespace-nowrap overflow-hidden">{isCh20 ? sigDashes : display2}</td>
+                  <td className="border border-black py-[3px] px-1 text-center italic text-[8.5px] whitespace-nowrap overflow-hidden">{isCh20 ? dashLine : (isTracejado2 ? dashLine : display2)}</td>
                   <td className="border border-black py-[3px] px-1 text-center tracking-widest whitespace-nowrap overflow-hidden">{isCh20 ? dashes : (isWork2 ? entry.entry2 : (display2 ? dashes : ''))}</td>
                   <td className="border border-black py-[3px] px-1 text-center tracking-widest whitespace-nowrap overflow-hidden">{isCh20 ? dashes : (isWork2 ? entry.exit2 : (display2 ? dashes : ''))}</td>
                 </tr>

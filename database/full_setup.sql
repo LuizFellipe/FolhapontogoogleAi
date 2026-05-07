@@ -106,7 +106,8 @@ INSERT INTO `tipos_lancamento` (`valor`, `label`, `codigo`) VALUES
   ('PONTO FACULTATIVO',           'PONTO FACULTATIVO',                             '00000'),
   ('ATESTADO COMPARECIMENTO A',   'ATESTADO COMPARECIMENTO A SUBSAUDE',            '00343'),
   ('ATESTADO COMPARECIMENTO P.',  'ATESTADO COMPARECIMENTO PESSOA DA FAMILIA',     '00341'),
-  ('EXAME MEDICO PREV/PERIOD ART','EXAME MEDICO PREV/PERIOD ART 62 LEI COMP',      '00118');
+  ('EXAME MEDICO PREV/PERIOD ART','EXAME MEDICO PREV/PERIOD ART 62 LEI COMP',      '00118'),
+  ('TRACEJADO',                   '--- (Tracejado)',                               NULL);
 
 --
 -- Table structure for table `lancamentos_diarios`

@@ -10,10 +10,16 @@ interface Props {
 }
 
 export const TimesheetGrid: React.FC<Props> = ({ entries, month, year, onChange, employeeCh }) => {
+  const DAY_ABBR = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB'];
+
   const isWeekend = (day: number) => {
     const date = new Date(year, month, day);
     const dayOfWeek = date.getDay();
-    return dayOfWeek === 0 || dayOfWeek === 6; // 0 is Sunday, 6 is Saturday
+    return dayOfWeek === 0 || dayOfWeek === 6;
+  };
+
+  const getDayOfWeek = (day: number) => {
+    return DAY_ABBR[new Date(year, month, day).getDay()];
   };
 
   // Verifica se segundo turno está habilitado baseado na carga horária
@@ -59,8 +65,11 @@ export const TimesheetGrid: React.FC<Props> = ({ entries, month, year, onChange,
                   key={entry.day} 
                   className={`${weekend ? 'bg-amber-50/40' : 'hover:bg-stone-50/60'} transition-colors group`}
                 >
-                  <td className={`px-4 py-2 text-center font-mono font-medium ${weekend ? 'text-amber-700/60' : 'text-stone-500'}`}>
-                    {String(entry.day).padStart(2, '0')}
+                  <td className={`px-4 py-2 font-mono font-medium ${weekend ? 'text-amber-700/60' : 'text-stone-500'}`}>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] uppercase tracking-wider">{getDayOfWeek(entry.day)}</span>
+                      <span>{String(entry.day).padStart(2, '0')}</span>
+                    </div>
                   </td>
                   <td className="p-1.5">
                     <select

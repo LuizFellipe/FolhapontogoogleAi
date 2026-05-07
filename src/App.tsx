@@ -362,10 +362,14 @@ export default function App() {
           const data = await apiService.loadCompleteTimesheet(profId, mes, ano);
           if (data) results.push(data);
         } else {
-          const entries = await computePreFillEntries(profId, mes, ano);
+          let entries = await computePreFillEntries(profId, mes, ano);
+          const isCh20 = String(prof?.carga_horaria || '').includes('20');
+          if (isCh20) {
+            entries = entries.map(e => ({ ...e, type_turno2: 'TRABALHO' as EntryType, observation_turno2: '' }));
+          }
           const hasPattern = entries.some(e => e.type !== 'TRABALHO' || e.type_turno2 !== 'TRABALHO');
           const obsText = "CURSO FORMACAO CONTINUADA DE ACORDO MEMORANDO/CIRC 59/2025 - SEE/SUBEB DE 18/02/2025 - SEI 00080.00049147/2025-76";
-          
+
           const novaFolha = await apiService.createFolhaPonto({ profissional_id: profId, mes, ano, observacoes: hasPattern ? obsText : '' });
           const lancamentos = entries.map(e => ({
             dia: e.day, tipo: e.type, tipo_turno2: e.type_turno2,
@@ -468,12 +472,13 @@ export default function App() {
       const newEntries = [...entries];
       const entryIndex = newEntries.findIndex(e => e.day === holiday.day);
       if (entryIndex !== -1) {
+        const isCh20 = String(employee.ch || '').includes('20');
         newEntries[entryIndex] = {
           ...newEntries[entryIndex],
           type: 'FERIADO',
-          type_turno2: 'FERIADO',
+          type_turno2: isCh20 ? newEntries[entryIndex].type_turno2 : 'FERIADO',
           observation: holiday.label,
-          observation_turno2: holiday.label
+          observation_turno2: isCh20 ? newEntries[entryIndex].observation_turno2 : holiday.label
         };
         handleEntriesChange(newEntries);
 
