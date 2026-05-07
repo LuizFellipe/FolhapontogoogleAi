@@ -32,6 +32,8 @@ export const TimesheetGrid: React.FC<Props> = ({ entries, month, year, onChange,
     onChange(newEntries);
   };
 
+  const sortedEntryTypes = [...ENTRY_TYPES].sort((a, b) => a.label.localeCompare(b.label, 'pt-BR'));
+
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-stone-200 overflow-x-auto">
       <div className="flex items-center justify-between border-b border-stone-100 pb-4 mb-6">
@@ -66,7 +68,7 @@ export const TimesheetGrid: React.FC<Props> = ({ entries, month, year, onChange,
                       onChange={(e) => handleEntryChange(entry.day, 'type', e.target.value)}
                       className={`w-full bg-transparent focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-md py-2 px-3 transition-all outline-none cursor-pointer ${weekend ? 'text-amber-900/80' : 'text-stone-700'}`}
                     >
-                      {ENTRY_TYPES.map((t) => (
+                      {sortedEntryTypes.map((t) => (
                         <option key={t.value} value={t.value}>{t.label}</option>
                       ))}
                     </select>
@@ -79,7 +81,7 @@ export const TimesheetGrid: React.FC<Props> = ({ entries, month, year, onChange,
                         className={`w-full bg-transparent focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-md py-2 px-3 transition-all outline-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${weekend ? 'text-amber-900/80' : 'text-stone-700'}`}
                         disabled={!secondTurnEnabled}
                       >
-                        {ENTRY_TYPES.map((t) => (
+                        {sortedEntryTypes.map((t) => (
                           <option key={t.value} value={t.value}>{t.label}</option>
                         ))}
                       </select>

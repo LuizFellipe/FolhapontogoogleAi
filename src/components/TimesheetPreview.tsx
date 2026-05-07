@@ -121,7 +121,7 @@ export const TimesheetPreview: React.FC<Props> = ({ data }) => {
                   <td className="border border-black py-[3px] px-1 text-center italic text-[8.5px] whitespace-nowrap overflow-hidden">{display1}</td>
                   <td className="border border-black py-[3px] px-1 text-center tracking-widest whitespace-nowrap overflow-hidden">{isWork1 ? entry.entry1 : (display1 ? dashes : '')}</td>
                   <td className="border border-black py-[3px] px-1 text-center tracking-widest whitespace-nowrap overflow-hidden">{isWork1 ? entry.exit1 : (display1 ? dashes : '')}</td>
-                  <td className="border border-black py-[3px] px-1 text-center tracking-widest whitespace-nowrap overflow-hidden">{isCh20 ? sigDashes : display2}</td>
+                  <td className="border border-black py-[3px] px-1 text-center italic text-[8.5px] whitespace-nowrap overflow-hidden">{isCh20 ? sigDashes : display2}</td>
                   <td className="border border-black py-[3px] px-1 text-center tracking-widest whitespace-nowrap overflow-hidden">{isCh20 ? dashes : (isWork2 ? entry.entry2 : (display2 ? dashes : ''))}</td>
                   <td className="border border-black py-[3px] px-1 text-center tracking-widest whitespace-nowrap overflow-hidden">{isCh20 ? dashes : (isWork2 ? entry.exit2 : (display2 ? dashes : ''))}</td>
                 </tr>
