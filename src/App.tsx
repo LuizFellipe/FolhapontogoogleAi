@@ -257,24 +257,21 @@ export default function App() {
       return b.mes - a.mes;
     });
 
-    // Pattern key: "DOW-weekIndex" — distinguishes 3ª segunda (dia 16) de 4ª segunda (dia 23)
-    // weekIndex = Math.floor((dia - 1) / 7): dias 1-7→0, 8-14→1, 15-21→2, 22-28→3, 29-31→4
     const pattern = new Map<string, { tipo: string; tipo_turno2: string }>();
-    const CPIP_CURSO = ['CPIP', 'CURSO'];
+    const TARGET_TYPES = ['CPIP', 'CURSO', 'TRACEJADO'];
 
     for (const folha of folhasAnteriores) {
       const dados = await apiService.getFolhaPonto(folha.id);
       for (const lancamento of dados.lancamentos) {
-        const tem = CPIP_CURSO.includes(lancamento.tipo) || CPIP_CURSO.includes(lancamento.tipo_turno2);
+        const tem = TARGET_TYPES.includes(lancamento.tipo) || TARGET_TYPES.includes(lancamento.tipo_turno2);
         if (!tem) continue;
         const dow = new Date(folha.ano, folha.mes, lancamento.dia).getDay();
         if (dow < 1 || dow > 5) continue;
-        const weekIndex = Math.floor((lancamento.dia - 1) / 7);
-        const key = `${dow}-${weekIndex}`;
+        const key = `${dow}`;
         if (!pattern.has(key)) {
           pattern.set(key, {
-            tipo: CPIP_CURSO.includes(lancamento.tipo) ? lancamento.tipo : 'TRABALHO',
-            tipo_turno2: CPIP_CURSO.includes(lancamento.tipo_turno2) ? lancamento.tipo_turno2 : 'TRABALHO',
+            tipo: TARGET_TYPES.includes(lancamento.tipo) ? lancamento.tipo : 'TRABALHO',
+            tipo_turno2: TARGET_TYPES.includes(lancamento.tipo_turno2) ? lancamento.tipo_turno2 : 'TRABALHO',
           });
         }
       }
@@ -284,8 +281,7 @@ export default function App() {
     return Array.from({ length: daysInMonth }, (_, i) => {
       const day = i + 1;
       const dow = new Date(targetYear, targetMonth, day).getDay();
-      const weekIndex = Math.floor((day - 1) / 7);
-      const key = `${dow}-${weekIndex}`;
+      const key = `${dow}`;
       const p = pattern.get(key);
       return {
         day,

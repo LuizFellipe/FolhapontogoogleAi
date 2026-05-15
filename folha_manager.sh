@@ -27,6 +27,9 @@ BRIGHT_WHITE='\033[1;97m'
 NEON_GREEN='\033[38;5;46m'
 NEON_CYAN='\033[38;5;51m'
 NEON_BLUE='\033[38;5;45m'
+ORANGE='\033[38;5;214m'
+MAGENTA='\033[38;5;201m'
+PINK='\033[38;5;213m'
 NC='\033[0m' # No Color
 
 # Função para limpar tela e mostrar cabeçalho
@@ -146,10 +149,10 @@ start_backend() {
     CONTAINER_NAME="meu-mysql"
 
     if command -v docker >/dev/null 2>&1; then
-        if [ "$(docker ps -aq -f name=$CONTAINER_NAME)" ]; then
-            if [ ! "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
+        if [ "$(docker ps -aq -f name="$CONTAINER_NAME")" ]; then
+            if [ ! "$(docker ps -q -f name="$CONTAINER_NAME")" ]; then
                 warning "Contêiner $CONTAINER_NAME encontrado mas parado. Iniciando..."
-                docker start $CONTAINER_NAME
+                docker start "$CONTAINER_NAME"
                 sleep 2
             else
                 success "Contêiner $CONTAINER_NAME já está em execução."
@@ -212,7 +215,7 @@ start_backend() {
     sleep 3
 
     # Verificar se o backend iniciou corretamente
-    if ! kill -0 $BACKEND_PID 2>/dev/null; then
+    if ! kill -0 "$BACKEND_PID" 2>/dev/null; then
         error "Falha ao iniciar o backend!"
         rm -f "$PID_FILE"
         pause
@@ -229,9 +232,9 @@ start_backend() {
     sleep 3
 
     # Verificar se o frontend iniciou corretamente
-    if ! kill -0 $FRONTEND_PID 2>/dev/null; then
+    if ! kill -0 "$FRONTEND_PID" 2>/dev/null; then
         error "Falha ao iniciar o frontend!"
-        kill $BACKEND_PID 2>/dev/null
+        kill "$BACKEND_PID" 2>/dev/null
         rm -f "$PID_FILE"
         pause
         return 1
@@ -264,7 +267,7 @@ check_system_running() {
     fi
     
     source "$PID_FILE"
-    if [ -n "$BACKEND_PID" ] && kill -0 $BACKEND_PID 2>/dev/null && [ -n "$FRONTEND_PID" ] && kill -0 $FRONTEND_PID 2>/dev/null; then
+    if [ -n "$BACKEND_PID" ] && kill -0 "$BACKEND_PID" 2>/dev/null && [ -n "$FRONTEND_PID" ] && kill -0 "$FRONTEND_PID" 2>/dev/null; then
         return 0
     else
         return 1
@@ -286,7 +289,7 @@ show_system_status() {
     echo ""
     
     # Verificar backend
-    if [ -n "$BACKEND_PID" ] && kill -0 $BACKEND_PID 2>/dev/null; then
+    if [ -n "$BACKEND_PID" ] && kill -0 "$BACKEND_PID" 2>/dev/null; then
         echo -e "${GREEN}✓ Backend (PID: $BACKEND_PID) - Rodando${NC}"
         echo -e "${CYAN}  📍 URL: http://localhost:5000${NC}"
     else
@@ -294,7 +297,7 @@ show_system_status() {
     fi
     
     # Verificar frontend
-    if [ -n "$FRONTEND_PID" ] && kill -0 $FRONTEND_PID 2>/dev/null; then
+    if [ -n "$FRONTEND_PID" ] && kill -0 "$FRONTEND_PID" 2>/dev/null; then
         echo -e "${GREEN}✓ Frontend (PID: $FRONTEND_PID) - Rodando${NC}"
         echo -e "${CYAN}  📍 URL: http://localhost:3000${NC}"
     else
@@ -321,16 +324,16 @@ stop_system() {
     echo -e "${YELLOW}🛑 Parando Sistema Mágico...${NC}"
     
     # Parar backend
-    if [ -n "$BACKEND_PID" ] && kill -0 $BACKEND_PID 2>/dev/null; then
-        kill $BACKEND_PID
+    if [ -n "$BACKEND_PID" ] && kill -0 "$BACKEND_PID" 2>/dev/null; then
+        kill "$BACKEND_PID"
         echo -e "${GREEN}✓ Backend parado (PID: $BACKEND_PID)${NC}"
     else
         echo -e "${ORANGE}⚠ Backend já estava parado${NC}"
     fi
     
     # Parar frontend
-    if [ -n "$FRONTEND_PID" ] && kill -0 $FRONTEND_PID 2>/dev/null; then
-        kill $FRONTEND_PID
+    if [ -n "$FRONTEND_PID" ] && kill -0 "$FRONTEND_PID" 2>/dev/null; then
+        kill "$FRONTEND_PID"
         echo -e "${GREEN}✓ Frontend parado (PID: $FRONTEND_PID)${NC}"
     else
         echo -e "${ORANGE}⚠ Frontend já estava parado${NC}"

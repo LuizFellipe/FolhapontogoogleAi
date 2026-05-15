@@ -7,6 +7,7 @@ interface Profissional {
   nome: string;
   matricula: string;
   cargo: string;
+  carga_horaria?: string | number;
 }
 
 interface Props {
@@ -30,6 +31,7 @@ export const BatchTimesheetModal: React.FC<Props> = ({
 }) => {
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [cargoFilter, setCargoFilter] = useState('TODOS');
+  const [chFilter, setChFilter] = useState('TODAS');
   const [selectedMes, setSelectedMes] = useState(new Date().getMonth());
   const [selectedAno, setSelectedAno] = useState(new Date().getFullYear());
 
@@ -38,20 +40,32 @@ export const BatchTimesheetModal: React.FC<Props> = ({
     if (isOpen) {
       setSelectedIds(new Set());
       setCargoFilter('TODOS');
+      setChFilter('TODAS');
     }
   }, [isOpen]);
 
-  const uniqueCargos = useMemo(
-    () => [...new Set(profissionais.map((p) => p.cargo))].sort(),
-    [profissionais]
-  );
+  const CARGO_FILTERS = [
+    'ANA.POL.PUB.G.E',
+    'PEDAGOGO',
+    'PROFESSOR DE EDUC. BASICA',
+    'TEMP'
+  ];
 
   const filtered = useMemo(
-    () =>
-      cargoFilter === 'TODOS'
-        ? profissionais
-        : profissionais.filter((p) => p.cargo === cargoFilter),
-    [profissionais, cargoFilter]
+    () => {
+      let result = profissionais;
+      
+      if (cargoFilter !== 'TODOS') {
+        result = result.filter((p) => p.cargo && p.cargo.toUpperCase().includes(cargoFilter));
+      }
+
+      if (chFilter !== 'TODAS') {
+        result = result.filter((p) => String(p.carga_horaria || '').includes(chFilter));
+      }
+
+      return result;
+    },
+    [profissionais, cargoFilter, chFilter]
   );
 
   const allFilteredSelected = filtered.length > 0 && filtered.every((p) => selectedIds.has(p.id));
@@ -111,10 +125,23 @@ export const BatchTimesheetModal: React.FC<Props> = ({
               disabled={isGenerating}
               className="px-3 py-2 bg-white border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-stone-200 disabled:opacity-50"
             >
-              <option value="TODOS">Todos os cargos</option>
-              {uniqueCargos.map((c) => (
+              <option value="TODOS">TODOS OS CARGOS</option>
+              {CARGO_FILTERS.map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
+            </select>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-stone-500 uppercase tracking-wider">CH</label>
+            <select
+              value={chFilter}
+              onChange={(e) => setChFilter(e.target.value)}
+              disabled={isGenerating}
+              className="px-3 py-2 bg-white border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-stone-200 disabled:opacity-50"
+            >
+              <option value="TODAS">TODAS</option>
+              <option value="20">20H</option>
+              <option value="40">40H</option>
             </select>
           </div>
           <div className="flex flex-col gap-1">

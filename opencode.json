@@ -1,0 +1,19 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "openrouter": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "OpenRouter",
+      "options": {
+        "baseURL": "https://openrouter.ai/api/v1",
+        "apiKey": "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",
+        "headers": {
+        "HTTP-Referer": "http://localhost",
+        "X-OpenRouter-Title": "OpenCode - Luiz",
+        "X-OpenRouter-Categories": "cli-agent"
+        }
+    }
+    }
+  },
+  "model": "openrouter/deepseek/deepseek-v4-pro"   // ou o modelo que preferir
+}

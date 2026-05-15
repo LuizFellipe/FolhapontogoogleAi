@@ -4,6 +4,24 @@ Este arquivo registra as modificações significativas realizadas nos componente
 
 ---
 
+## [2026-05-15] - Funcionalidade: Filtro de Carga Horária na Geração em Lote
+
+### 🔍 Alterações Realizadas
+
+#### 1. BatchTimesheetModal.tsx — Filtro CH
+- Interface `Profissional` atualizada para suportar `carga_horaria` (vindo do backend).
+- Adicionado estado e dropdown para filtrar a lista de profissionais por `CH` (TODAS, 20H, 40H).
+- O `useMemo` de profissionais filtrados agora verifica `carga_horaria` caso o filtro selecionado seja diferente de 'TODAS'.
+
+### ✅ Arquivos Modificados
+- `src/components/BatchTimesheetModal.tsx`
+- `src/components/README.md`
+
+### 🎯 Objetivo
+Permitir a geração em lote específica por jornada de trabalho (ex: gerar apenas folhas de servidores com CH 20), agilizando a impressão.
+
+---
+
 ## [2026-05-06] - Melhoria: 2º Turno com Traços para Profissionais CH=20
 
 ### 🔍 Alterações Realizadas
