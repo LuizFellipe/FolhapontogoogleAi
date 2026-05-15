@@ -4,6 +4,25 @@ Este arquivo registra as modificações significativas realizadas nos componente
 
 ---
 
+## [2026-05-15] - Funcionalidade: Botão de Cópia Rápida de Padrão Semanal
+
+### 🔍 Alterações Realizadas
+
+#### 1. TimesheetGrid.tsx — Botão Flutuante de Pré-preenchimento (Copiar Semana)
+- Implementada a exibição dinâmica de um botão de cópia na célula de "Dia" ao passar o mouse sobre uma linha que seja um dia útil (SEG a SEX).
+- O botão só aparece se a semana atual estiver completa dentro do mês e se a **semana anterior** também constar integralmente no mesmo mês.
+- Adicionada verificação rigorosa do conteúdo da semana anterior: o botão é exibido apenas se houver algum lançamento diferente de "TRABALHO NORMAL" nos dias úteis da semana passada.
+- Lógica inteligente de cópia respeita a carga horária (CH): para profissionais de 40h, copia o padrão de ambos os turnos; para 20h, copia apenas o Turno 1.
+
+### ✅ Arquivos Modificados
+- `src/components/TimesheetGrid.tsx`
+- `src/components/README.md`
+
+### 🎯 Objetivo
+Acelerar o preenchimento da folha de ponto, permitindo aos usuários repetirem facilmente padrões de lançamentos especiais ocorridos na semana anterior com apenas um clique.
+
+---
+
 ## [2026-05-15] - Funcionalidade: Filtro de Carga Horária na Geração em Lote
 
 ### 🔍 Alterações Realizadas

@@ -15,7 +15,7 @@ Esta pasta contém todos os componentes React modulares utilizados para construi
     -   Cada relatório tem seu próprio estado e `useEffect` independente — fetch só ocorre quando o relatório está ativo. Botão "Imprimir" chama `window.print()`.
 -   **`HolidayModal.tsx`**: Modal para lançar feriados. Permite inserir Dia, Mês, Ano e Nome do feriado, aplicar a alteração nas entradas da folha selecionada e reverter a ação, armazenando o histórico de feriados no banco de dados (MySQL) via API.
 -   **`SummaryForm.tsx`**: Gerencia a grade de preenchimento da **Página 2** (Resumo da Frequência). Permite adicionar códigos de operação (Inclusão, Alteração, Exclusão) e códigos de ocorrência.
--   **`TimesheetGrid.tsx`**: Grade principal da **Página 1** para lançamentos diários (Trabalho Normal, Férias, Atestado, etc.). Suporta lançamentos por **dois turnos** (Turno 1 e Turno 2), com o segundo turno habilitado conforme a carga horária.
+-   **`TimesheetGrid.tsx`**: Grade principal da **Página 1** para lançamentos diários (Trabalho Normal, Férias, Atestado, etc.). Suporta lançamentos por **dois turnos** (Turno 1 e Turno 2), com o segundo turno habilitado conforme a carga horária. Possui funcionalidade de copiar o padrão de preenchimento de semanas anteriores (botão "Copiar Semana" flutuante exibido ao passar o mouse sobre os dias úteis).
 
 ### 📄 Visualizações para Impressão (Preview)
 

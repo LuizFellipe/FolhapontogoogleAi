@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { DailyEntry, ENTRY_TYPES } from '../types';
 
 interface Props {
@@ -10,6 +10,8 @@ interface Props {
 }
 
 export const TimesheetGrid: React.FC<Props> = ({ entries, month, year, onChange, employeeCh }) => {
+  const [hoveredDay, setHoveredDay] = useState<number | null>(null);
+
   const DAY_ABBR = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB'];
 
   const isWeekend = (day: number) => {
@@ -28,6 +30,79 @@ export const TimesheetGrid: React.FC<Props> = ({ entries, month, year, onChange,
     return ch.includes('40');
   };
 
+  const getCopyPatternState = () => {
+    if (hoveredDay === null) return null;
+    
+    const date = new Date(year, month, hoveredDay);
+    const dayOfWeek = date.getDay();
+    
+    // Final de semana -> sem botão
+    if (dayOfWeek === 0 || dayOfWeek === 6) return null;
+    
+    const mondayDay = hoveredDay - dayOfWeek + 1;
+    const fridayDay = mondayDay + 4;
+    
+    // Semana atual inteiramente no mês?
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    if (mondayDay < 1 || fridayDay > daysInMonth) return null;
+    
+    const prevMondayDay = mondayDay - 7;
+    const prevFridayDay = prevMondayDay + 4;
+    
+    // Semana anterior inteiramente no mesmo mês?
+    if (prevMondayDay < 1) return null;
+    
+    const secondTurnEnabled = isSecondTurnEnabled();
+    let hasSpecialEntry = false;
+    
+    // Verifica se semana anterior tem todos os dias úteis e se possui algo != TRABALHO
+    for (let i = 0; i < 5; i++) {
+      const sourceDay = prevMondayDay + i;
+      const entry = entries.find(e => e.day === sourceDay);
+      if (!entry) return null; 
+      
+      if (entry.type !== 'TRABALHO') hasSpecialEntry = true;
+      if (secondTurnEnabled && entry.type_turno2 && entry.type_turno2 !== 'TRABALHO') hasSpecialEntry = true;
+    }
+    
+    if (!hasSpecialEntry) return null;
+    
+    // Verifica se a semana atual também possui todos os dias na grade (para poder sobrescrever)
+    for (let i = 0; i < 5; i++) {
+      const targetDay = mondayDay + i;
+      const entry = entries.find(e => e.day === targetDay);
+      if (!entry) return null;
+    }
+
+    return { mondayDay, prevMondayDay };
+  };
+
+  const handleCopyWeek = (mondayDay: number, prevMondayDay: number) => {
+    const newEntries = [...entries];
+    const secondTurnEnabled = isSecondTurnEnabled();
+    
+    for (let i = 0; i < 5; i++) {
+      const sourceDay = prevMondayDay + i;
+      const targetDay = mondayDay + i;
+      
+      const sourceEntry = entries.find(e => e.day === sourceDay);
+      const targetIndex = newEntries.findIndex(e => e.day === targetDay);
+      
+      if (sourceEntry && targetIndex !== -1) {
+        newEntries[targetIndex] = {
+          ...newEntries[targetIndex],
+          type: sourceEntry.type,
+          ...(secondTurnEnabled ? { type_turno2: sourceEntry.type_turno2 } : {})
+        };
+      }
+    }
+    
+    onChange(newEntries);
+    setHoveredDay(null);
+  };
+
+  const copyState = getCopyPatternState();
+
   const handleEntryChange = (day: number, field: keyof DailyEntry, value: string) => {
     const newEntries = entries.map((entry) => {
       if (entry.day === day) {
@@ -41,7 +116,10 @@ export const TimesheetGrid: React.FC<Props> = ({ entries, month, year, onChange,
   const sortedEntryTypes = [...ENTRY_TYPES].sort((a, b) => a.label.localeCompare(b.label, 'pt-BR'));
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-stone-200 overflow-x-auto">
+    <div 
+      className="bg-white p-6 rounded-2xl shadow-sm border border-stone-200 overflow-x-auto relative"
+      onMouseLeave={() => setHoveredDay(null)}
+    >
       <div className="flex items-center justify-between border-b border-stone-100 pb-4 mb-6">
         <h2 className="text-lg font-semibold text-stone-800 tracking-tight">Lançamentos Diários</h2>
       </div>
@@ -63,12 +141,23 @@ export const TimesheetGrid: React.FC<Props> = ({ entries, month, year, onChange,
               return (
                 <tr 
                   key={entry.day} 
-                  className={`${weekend ? 'bg-amber-50/40' : 'hover:bg-stone-50/60'} transition-colors group`}
+                  className={`${weekend ? 'bg-amber-50/40' : 'hover:bg-stone-50/60'} transition-colors group relative`}
+                  onMouseEnter={() => setHoveredDay(entry.day)}
                 >
-                  <td className={`px-4 py-2 font-mono font-medium ${weekend ? 'text-amber-700/60' : 'text-stone-500'}`}>
-                    <div className="flex items-center gap-2">
+                  <td className={`px-4 py-2 font-mono font-medium ${weekend ? 'text-amber-700/60' : 'text-stone-500'} relative`}>
+                    <div className="flex items-center gap-2 relative">
                       <span className="text-[10px] uppercase tracking-wider">{getDayOfWeek(entry.day)}</span>
                       <span>{String(entry.day).padStart(2, '0')}</span>
+                      {hoveredDay === entry.day && copyState && (
+                        <button
+                          onClick={() => handleCopyWeek(copyState.mondayDay, copyState.prevMondayDay)}
+                          className="absolute left-full ml-4 bg-blue-600 text-white rounded p-1.5 shadow-md hover:bg-blue-700 hover:scale-105 transition-all flex items-center gap-1 z-20 whitespace-nowrap cursor-pointer"
+                          title="Copiar padrão da semana anterior"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
+                          <span className="text-[10px] font-semibold pr-1">Copiar</span>
+                        </button>
+                      )}
                     </div>
                   </td>
                   <td className="p-1.5">
