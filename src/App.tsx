@@ -352,7 +352,7 @@ export default function App() {
   };
 
   // Geração em lote: processa cada profissional selecionado e abre impressão
-  const handleBatchGenerate = async (selectedIds: number[], mes: number, ano: number) => {
+  const handleBatchGenerate = async (selectedIds: number[], mes: number, ano: number, selectedRecessos: Recesso[] = []) => {
     setIsGeneratingBatch(true);
     const results: TimesheetData[] = [];
 
@@ -372,6 +372,25 @@ export default function App() {
           const isCh20 = String(prof?.carga_horaria || '').includes('20');
           if (isCh20) {
             entries = entries.map(e => ({ ...e, type_turno2: 'TRABALHO' as EntryType, observation_turno2: '' }));
+          }
+          for (const recesso of selectedRecessos) {
+            const inicio = new Date(recesso.yearInicio, recesso.monthInicio, recesso.dayInicio);
+            const fim = new Date(recesso.yearFim, recesso.monthFim, recesso.dayFim);
+            for (let d = new Date(inicio); d <= fim; d.setDate(d.getDate() + 1)) {
+              if (d.getMonth() === mes && d.getFullYear() === ano) {
+                const dia = d.getDate();
+                const idx = entries.findIndex(e => e.day === dia);
+                if (idx !== -1) {
+                  entries[idx] = {
+                    ...entries[idx],
+                    type: 'RECESSO' as EntryType,
+                    type_turno2: isCh20 ? entries[idx].type_turno2 : 'RECESSO' as EntryType,
+                    observation: recesso.label,
+                    observation_turno2: isCh20 ? entries[idx].observation_turno2 : recesso.label,
+                  };
+                }
+              }
+            }
           }
           const hasPattern = entries.some(e => e.type !== 'TRABALHO' || e.type_turno2 !== 'TRABALHO');
           const obsText = "CURSO FORMACAO CONTINUADA DE ACORDO MEMORANDO/CIRC 59/2025 - SEE/SUBEB DE 18/02/2025 - SEI 00080.00049147/2025-76";
