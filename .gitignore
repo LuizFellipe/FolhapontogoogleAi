@@ -35,3 +35,8 @@ npm-debug.log*
 Thumbs.db
 .aider*
 /*.tar.gz
+
+#meus arquivos locais
+backup_db.py
+folha_manager.sh
+start_backend.sh

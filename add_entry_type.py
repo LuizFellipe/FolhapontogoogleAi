@@ -45,7 +45,7 @@ def read_current_types():
     text = TYPES_TS.read_text()
 
     # Extrai valores do EntryType union
-    match = re.search(r"export type EntryType = (.+?);", text, re.DOTALL)
+    match = re.search(r"export type EntryType\s*=\s*(.+?);", text, re.DOTALL)
     if not match:
         sys.exit("Erro: EntryType não encontrado em types.ts")
     type_values = re.findall(r"'([^']+)'", match.group(1))
@@ -56,15 +56,18 @@ def read_current_types():
 
 def update_types_ts(value: str, label: str, type_values: list, text: str):
     # Adiciona ao EntryType union
-    old_union = re.search(r"(export type EntryType = .+?;)", text, re.DOTALL).group(1)
+    old_union = re.search(r"(export type EntryType\s*=\s*.+?;)", text, re.DOTALL).group(1)
     new_types = type_values + [value]
     new_union = "export type EntryType = " + " | ".join(f"'{v}'" for v in new_types) + ";"
     text = text.replace(old_union, new_union)
 
-    # Adiciona ao ENTRY_TYPES: garante vírgula na última entrada existente e insere o novo item
-    new_entry = f"  {{ value: '{value}', label: '{label}', code: null }}"
-    # Adiciona vírgula na última linha que termina com '}' sem vírgula, depois insere o novo item antes de '];'
-    text = re.sub(r"(\})\s*\n(\];)$", f"\\1,\n{new_entry}\n\\2", text, flags=re.MULTILINE)
+    # Adiciona ao ENTRY_TYPES inserindo antes do '];' final
+    idx = text.rfind('\n];')
+    if idx != -1:
+        new_entry_line = f"\n  {{ value: '{value}', label: '{label}', code: null }},"
+        text = text[:idx] + new_entry_line + text[idx:]
+    else:
+        print("  [AVISO] Não foi possível adicionar ao ENTRY_TYPES automaticamente")
 
     TYPES_TS.write_text(text)
     print(f"  [OK] src/types.ts atualizado")
@@ -138,10 +141,37 @@ ALTER TABLE lancamentos_diarios
   MODIFY COLUMN tipo_turno2 ENUM(
     {enum_vals}
   ) NULL;
+
+INSERT IGNORE INTO `tipos_lancamento` (`valor`, `label`, `codigo`)
+VALUES ('{value}', '{label}', NULL);
 """
     filename.write_text(sql)
     print(f"  [OK] Migration criada: database/migrations/{filename.name}")
     return filename
+
+# --- Atualização de tipos_lancamento no full_setup.sql ---
+
+def update_tipos_lancamento_in_setup(value: str, label: str):
+    text = FULL_SETUP_SQL.read_text()
+    # Já existe?
+    if f"'{value}'" in text and 'tipos_lancamento' in text[max(0, text.find(f"'{value}'")-100):text.find(f"'{value}'")+20]:
+        print("  [SKIP] tipos_lancamento já contém o valor em full_setup.sql")
+        return
+    new_line = (
+        f"\nINSERT IGNORE INTO `tipos_lancamento` (`valor`, `label`, `codigo`)"
+        f" VALUES ('{value}', '{label}', NULL);\n"
+    )
+    # Insere logo após o fechamento do bloco INSERT de tipos_lancamento (linha com 'TRACEJADO')
+    marker = "('TRACEJADO'"
+    idx = text.find(marker)
+    if idx != -1:
+        end = text.index(';', idx) + 1
+        text = text[:end] + new_line + text[end:]
+        FULL_SETUP_SQL.write_text(text)
+        print("  [OK] database/full_setup.sql atualizado (tipos_lancamento)")
+    else:
+        print("  [AVISO] Não foi possível localizar bloco tipos_lancamento em full_setup.sql")
+
 
 # --- Execução no banco ---
 
@@ -214,10 +244,11 @@ def main():
     # 1. types.ts
     update_types_ts(value, label, type_values, ts_text)
 
-    # 2. full_setup.sql
+    # 2. full_setup.sql (ENUM + tipos_lancamento)
     text = FULL_SETUP_SQL.read_text()
     FULL_SETUP_SQL.write_text(add_to_enum_full_setup(text, value))
-    print("  [OK] database/full_setup.sql atualizado")
+    print("  [OK] database/full_setup.sql atualizado (ENUM)")
+    update_tipos_lancamento_in_setup(value, label)
 
     # 3. 001_create_tables.sql
     text = CREATE_TABLES_SQL.read_text()

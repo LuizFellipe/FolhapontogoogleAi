@@ -1,5 +1,24 @@
 # Memória de Modificações do Projeto
 
+## [2026-06-09] Correção: add_entry_type.py — Falha ao adicionar novo tipo de lançamento
+
+### Arquivos Modificados:
+- `add_entry_type.py`
+
+### Problema:
+Script terminava com `"Erro: EntryType não encontrado em types.ts"` sempre que executado via opção 4 do `folha_manager.sh`. Dois bugs independentes:
+
+1. **Regex não casava com union multi-linha** — `src/types.ts` define `EntryType` com `=\n  | 'VALOR'` (sem espaço entre `=` e a quebra de linha), mas o padrão buscava `= ` (espaço literal). Linhas 48 e 59 corrigidas de `r"export type EntryType = (.+?);"` para `r"export type EntryType\s*=\s*(.+?);"`.
+
+2. **Regex não casava com final do array ENTRY_TYPES** — O último item do array já possuía vírgula trailing (`},`), portanto o padrão `(\})\s*\n(\];)$` nunca encontrava `}` imediatamente antes de `];`. Linha 67 substituída por `text.rfind('\n];')` para inserção direta antes do fechamento do array.
+
+### Alterações:
+- `read_current_types` (linha 48): `= (.+?);` → `\s*=\s*(.+?);`
+- `update_types_ts` (linha 59): mesma correção na busca do `old_union`
+- `update_types_ts` (linhas 64-70): `re.sub` de ENTRY_TYPES substituído por inserção via `rfind('\n];')`
+
+---
+
 ## [2026-05-03] Melhoria: Impressão Isolada e Limpeza de Seleção em Lote
 
 ### Arquivos Modificados/Criados:
