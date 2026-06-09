@@ -1,5 +1,21 @@
 # Memória de Modificação - Backend (backend/)
 
+## [2026-06-09] Endpoints REST para Recessos
+
+### Arquivos Modificados:
+- **app.py**: Adicionados 3 endpoints para a tabela `recessos`.
+
+### Alterações:
+- **Novos Endpoints**:
+  - `GET /api/recessos`: Lista todos os recessos; parâmetro opcional `ano` filtra por `ano_inicio = ano OR ano_fim = ano`.
+  - `POST /api/recessos`: Insere novo recesso (`dia_inicio`, `mes_inicio`, `ano_inicio`, `dia_fim`, `mes_fim`, `ano_fim`, `label`). Retorna o `id` gerado.
+  - `DELETE /api/recessos/<int:id>`: Remove um recesso pelo ID.
+
+### Objetivo:
+Suportar o CRUD de recessos via API, permitindo que o `HolidayModal` (aba Recessos) persista e recupere períodos de recesso do banco de dados.
+
+---
+
 ## [2026-05-03] Persistência de Feriados no Banco de Dados
 
 ### Arquivos Modificados:

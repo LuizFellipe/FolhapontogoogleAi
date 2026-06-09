@@ -37,17 +37,22 @@ O `apiService` encapsula toda a lógica de persistência de dados:
     -   `createFeriado()`: Cadastra novo feriado
     -   `deleteFeriado()`: Remove feriado
 
-5.  **Relatórios**
+5.  **Gestão de Recessos**
+    -   `getRecessos(ano?)`: Lista recessos (opcionalmente por ano)
+    -   `createRecesso(data)`: Cadastra novo recesso com data início e fim
+    -   `deleteRecesso(id)`: Remove recesso
+
+6.  **Relatórios**
     -   `getLancamentosRelatorio()`: Relatório de lançamentos por período
     -   `getAdicionaNoturnoRelatorio()`: Relatório de adicional noturno
 
-6.  **Helpers de Conversão**
+7.  **Helpers de Conversão**
     -   `convertEmployeeToProfissional()`: Mapeia objetos do frontend para o formato aceito pelo banco de dados (MySQL).
     -   `convertProfissionalToEmployee()`: Converte do banco para o estado do React.
     -   `saveCompleteTimesheet()`: Orquestrador que agrupa a criação/atualização de profissional, folha, lançamentos e resumo em uma única chamada lógica para o usuário.
     -   `loadCompleteTimesheet()`: Carrega folha completa com todos os dados associados.
 
-7.  **Saúde da API**
+8.  **Saúde da API**
     -   `healthCheck()`: Verifica status da API e conexão com banco de dados
 
 ## Configuração

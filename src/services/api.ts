@@ -137,6 +137,25 @@ class ApiService {
     });
   }
 
+  // Recessos
+  async getRecessos(ano?: number) {
+    const url = ano ? `/recessos?ano=${ano}` : '/recessos';
+    return this.request<any[]>(url);
+  }
+
+  async createRecesso(data: any) {
+    return this.request<any>('/recessos', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteRecesso(id: number) {
+    return this.request<any>(`/recessos/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
   // Relatórios — view vw_folhas_lancamento
   async getLancamentosRelatorio(mes: number, ano: number) {
     return this.request<any[]>(`/relatorio/lancamentos?mes=${mes}&ano=${ano}`);

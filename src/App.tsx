@@ -6,7 +6,7 @@ import { TimesheetSummaryPreview } from './components/TimesheetSummaryPreview';
 import { SummaryForm } from './components/SummaryForm';
 import { EmployeeNavigator } from './components/EmployeeNavigator';
 import { BatchTimesheetModal } from './components/BatchTimesheetModal';
-import { HolidayModal, Holiday } from './components/HolidayModal';
+import { HolidayModal, Holiday, Recesso } from './components/HolidayModal';
 import { ReportsModal } from './components/ReportsModal';
 import { TimesheetData, EmployeeData, DailyEntry, EntryType, SummaryEntry, MONTHS, ENTRY_TYPES } from './types';
 import { Printer, FileText, Settings, Download, Save, Database } from 'lucide-react';
@@ -561,6 +561,118 @@ export default function App() {
     }
   };
 
+  // Recessos: Aplicar range na folha atual
+  const handleApplyRecesso = async (recesso: Recesso) => {
+    const inicio = new Date(recesso.yearInicio, recesso.monthInicio, recesso.dayInicio);
+    const fim = new Date(recesso.yearFim, recesso.monthFim, recesso.dayFim);
+    const isCh20 = String(employee.ch || '').includes('20');
+
+    const newEntries = [...entries];
+    let changed = false;
+
+    for (let d = new Date(inicio); d <= fim; d.setDate(d.getDate() + 1)) {
+      if (d.getMonth() === month && d.getFullYear() === year) {
+        const dia = d.getDate();
+        const idx = newEntries.findIndex(e => e.day === dia);
+        if (idx !== -1) {
+          newEntries[idx] = {
+            ...newEntries[idx],
+            type: 'RECESSO',
+            type_turno2: isCh20 ? newEntries[idx].type_turno2 : 'RECESSO',
+            observation: recesso.label,
+            observation_turno2: isCh20 ? newEntries[idx].observation_turno2 : recesso.label
+          };
+          changed = true;
+        }
+      }
+    }
+
+    if (!changed) {
+      alert('O recesso selecionado não possui dias no mês/ano da folha atual.');
+      return;
+    }
+
+    handleEntriesChange(newEntries);
+
+    if (employee.name) {
+      setSaveStatus('saving');
+      try {
+        const dataToSave: TimesheetData = {
+          month,
+          year,
+          employee,
+          entries: newEntries,
+          summaryEntries: computeSummaryFromEntries(newEntries, employee.ch, dynamicTypes),
+          observations
+        };
+        const result = await apiService.saveCompleteTimesheet(dataToSave);
+        if (result.success) {
+          if (result.folhaPontoId) setCurrentTimesheetId(result.folhaPontoId);
+          setSaveStatus('saved');
+          setTimeout(() => setSaveStatus('idle'), 3000);
+        }
+      } catch (error) {
+        console.error('Erro ao auto-salvar folha de ponto após aplicar recesso:', error);
+        setSaveStatus('error');
+        setTimeout(() => setSaveStatus('idle'), 3000);
+      }
+    }
+  };
+
+  // Recessos: Reverter range na folha atual
+  const handleRemoveRecessoEffect = async (recesso: Recesso) => {
+    const inicio = new Date(recesso.yearInicio, recesso.monthInicio, recesso.dayInicio);
+    const fim = new Date(recesso.yearFim, recesso.monthFim, recesso.dayFim);
+
+    const newEntries = [...entries];
+    let changed = false;
+
+    for (let d = new Date(inicio); d <= fim; d.setDate(d.getDate() + 1)) {
+      if (d.getMonth() === month && d.getFullYear() === year) {
+        const dia = d.getDate();
+        const idx = newEntries.findIndex(e => e.day === dia);
+        if (idx !== -1 && newEntries[idx].type === 'RECESSO') {
+          newEntries[idx] = {
+            ...newEntries[idx],
+            type: 'TRABALHO',
+            type_turno2: 'TRABALHO',
+            observation: '',
+            observation_turno2: ''
+          };
+          changed = true;
+        }
+      }
+    }
+
+    if (!changed) return;
+
+    handleEntriesChange(newEntries);
+
+    if (employee.name) {
+      setSaveStatus('saving');
+      try {
+        const dataToSave: TimesheetData = {
+          month,
+          year,
+          employee,
+          entries: newEntries,
+          summaryEntries: computeSummaryFromEntries(newEntries, employee.ch, dynamicTypes),
+          observations
+        };
+        const result = await apiService.saveCompleteTimesheet(dataToSave);
+        if (result.success) {
+          if (result.folhaPontoId) setCurrentTimesheetId(result.folhaPontoId);
+          setSaveStatus('saved');
+          setTimeout(() => setSaveStatus('idle'), 3000);
+        }
+      } catch (error) {
+        console.error('Erro ao auto-salvar folha de ponto após remover recesso:', error);
+        setSaveStatus('error');
+        setTimeout(() => setSaveStatus('idle'), 3000);
+      }
+    }
+  };
+
   // Criar novo profissional
   const handleNewProfissional = () => {
     // Salvar folha atual antes de criar novo
@@ -949,6 +1061,8 @@ export default function App() {
         onClose={() => setShowHolidayModal(false)}
         onApply={handleApplyHoliday}
         onRemoveEffect={handleRemoveHolidayEffect}
+        onApplyRecesso={handleApplyRecesso}
+        onRemoveRecessoEffect={handleRemoveRecessoEffect}
         currentMonth={month}
         currentYear={year}
       />

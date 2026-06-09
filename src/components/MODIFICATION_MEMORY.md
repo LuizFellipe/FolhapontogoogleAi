@@ -4,6 +4,30 @@ Este arquivo registra as modificações significativas realizadas nos componente
 
 ---
 
+## [2026-06-09] - Funcionalidade: Aba "Recessos" no HolidayModal
+
+### 🔍 Alterações Realizadas
+
+#### 1. HolidayModal.tsx — Sistema de abas + nova interface Recesso
+- Modal renomeado internamente para "Datas Especiais" e dividido em duas abas (`activeTab: 'feriados' | 'recessos'`).
+- **Aba Feriados**: conteúdo e comportamento originais preservados sem alteração.
+- **Aba Recessos**: nova funcionalidade completa:
+  - Formulário com campos de Data Início (dia/mês/ano), Data Fim (dia/mês/ano) e Label.
+  - Lista de recessos do ano atual com botões **Aplicar** (emerald), **Reverter** (amber) e **Excluir** (red) — mesmo padrão visual dos feriados.
+  - `loadRecessos()` busca dados via `apiService.getRecessos(currentYear)`.
+- Nova interface exportada: `Recesso { id, dayInicio, monthInicio, yearInicio, dayFim, monthFim, yearFim, label }`.
+- Novas props: `onApplyRecesso: (r: Recesso) => void` e `onRemoveRecessoEffect: (r: Recesso) => void`.
+- Ícone `Coffee` (lucide-react) usado na aba Recessos.
+
+### ✅ Arquivos Modificados
+- `src/components/HolidayModal.tsx`
+- `src/components/README.md`
+
+### 🎯 Objetivo
+Permitir o cadastro e aplicação de períodos de recesso (data início + fim) diretamente no modal de datas especiais, marcando em lote todos os dias do range na folha atual como tipo `RECESSO`.
+
+---
+
 ## [2026-05-15] - Funcionalidade: Botão de Cópia Rápida de Padrão Semanal
 
 ### 🔍 Alterações Realizadas

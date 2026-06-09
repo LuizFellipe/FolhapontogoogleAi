@@ -2,6 +2,14 @@
 
 ## Registro de Alterações
 
+### 2026-06-09 - Adição de Métodos para Recessos
+- **Motivo**: Nova funcionalidade de gestão de recessos (períodos com data início + fim)
+- **Ações**:
+  - Adicionado `getRecessos(ano?)` em `api.ts` — `GET /api/recessos?ano=<ano>`
+  - Adicionado `createRecesso(data)` em `api.ts` — `POST /api/recessos`
+  - Adicionado `deleteRecesso(id)` em `api.ts` — `DELETE /api/recessos/<id>`
+  - Mesma estrutura dos métodos de feriados já existentes
+
 ### 2026-05-04 - Atualização Completa da Documentação
 - **Motivo**: Documentação desatualizada em relação à implementação atual
 - **Ações**: 

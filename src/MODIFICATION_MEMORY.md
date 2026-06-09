@@ -1,5 +1,38 @@
 # Memória de Modificação - Frontend (src/)
 
+## [2026-06-09] Funcionalidade: Aplicação de Recessos na Folha de Ponto
+
+### Arquivos Modificados:
+- **App.tsx**
+
+### Alterações Detalhadas:
+
+#### 1. Import de `Recesso`
+- Adicionado à importação existente de `HolidayModal`: `import { HolidayModal, Holiday, Recesso } from './components/HolidayModal'`.
+
+#### 2. `handleApplyRecesso(recesso: Recesso)` — novo handler
+- Itera de `dia_inicio/mes_inicio/ano_inicio` até `dia_fim/mes_fim/ano_fim` usando `Date` JS.
+- Para cada dia do range que pertença ao `month/year` atual:
+  - Define `type = 'RECESSO'`.
+  - CH=40: define `type_turno2 = 'RECESSO'` e `observation_turno2 = recesso.label`.
+  - CH=20: mantém `type_turno2` e `observation_turno2` intocados.
+  - Define `observation = recesso.label`.
+- Chama `handleEntriesChange(newEntries)` + auto-save (mesmo padrão de `handleApplyHoliday`).
+- Exibe `alert` se nenhum dia do range pertencer ao mês/ano atual.
+
+#### 3. `handleRemoveRecessoEffect(recesso: Recesso)` — novo handler
+- Mesmo percurso de datas que `handleApplyRecesso`.
+- Reverte apenas os dias cujo `type === 'RECESSO'` para `type='TRABALHO'`, `type_turno2='TRABALHO'`, `observation=''`, `observation_turno2=''`.
+- Chama `handleEntriesChange` + auto-save.
+
+#### 4. `<HolidayModal>` — novas props
+- `onApplyRecesso={handleApplyRecesso}` e `onRemoveRecessoEffect={handleRemoveRecessoEffect}` passados ao componente.
+
+### 🎯 Objetivo
+Integrar a lógica de aplicação/reversão de recessos ao App.tsx, permitindo marcar em lote dias de um período como `RECESSO` com auto-save imediato, seguindo o mesmo padrão já estabelecido para feriados.
+
+---
+
 ## [2026-05-03] Funcionalidade: Modal de Relatórios Gerenciais (ReportsModal)
 
 ### Arquivos Modificados/Criados:

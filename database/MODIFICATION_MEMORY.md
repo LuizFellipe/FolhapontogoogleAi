@@ -1,5 +1,21 @@
 # Memória de Modificação - Database (database/)
 
+## [2026-06-09] Criação da Tabela de Recessos (Migration 012)
+
+### Arquivos Modificados/Criados:
+- **migrations/012_create_recessos_table.sql**: Nova migration criada e aplicada
+
+### Alterações:
+#### 1. Nova tabela `recessos`
+- Criada com colunas `id INT PK AUTO_INCREMENT`, `dia_inicio INT`, `mes_inicio INT`, `ano_inicio INT`, `dia_fim INT`, `mes_fim INT`, `ano_fim INT`, `label VARCHAR(255)` e `criado_em TIMESTAMP`.
+- Sem restrição de unicidade — permite recessos sobrepostos ou que cruzem meses.
+- Diferente de `feriados` (ponto único), um recesso representa um intervalo de datas.
+
+### Objetivo:
+Persistir períodos de recesso com data de início e fim para reutilização entre folhas. O modal `HolidayModal` aplica o tipo `RECESSO` a todos os dias do range que pertencem ao mês/ano da folha aberta.
+
+---
+
 ## [2026-05-03] Criação da Tabela de Feriados (Migration 011)
 
 ### Arquivos Modificados/Criados:

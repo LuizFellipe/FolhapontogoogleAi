@@ -49,6 +49,15 @@ Adiciona `tipo_turno2` e `observacao_turno2` à tabela `lancamentos_diarios` par
 Adiciona o valor `'ABONO DE PONTO ART 151 LEI'` ao ENUM das colunas `tipo` e `tipo_turno2` da tabela `lancamentos_diarios`.
 > **Nota:** Aplica-se apenas a bancos criados antes de 2026-04-22. Bancos novos já inicializam com o valor incluído no `001_create_tables.sql` e `full_setup.sql`.
 
+### `010_refactor_tipos_lancamento.sql`
+Refatoração completa: converte `tipo`/`tipo_turno2` de ENUM para `VARCHAR(80)` e cria a tabela lookup `tipos_lancamento` com 21 tipos oficiais e seus códigos.
+
+### `011_create_feriados_table.sql`
+Cria a tabela `feriados` (`id`, `dia`, `mes`, `ano`, `label`, `criado_em`) com `UNIQUE KEY (dia, mes, ano)` para evitar duplicatas.
+
+### `012_create_recessos_table.sql`
+Cria a tabela `recessos` (`id`, `dia_inicio`, `mes_inicio`, `ano_inicio`, `dia_fim`, `mes_fim`, `ano_fim`, `label`, `criado_em`) para armazenar períodos de recesso com data de início e fim.
+
 ## Como Adicionar Novos Tipos de Lançamento
 
 Use o script interativo na raiz do projeto — ele atualiza automaticamente `types.ts`, os SQLs e aplica a migration no banco:

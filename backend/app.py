@@ -448,6 +448,61 @@ def delete_feriado(id):
         return jsonify({'message': 'Feriado excluído com sucesso'})
     return jsonify({'error': 'Erro ao excluir feriado'}), 500
 
+# Rotas para Recessos
+@app.route('/api/recessos', methods=['GET'])
+def get_recessos():
+    """Lista todos os recessos, opcionalmente filtrados por ano"""
+    ano = request.args.get('ano')
+    query = "SELECT * FROM recessos"
+    params = []
+
+    if ano:
+        query += " WHERE ano_inicio = %s OR ano_fim = %s"
+        params.extend([ano, ano])
+
+    query += " ORDER BY ano_inicio DESC, mes_inicio, dia_inicio"
+
+    recessos = execute_query(query, params)
+    return jsonify(recessos or [])
+
+@app.route('/api/recessos', methods=['POST'])
+def create_recesso():
+    """Cria um novo recesso"""
+    data = request.get_json()
+
+    query = """
+    INSERT INTO recessos (dia_inicio, mes_inicio, ano_inicio, dia_fim, mes_fim, ano_fim, label)
+    VALUES (%s, %s, %s, %s, %s, %s, %s)
+    """
+
+    params = (
+        data.get('dia_inicio'),
+        data.get('mes_inicio'),
+        data.get('ano_inicio'),
+        data.get('dia_fim'),
+        data.get('mes_fim'),
+        data.get('ano_fim'),
+        data.get('label')
+    )
+
+    try:
+        result = execute_query(query, params, fetch=False, return_lastrowid=True)
+        if result:
+            return jsonify({'id': result, 'message': 'Recesso criado com sucesso'}), 201
+        return jsonify({'error': 'Erro ao criar recesso'}), 500
+    except Exception as e:
+        return jsonify({'error': f'Erro ao criar recesso: {e}'}), 500
+
+@app.route('/api/recessos/<int:id>', methods=['DELETE'])
+def delete_recesso(id):
+    """Exclui um recesso"""
+    query = "DELETE FROM recessos WHERE id = %s"
+    result = execute_query(query, (id,), fetch=False)
+
+    if result:
+        return jsonify({'message': 'Recesso excluído com sucesso'})
+    return jsonify({'error': 'Erro ao excluir recesso'}), 500
+
 # Rota de Relatório — consulta view vw_adicional_noturno
 @app.route('/api/relatorio/adicional-noturno', methods=['GET'])
 def get_relatorio_adicional_noturno():

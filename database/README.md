@@ -17,6 +17,7 @@ O banco de dados `folhaponto_db` utiliza um modelo estruturado para representar 
 4.  **`tipos_lancamento`**: Tabela lookup com todos os tipos de lançamento válidos (`valor`, `label`, `codigo`). Fonte de verdade para os tipos — sempre consultar esta tabela ao adicionar novos tipos.
 5.  **`resumo_folha`**: Contém as entradas do "Resumo de Frequência" (Página 2), mapeando códigos de operação (I/A/E), códigos de ocorrência e períodos.
 6.  **`feriados`**: Tabela dedicada para gestão de feriados. Armazena o `dia`, `mes`, `ano` e um `label` (ex: FERIADO - NATAL), garantindo a persistência global para fácil reutilização sem precisar digitar nomes manualmente todas as vezes.
+7.  **`recessos`**: Armazena períodos de recesso com data de início (`dia_inicio`, `mes_inicio`, `ano_inicio`) e fim (`dia_fim`, `mes_fim`, `ano_fim`) e um `label`. Sem unicidade forçada — um recesso pode cobrir múltiplos meses. Ao aplicar, todos os dias do range que pertencem ao mês/ano da folha atual são marcados como tipo `RECESSO`.
 
 ## Arquivo de Inicialização Docker
 
