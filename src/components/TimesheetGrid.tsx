@@ -7,9 +7,10 @@ interface Props {
   year: number;
   onChange: (entries: DailyEntry[]) => void;
   employeeCh: string; // carga horária para controle do segundo turno
+  entryTypes?: { value: string; label: string; code: string | null }[];
 }
 
-export const TimesheetGrid: React.FC<Props> = ({ entries, month, year, onChange, employeeCh }) => {
+export const TimesheetGrid: React.FC<Props> = ({ entries, month, year, onChange, employeeCh, entryTypes = ENTRY_TYPES }) => {
   const [hoveredDay, setHoveredDay] = useState<number | null>(null);
 
   const DAY_ABBR = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB'];
@@ -113,7 +114,7 @@ export const TimesheetGrid: React.FC<Props> = ({ entries, month, year, onChange,
     onChange(newEntries);
   };
 
-  const sortedEntryTypes = [...ENTRY_TYPES].sort((a, b) => a.label.localeCompare(b.label, 'pt-BR'));
+  const sortedEntryTypes = [...entryTypes].sort((a, b) => a.label.localeCompare(b.label, 'pt-BR'));
 
   return (
     <div 

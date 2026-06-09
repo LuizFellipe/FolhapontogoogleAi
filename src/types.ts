@@ -59,7 +59,7 @@ export const ENTRY_TYPES: { value: EntryType; label: string; code: string | null
   { value: 'ABONO DE PONTO ART 151 LEI',  label: 'ABONO DE PONTO ART 151 LEI COMP 840/2011',    code: '00219' },
   { value: 'CPIP',                        label: 'CPIP',                                         code: null    },
   { value: 'CURSO',                       label: 'CURSO FORMAÇÃO CONTINUADA',                    code: null    },
-  { value: 'ABONO_NIVER',                 label: 'ABONO ANIVERSÁRIO',                            code: null    },
+  { value: 'ABONO_NIVER',                 label: 'ABONO ANIVERSÁRIO',                            code: '00717'    },
   { value: 'FERIADO',                     label: 'FERIADO',                                      code: null    },
   { value: 'FALTA PARALISAÇÃO',           label: 'FALTA PARALISAÇÃO',                            code: '40034' },
   { value: 'ATESTADO DE COMPARECIMENTO',  label: 'ATESTADO COMPARECIMENTO SERVIDOR',             code: '00340' },
@@ -72,6 +72,6 @@ export const ENTRY_TYPES: { value: EntryType; label: string; code: string | null
   { value: 'ATESTADO COMPARECIMENTO P.',  label: 'ATESTADO COMPARECIMENTO PESSOA DA FAMILIA',    code: '00341' },
   { value: 'EXAME MEDICO PREV/PERIOD ART',label: 'EXAME MEDICO PREV/PERIOD ART 62 LEI COMP',     code: '00118' },
   { value: 'TRACEJADO',                   label: '--- (Tracejado)',                               code: null    },
-  { value: 'AFAST CASAMENTO ART 62 LEI', label: 'AFAST CASAMENTO ART 62 LEI', code: null },
-  { value: 'AFAST FALECIMENTO FAMILIA LEI', label: 'AFAST FALECIMENTO FAMILIA LEI', code: null },
+  { value: 'AFAST CASAMENTO ART 62 LEI', label: 'AFAST CASAMENTO ART 62 LEI', code: '00317' },
+  { value: 'AFAST FALECIMENTO FAMILIA LEI', label: 'AFAST FALECIMENTO FAMILIA LEI', code: '00313' },
 ];

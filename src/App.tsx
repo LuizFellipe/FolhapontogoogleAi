@@ -13,19 +13,23 @@ import { Printer, FileText, Settings, Download, Save, Database } from 'lucide-re
 import { motion, AnimatePresence } from 'motion/react';
 import { apiService } from './services/api';
 
-const computeSummaryFromEntries = (entries: DailyEntry[], ch: string): SummaryEntry[] => {
+const computeSummaryFromEntries = (
+  entries: DailyEntry[],
+  ch: string,
+  entryTypes: { value: string; code: string | null }[] = ENTRY_TYPES,
+): SummaryEntry[] => {
   const cargaValue = String(ch || '').toLowerCase().includes('40') ? '3' : '1';
 
   const seen = new Set<string>();
   const codeDays: { code: string; day: number }[] = [];
 
   for (const entry of entries) {
-    const t1 = ENTRY_TYPES.find(t => t.value === entry.type);
+    const t1 = entryTypes.find(t => t.value === entry.type);
     if (t1?.code != null) {
       const key = `${t1.code}-${entry.day}`;
       if (!seen.has(key)) { seen.add(key); codeDays.push({ code: t1.code, day: entry.day }); }
     }
-    const t2 = ENTRY_TYPES.find(t => t.value === entry.type_turno2);
+    const t2 = entryTypes.find(t => t.value === entry.type_turno2);
     if (t2?.code != null) {
       const key = `${t2.code}-${entry.day}`;
       if (!seen.has(key)) { seen.add(key); codeDays.push({ code: t2.code, day: entry.day }); }
@@ -121,9 +125,15 @@ export default function App() {
   // Estados para Modal de Relatórios
   const [showReportsModal, setShowReportsModal] = useState(false);
 
-  // Carregar profissionais na inicialização
+  const [dynamicTypes, setDynamicTypes] = useState<typeof ENTRY_TYPES>(ENTRY_TYPES);
+
+  // Carregar profissionais e tipos de lançamento na inicialização
   useEffect(() => {
     loadProfissionais();
+    apiService.getTiposLancamento().then(tipos => {
+      if (tipos.length > 0)
+        setDynamicTypes(tipos.map(t => ({ value: t.valor as EntryType, label: t.label, code: t.codigo ?? null })));
+    }).catch(() => {});
   }, []);
 
   // Carregar lista de profissionais
@@ -216,7 +226,7 @@ export default function App() {
 
   const handleEntriesChange = (newEntries: DailyEntry[]) => {
     setEntries(newEntries);
-    setSummaryEntries(computeSummaryFromEntries(newEntries, employee.ch));
+    setSummaryEntries(computeSummaryFromEntries(newEntries, employee.ch, dynamicTypes));
   };
 
   // Limpar todos os lançamentos para TRABALHO NORMAL
@@ -487,7 +497,7 @@ export default function App() {
               year,
               employee,
               entries: newEntries,
-              summaryEntries: computeSummaryFromEntries(newEntries, employee.ch),
+              summaryEntries: computeSummaryFromEntries(newEntries, employee.ch, dynamicTypes),
               observations
             };
             const result = await apiService.saveCompleteTimesheet(dataToSave);
@@ -532,7 +542,7 @@ export default function App() {
               year,
               employee,
               entries: newEntries,
-              summaryEntries: computeSummaryFromEntries(newEntries, employee.ch),
+              summaryEntries: computeSummaryFromEntries(newEntries, employee.ch, dynamicTypes),
               observations
             };
             const result = await apiService.saveCompleteTimesheet(dataToSave);
@@ -865,6 +875,7 @@ export default function App() {
                 year={year}
                 onChange={handleEntriesChange}
                 employeeCh={employee.ch}
+                entryTypes={dynamicTypes}
               />
 
               <SummaryForm 

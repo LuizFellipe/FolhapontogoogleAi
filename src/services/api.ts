@@ -348,6 +348,13 @@ class ApiService {
       throw error;
     }
   }
+  async getTiposLancamento(): Promise<{ valor: string; label: string; codigo: string | null }[]> {
+    try {
+      return await this.request<{ valor: string; label: string; codigo: string | null }[]>('/tipos-lancamento');
+    } catch {
+      return [];
+    }
+  }
 }
 
 // Exportar uma instância única do serviço

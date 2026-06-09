@@ -488,6 +488,14 @@ def get_relatorio_lancamentos():
     rows = execute_query(query, (mes, ano))
     return jsonify(rows or [])
 
+# Tipos de lançamento
+@app.route('/api/tipos-lancamento', methods=['GET'])
+def get_tipos_lancamento():
+    rows = execute_query(
+        "SELECT valor, label, codigo FROM tipos_lancamento ORDER BY label"
+    )
+    return jsonify(rows or [])
+
 # Rota de saúde
 @app.route('/api/health', methods=['GET'])
 def health_check():

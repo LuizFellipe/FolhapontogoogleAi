@@ -72,7 +72,8 @@ show_main_menu() {
     echo -e "${BRIGHT_WHITE}  [ 6 ]  Atualizar Árvore de Diretórios${NC}"
     echo -e "${BRIGHT_WHITE}  [ 7 ]  Informações do Sistema${NC}"
     echo -e "${BRIGHT_WHITE}  [ 8 ]  Limpar e Otimizar${NC}"
-    echo -e "${BRIGHT_WHITE}  [ 9 ]  Sair do Sistema${NC}"
+    echo -e "${BRIGHT_WHITE}  [ 9 ]  Sincronizar Tipos de Lançamento${NC}"
+    echo -e "${BRIGHT_WHITE}  [ 10 ] Sair do Sistema${NC}"
     echo -e "${BRIGHT_CYAN}=================================================${NC}"
     echo ""
 }
@@ -677,6 +678,40 @@ clean_and_optimize() {
 }
 
 # ==============================================================================
+# FUNÇÃO 9: Sincronizar Tipos de Lançamento
+# ==============================================================================
+sync_entry_types() {
+    show_header
+    echo -e "${MAGENTA}🔄 Sincronizar Tipos de Lançamento${NC}"
+    echo -e "${PURPLE}═══════════════════════════════════════════════════════════════${NC}"
+
+    if [ ! -f "sync_tipos_lancamento.py" ]; then
+        error "Script sync_tipos_lancamento.py não encontrado!"
+        pause
+        return 1
+    fi
+
+    if ! command -v python3 >/dev/null 2>&1; then
+        error "Python3 não está instalado ou não está no PATH!"
+        pause
+        return 1
+    fi
+
+    info "Executando sincronização de tipos de lançamento..."
+    echo ""
+
+    python3 sync_tipos_lancamento.py
+
+    if [ $? -eq 0 ]; then
+        success "Sincronização concluída!"
+    else
+        error "Falha na sincronização!"
+    fi
+
+    pause
+}
+
+# ==============================================================================
 # FUNÇÃO PRINCIPAL - LOOP DO SISTEMA
 # ==============================================================================
 main() {
@@ -700,7 +735,7 @@ main() {
         
         show_main_menu
         
-        read -p "${NEON_CYAN}[SELECT OPTION 1-9]: ${NC}" choice
+        read -p "${NEON_CYAN}[SELECT OPTION 1-10]: ${NC}" choice
         
         case $choice in
             1)
@@ -728,6 +763,9 @@ main() {
                 clean_and_optimize
                 ;;
             9)
+                sync_entry_types
+                ;;
+            10)
                 show_header
                 echo -e "${BRIGHT_CYAN}[SYSTEM SHUTDOWN] Thank you for using Gestor Folha Ponto!${NC}"
                 echo -e "${NEON_GREEN}[DISCONNECTED] Connection terminated${NC}"
@@ -740,7 +778,7 @@ main() {
                 exit 0
                 ;;
             *)
-                error "Invalid option! Please choose an option from 1 to 9."
+                error "Invalid option! Please choose an option from 1 to 10."
                 pause
                 ;;
         esac
