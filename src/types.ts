@@ -8,8 +8,6 @@ export interface DailyEntry {
   exit1: string;
   entry2: string;
   exit2: string;
-  observation: string;
-  observation_turno2: string; // observações específicas do turno 2
 }
 
 export interface EmployeeData {

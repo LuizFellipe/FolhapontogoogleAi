@@ -1,5 +1,25 @@
 # Memória de Modificação - Database (database/)
 
+## [2026-06-10] Remoção de Colunas Mortas (Migration 015)
+
+### Arquivos Modificados/Criados:
+- **migrations/015_remove_observacao_columns.sql**: Nova migration criada e aplicada
+- **full_setup.sql**: Removidas linhas de definição das colunas `observacao` e `observacao_turno2`
+
+### Alterações:
+#### 1. `lancamentos_diarios` — DROP COLUMN
+- Removida coluna `observacao TEXT` (turno 1).
+- Removida coluna `observacao_turno2 TEXT` (turno 2).
+
+### Causa Raiz:
+Investigação revelou que estes campos armazenavam o `label` de feriados/recessos quando aplicados, mas o dado nunca era exibido em nenhuma tela (TimesheetGrid, TimesheetPreview) nem no relatório de Lançamentos Efetuados (a coluna "Obs" hardcodeiava `''`). Campos mortos sem nenhum consumidor real.
+
+### Impacto:
+- Schema mais enxuto. Nenhuma funcionalidade afetada.
+- Migration `003_add_second_turn_columns.sql` adicionava ambas as colunas — em bancos existentes que ainda não rodaram a 015, as colunas permanecem até a execução da migration.
+
+---
+
 ## [2026-06-09] Criação da Tabela de Recessos (Migration 012)
 
 ### Arquivos Modificados/Criados:

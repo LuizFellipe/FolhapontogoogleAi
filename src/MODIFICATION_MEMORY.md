@@ -1,5 +1,35 @@
 # Memória de Modificação - Frontend (src/)
 
+## [2026-06-10] Limpeza: Remoção de `observation`/`observation_turno2` da interface `DailyEntry`
+
+### Arquivos Modificados:
+- **types.ts**
+- **App.tsx**
+- **services/api.ts**
+
+### Alterações Detalhadas:
+
+#### 1. `types.ts` — interface `DailyEntry`
+- Removidos campos `observation: string` e `observation_turno2: string`.
+
+#### 2. `App.tsx`
+- Removidas todas as atribuições `observation`/`observation_turno2` em:
+  - `computePreFillEntries` (inicialização de entries)
+  - `handleApplyHoliday` / `handleRemoveHolidayEffect`
+  - `handleApplyRecesso` / `handleRemoveRecessoEffect`
+  - geração em lote (loop de recessos selecionados)
+  - `useEffect` de inicialização mensal
+  - array de entries vazias para impressão rápida
+
+#### 3. `services/api.ts`
+- Save: removidos `observacao: entry.observation` e `observacao_turno2: entry.observation_turno2` do mapeamento de lancamentos.
+- Load: removidos `observation: lancamento.observacao` e `observation_turno2: lancamento.observacao_turno2` do mapeamento de retorno.
+
+### 🎯 Objetivo
+Estes campos armazenavam labels de feriado/recesso no banco mas nunca foram exibidos em nenhuma tela ou relatório. Remoção coordenada com `components/ReportsModal.tsx`, `backend/app.py` e migration `015_remove_observacao_columns.sql`.
+
+---
+
 ## [2026-06-09] Funcionalidade: Aplicação de Recessos na Folha de Ponto
 
 ### Arquivos Modificados:

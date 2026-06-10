@@ -126,8 +126,6 @@ CREATE TABLE `lancamentos_diarios` (
   `dia` int NOT NULL,
   `tipo` varchar(80) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'TRABALHO',
   `tipo_turno2` varchar(80) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `observacao` text COLLATE utf8mb4_unicode_ci,
-  `observacao_turno2` text COLLATE utf8mb4_unicode_ci,
   `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `atualizado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),

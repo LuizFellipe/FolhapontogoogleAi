@@ -288,9 +288,7 @@ class ApiService {
         const lancamentos = timesheetData.entries.map((entry: any) => ({
           dia: entry.day,
           tipo: entry.type,
-          observacao: entry.observation,
           tipo_turno2: entry.type_turno2,
-          observacao_turno2: entry.observation_turno2
         }));
         
         await this.saveLancamentosDiarios(folhaPontoId, lancamentos);
@@ -348,8 +346,6 @@ class ApiService {
           exit1: '',
           entry2: '',
           exit2: '',
-          observation: lancamento.observacao,
-          observation_turno2: lancamento.observacao_turno2
         })),
         summaryEntries: completeData.resumo.map((resumo: any) => ({
           operation: resumo.operacao,

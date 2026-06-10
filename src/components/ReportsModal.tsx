@@ -9,9 +9,7 @@ import { apiService } from '../services/api';
 interface Lancamento {
   dia: number;
   tipo: string;
-  observation: string;
   tipo_turno2: string;
-  observation_turno2: string;
 }
 
 interface ProfData {
@@ -76,7 +74,6 @@ interface EntryRange {
   label: string;
   diaInicio: number;
   diaFim: number;
-  observation: string;
   turnoLabel: string; // MAT | VESP | NOT
 }
 
@@ -137,14 +134,14 @@ function buildRangesLancamentos(
         end = dias[i];
         diaMap.get(dias[i])!.forEach(t => turnosRange.add(t));
       } else {
-        ranges.push({ tipo, label, diaInicio: start, diaFim: end, observation: '', turnoLabel: ordenarTurnos(turnosRange) });
+        ranges.push({ tipo, label, diaInicio: start, diaFim: end, turnoLabel: ordenarTurnos(turnosRange) });
         start = dias[i];
         end = dias[i];
         turnosRange.clear();
         diaMap.get(dias[i])!.forEach(t => turnosRange.add(t));
       }
     }
-    ranges.push({ tipo, label, diaInicio: start, diaFim: end, observation: '', turnoLabel: ordenarTurnos(turnosRange) });
+    ranges.push({ tipo, label, diaInicio: start, diaFim: end, turnoLabel: ordenarTurnos(turnosRange) });
   }
 
   ranges.sort((a, b) => a.diaInicio - b.diaInicio || a.label.localeCompare(b.label, 'pt-BR'));
@@ -187,7 +184,6 @@ const ReportLancamentos: React.FC<{
             <th className="py-3 px-4 w-16">Turno</th>
             <th className="py-3 px-4 w-28">Início</th>
             <th className="py-3 px-4 w-28">Fim</th>
-            <th className="py-3 px-4 w-32">Obs</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-stone-100">
@@ -195,7 +191,7 @@ const ReportLancamentos: React.FC<{
             <React.Fragment key={prof.profissionalId}>
               <tr className="bg-stone-50/50">
                 <td className="py-2.5 px-4 font-mono text-xs text-stone-500">{prof.matricula || '—'}</td>
-                <td className="py-2.5 px-4 font-semibold text-stone-900 uppercase" colSpan={5}>{prof.nome}</td>
+                <td className="py-2.5 px-4 font-semibold text-stone-900 uppercase" colSpan={4}>{prof.nome}</td>
               </tr>
               {ranges.map((r, i) => (
                 <tr key={i} className="hover:bg-stone-50 transition-colors group">
@@ -213,7 +209,6 @@ const ReportLancamentos: React.FC<{
                   </td>
                   <td className="py-2 px-4 text-stone-600">{formatDate(r.diaInicio, filterMonth, filterYear)}</td>
                   <td className="py-2 px-4 text-stone-600">{formatDate(r.diaFim, filterMonth, filterYear)}</td>
-                  <td className="py-2 px-4 text-xs text-stone-400 italic">{r.observation || '—'}</td>
                 </tr>
               ))}
             </React.Fragment>
@@ -361,9 +356,7 @@ export const ReportsModal: React.FC<Props> = ({
             map.get(fid)!.lancamentos.push({
               dia: r.dia,
               tipo: r.tipo || '',
-              observation: '',
               tipo_turno2: r.tipo_turno2 || '',
-              observation_turno2: '',
             });
           }
         }

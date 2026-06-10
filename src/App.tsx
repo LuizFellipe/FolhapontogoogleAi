@@ -248,7 +248,6 @@ export default function App() {
       Array.from({ length: daysInMonth }, (_, i) => ({
         day: i + 1, type: 'TRABALHO' as EntryType, type_turno2: 'TRABALHO' as EntryType,
         entry1: '', exit1: '', entry2: '', exit2: '',
-        observation: '', observation_turno2: ''
       }));
 
     const folhasDoAno = await apiService.getFolhasPonto({ profissional_id: profissionalId, ano: targetYear });
@@ -298,7 +297,6 @@ export default function App() {
         type: (p?.tipo || 'TRABALHO') as EntryType,
         type_turno2: (p?.tipo_turno2 || 'TRABALHO') as EntryType,
         entry1: '', exit1: '', entry2: '', exit2: '',
-        observation: '', observation_turno2: ''
       };
     });
   };
@@ -371,7 +369,7 @@ export default function App() {
           let entries = await computePreFillEntries(profId, mes, ano);
           const isCh20 = String(prof?.carga_horaria || '').includes('20');
           if (isCh20) {
-            entries = entries.map(e => ({ ...e, type_turno2: 'TRABALHO' as EntryType, observation_turno2: '' }));
+            entries = entries.map(e => ({ ...e, type_turno2: 'TRABALHO' as EntryType }));
           }
           for (const recesso of selectedRecessos) {
             const inicio = new Date(recesso.yearInicio, recesso.monthInicio, recesso.dayInicio);
@@ -385,8 +383,6 @@ export default function App() {
                     ...entries[idx],
                     type: 'RECESSO' as EntryType,
                     type_turno2: isCh20 ? entries[idx].type_turno2 : 'RECESSO' as EntryType,
-                    observation: recesso.label,
-                    observation_turno2: isCh20 ? entries[idx].observation_turno2 : recesso.label,
                   };
                 }
               }
@@ -397,8 +393,7 @@ export default function App() {
 
           const novaFolha = await apiService.createFolhaPonto({ profissional_id: profId, mes, ano, observacoes: hasPattern ? obsText : '' });
           const lancamentos = entries.map(e => ({
-            dia: e.day, tipo: e.type, tipo_turno2: e.type_turno2,
-            observacao: e.observation, observacao_turno2: e.observation_turno2
+            dia: e.day, tipo: e.type, tipo_turno2: e.type_turno2
           }));
           await apiService.saveLancamentosDiarios(novaFolha.id, lancamentos);
           const data = await apiService.loadCompleteTimesheet(profId, mes, ano);
@@ -452,7 +447,6 @@ export default function App() {
           const emptyEntries = Array.from({ length: daysInMonth }, (_, j) => ({
             day: j + 1, type: 'TRABALHO' as any, type_turno2: 'TRABALHO' as any,
             entry1: '', exit1: '', entry2: '', exit2: '',
-            observation: '', observation_turno2: ''
           }));
           
           results.push({
@@ -502,8 +496,6 @@ export default function App() {
           ...newEntries[entryIndex],
           type: 'FERIADO',
           type_turno2: isCh20 ? newEntries[entryIndex].type_turno2 : 'FERIADO',
-          observation: holiday.label,
-          observation_turno2: isCh20 ? newEntries[entryIndex].observation_turno2 : holiday.label
         };
         handleEntriesChange(newEntries);
 
@@ -547,8 +539,6 @@ export default function App() {
           ...newEntries[entryIndex],
           type: 'TRABALHO',
           type_turno2: 'TRABALHO',
-          observation: '',
-          observation_turno2: ''
         };
         handleEntriesChange(newEntries);
 
@@ -598,8 +588,6 @@ export default function App() {
             ...newEntries[idx],
             type: 'RECESSO',
             type_turno2: isCh20 ? newEntries[idx].type_turno2 : 'RECESSO',
-            observation: recesso.label,
-            observation_turno2: isCh20 ? newEntries[idx].observation_turno2 : recesso.label
           };
           changed = true;
         }
@@ -655,8 +643,6 @@ export default function App() {
             ...newEntries[idx],
             type: 'TRABALHO',
             type_turno2: 'TRABALHO',
-            observation: '',
-            observation_turno2: ''
           };
           changed = true;
         }
@@ -740,8 +726,6 @@ export default function App() {
       exit1: '',
       entry2: '',
       exit2: '',
-      observation: '',
-      observation_turno2: ''
     }));
     setEntries(newEntries);
     

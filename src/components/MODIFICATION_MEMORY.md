@@ -4,6 +4,25 @@ Este arquivo registra as modificações significativas realizadas nos componente
 
 ---
 
+## [2026-06-10] - Limpeza: Remoção de `observation`/`observation_turno2` de todos os componentes
+
+### 🔍 Alterações Realizadas
+
+#### 1. ReportsModal.tsx
+- Removidos campos `observation` e `observation_turno2` da interface `Lancamento`.
+- Removido campo `observation` da interface `EntryRange`.
+- Removida coluna "Obs" do cabeçalho da tabela de Lançamentos Efetuados.
+- Removida célula de dados correspondente; `colSpan` do cabeçalho de profissional ajustado de 5 para 4.
+- Removidas as atribuições `observation: ''` e `observation_turno2: ''` no loop de load da view e em `buildRangesLancamentos`.
+
+### ✅ Arquivos Modificados
+- `src/components/ReportsModal.tsx`
+
+### 🎯 Objetivo
+Remover dados mortos: `observation`/`observation_turno2` eram armazenados no banco mas nunca exibidos em nenhuma tela ou relatório. Parte da limpeza coordenada com `src/types.ts`, `src/App.tsx`, `src/services/api.ts`, `backend/app.py` e migration `015`.
+
+---
+
 ## [2026-06-09] - Funcionalidade: Aba "Recessos" no HolidayModal
 
 ### 🔍 Alterações Realizadas
@@ -254,7 +273,7 @@ Garantir a consistência e persistência centralizada dos dados de feriados entr
 - Modal dedicado à gestão de feriados locais/específicos:
   - **Inputs**: Dia, Mês, Ano e Nome do Feriado.
   - **Lista**: Exibe os feriados cadastrados para o ano selecionado.
-  - **Ações**: "Aplicar" atualiza o dia na grade de lançamentos com o `tipo` 'FERIADO' e a `observacao` com o nome inserido. "Reverter" desfaz a alteração voltando o dia para 'TRABALHO NORMAL'. "Excluir" remove o feriado do registro.
+  - **Ações**: "Aplicar" atualiza o dia na grade de lançamentos com o `tipo` 'FERIADO'. "Reverter" desfaz a alteração voltando o dia para 'TRABALHO NORMAL'. "Excluir" remove o feriado do registro.
   - **Armazenamento**: Feriados cadastrados ficam persistidos no `localStorage`.
 
 #### 2. App.tsx e EmployeeNavigator.tsx — Integração

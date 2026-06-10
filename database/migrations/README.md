@@ -34,7 +34,7 @@ Script principal de inicialização que realiza as seguintes operações:
 - Define o conjunto de caracteres para `utf8mb4` (suporte total a Unicode).
 - Cria a tabela `profissionais`: Armazena os dados cadastrais dos servidores (nome, matrícula, cargo, lotação, turnos, etc.).
 - Cria a tabela `folhas_ponto`: Cabeçalho da folha de cada mês/ano vinculada a um profissional.
-- Cria a tabela `lancamentos_diarios`: Registra as ocorrências de cada dia com suporte a dois turnos independentes (`tipo`/`observacao` para turno 1 e `tipo_turno2`/`observacao_turno2` para turno 2). ENUM completo: `TRABALHO`, `FERIAS`, `RECESSO`, `ATESTADO`, `LICENCA`, `FALTA`, `TRE`, `ABONO`, `CPIP`, `CURSO`, `ABONO_NIVER`, `FERIADO`, `ABONO DE PONTO ART 151 LEI`.
+- Cria a tabela `lancamentos_diarios`: Registra as ocorrências de cada dia com suporte a dois turnos independentes (`tipo` para turno 1 e `tipo_turno2` para turno 2). ENUM completo: `TRABALHO`, `FERIAS`, `RECESSO`, `ATESTADO`, `LICENCA`, `FALTA`, `TRE`, `ABONO`, `CPIP`, `CURSO`, `ABONO_NIVER`, `FERIADO`, `ABONO DE PONTO ART 151 LEI`.
 - Cria a tabela `resumo_folha`: Armazena os dados da segunda página (resumo de frequência e códigos de operação).
 - Insere um usuário de exemplo para testes iniciais.
 
@@ -42,8 +42,8 @@ Script principal de inicialização que realiza as seguintes operações:
 Torna a coluna `matricula` da tabela `profissionais` opcional (NULL), permitindo cadastro de servidores sem matrícula.
 
 ### `003_add_second_turn_columns.sql`
-Adiciona `tipo_turno2` e `observacao_turno2` à tabela `lancamentos_diarios` para suporte a lançamentos independentes por turno.
-> **Nota:** Esta migration aplica-se apenas a bancos **já existentes** criados antes de 2026-04-17. Bancos novos criados via Docker já contêm estas colunas diretamente no `001_create_tables.sql` e `full_setup.sql`.
+Adiciona `tipo_turno2` à tabela `lancamentos_diarios` para suporte a lançamentos independentes por turno. *(Nota: também adicionava `observacao_turno2`, removida pela migration 015.)*
+> **Nota:** Esta migration aplica-se apenas a bancos **já existentes** criados antes de 2026-04-17. Bancos novos criados via Docker já contêm `tipo_turno2` diretamente no `001_create_tables.sql` e `full_setup.sql`.
 
 ### `004_add_abono_art151_type.sql`
 Adiciona o valor `'ABONO DE PONTO ART 151 LEI'` ao ENUM das colunas `tipo` e `tipo_turno2` da tabela `lancamentos_diarios`.
@@ -57,6 +57,9 @@ Cria a tabela `feriados` (`id`, `dia`, `mes`, `ano`, `label`, `criado_em`) com `
 
 ### `012_create_recessos_table.sql`
 Cria a tabela `recessos` (`id`, `dia_inicio`, `mes_inicio`, `ano_inicio`, `dia_fim`, `mes_fim`, `ano_fim`, `label`, `criado_em`) para armazenar períodos de recesso com data de início e fim.
+
+### `015_remove_observacao_columns.sql`
+Remove as colunas `observacao` e `observacao_turno2` da tabela `lancamentos_diarios`. Estes campos armazenavam labels de feriado/recesso quando aplicados, mas nunca foram exibidos em nenhuma tela ou relatório do sistema — eram dados mortos.
 
 ## Como Adicionar Novos Tipos de Lançamento
 

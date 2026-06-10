@@ -1,5 +1,18 @@
 # Memória de Modificação - Backend (backend/)
 
+## [2026-06-10] Limpeza: Remoção de `observacao`/`observacao_turno2` do INSERT de lançamentos
+
+### Arquivos Modificados:
+- **app.py**
+
+### Alterações:
+- Endpoint `POST /api/folhas-ponto/<id>/lancamentos`: removidos `observacao` e `observacao_turno2` da query INSERT e dos `params`. O INSERT agora salva apenas `folha_ponto_id`, `dia`, `tipo` e `tipo_turno2`.
+
+### 🎯 Objetivo
+Alinhar o backend com a remoção física das colunas via migration `015`. Parte da limpeza coordenada em todas as camadas (frontend, API service, backend, banco de dados).
+
+---
+
 ## [2026-06-09] Endpoints REST para Recessos
 
 ### Arquivos Modificados:

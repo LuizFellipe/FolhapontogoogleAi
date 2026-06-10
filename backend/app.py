@@ -323,17 +323,15 @@ def create_lancamentos_diarios(folha_ponto_id):
         # Inserir novos lançamentos
         for lancamento in lancamentos:
             query = """
-            INSERT INTO lancamentos_diarios 
-            (folha_ponto_id, dia, tipo, observacao, tipo_turno2, observacao_turno2)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            INSERT INTO lancamentos_diarios
+            (folha_ponto_id, dia, tipo, tipo_turno2)
+            VALUES (%s, %s, %s, %s)
             """
             params = (
                 folha_ponto_id,
                 lancamento.get('dia'),
                 lancamento.get('tipo'),
-                lancamento.get('observacao'),
                 lancamento.get('tipo_turno2'),
-                lancamento.get('observacao_turno2')
             )
             cursor.execute(query, params)
         
