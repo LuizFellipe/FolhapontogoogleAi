@@ -349,6 +349,39 @@ export default function App() {
     }
   };
 
+  const RECESSO_REPLACEABLE = new Set<EntryType>(['TRABALHO', 'CPIP', 'CURSO']);
+
+  const applyRecessosToEntries = (
+    entries: DailyEntry[],
+    selectedRecessos: Recesso[],
+    mes: number,
+    ano: number,
+    isCh20: boolean,
+    isProfBasica: boolean
+  ): DailyEntry[] => {
+    const isRecessoSingleDay = (r: Recesso) =>
+      r.dayInicio === r.dayFim && r.monthInicio === r.monthFim && r.yearInicio === r.yearFim;
+    const result = entries.map(e => ({ ...e }));
+    for (const recesso of selectedRecessos) {
+      if (!isRecessoSingleDay(recesso) && !isProfBasica) continue;
+      const inicio = new Date(recesso.yearInicio, recesso.monthInicio, recesso.dayInicio);
+      const fim = new Date(recesso.yearFim, recesso.monthFim, recesso.dayFim);
+      for (let d = new Date(inicio); d <= fim; d.setDate(d.getDate() + 1)) {
+        if (d.getMonth() !== mes || d.getFullYear() !== ano) continue;
+        const dia = d.getDate();
+        const idx = result.findIndex(e => e.day === dia);
+        if (idx === -1) continue;
+        if (!RECESSO_REPLACEABLE.has(result[idx].type)) continue;
+        result[idx] = {
+          ...result[idx],
+          type: 'RECESSO' as EntryType,
+          type_turno2: isCh20 ? result[idx].type_turno2 : 'RECESSO' as EntryType,
+        };
+      }
+    }
+    return result;
+  };
+
   // Geração em lote: processa cada profissional selecionado e abre impressão
   const handleBatchGenerate = async (selectedIds: number[], mes: number, ano: number, selectedRecessos: Recesso[] = []) => {
     setIsGeneratingBatch(true);
@@ -363,31 +396,33 @@ export default function App() {
         const folhas = await apiService.getFolhasPonto({ profissional_id: profId, mes, ano });
 
         if (folhas.length > 0) {
-          const data = await apiService.loadCompleteTimesheet(profId, mes, ano);
-          if (data) results.push(data);
+          if (selectedRecessos.length > 0) {
+            const existingData = await apiService.loadCompleteTimesheet(profId, mes, ano);
+            if (existingData) {
+              const isCh20 = String(prof?.carga_horaria || '').includes('20');
+              const isProfBasica = !!prof?.cargo?.toUpperCase().includes('PROFESSOR DE EDUC. BASICA');
+              const updatedEntries = applyRecessosToEntries(
+                existingData.entries, selectedRecessos, mes, ano, isCh20, isProfBasica
+              );
+              const lancamentos = updatedEntries.map(e => ({
+                dia: e.day, tipo: e.type, tipo_turno2: e.type_turno2,
+              }));
+              await apiService.saveLancamentosDiarios(folhas[0].id, lancamentos);
+              const data = await apiService.loadCompleteTimesheet(profId, mes, ano);
+              if (data) results.push(data);
+            }
+          } else {
+            const data = await apiService.loadCompleteTimesheet(profId, mes, ano);
+            if (data) results.push(data);
+          }
         } else {
           let entries = await computePreFillEntries(profId, mes, ano);
           const isCh20 = String(prof?.carga_horaria || '').includes('20');
           if (isCh20) {
             entries = entries.map(e => ({ ...e, type_turno2: 'TRABALHO' as EntryType }));
           }
-          for (const recesso of selectedRecessos) {
-            const inicio = new Date(recesso.yearInicio, recesso.monthInicio, recesso.dayInicio);
-            const fim = new Date(recesso.yearFim, recesso.monthFim, recesso.dayFim);
-            for (let d = new Date(inicio); d <= fim; d.setDate(d.getDate() + 1)) {
-              if (d.getMonth() === mes && d.getFullYear() === ano) {
-                const dia = d.getDate();
-                const idx = entries.findIndex(e => e.day === dia);
-                if (idx !== -1) {
-                  entries[idx] = {
-                    ...entries[idx],
-                    type: 'RECESSO' as EntryType,
-                    type_turno2: isCh20 ? entries[idx].type_turno2 : 'RECESSO' as EntryType,
-                  };
-                }
-              }
-            }
-          }
+          const isProfBasica = !!prof?.cargo?.toUpperCase().includes('PROFESSOR DE EDUC. BASICA');
+          entries = applyRecessosToEntries(entries, selectedRecessos, mes, ano, isCh20, isProfBasica);
           const hasPattern = entries.some(e => e.type !== 'TRABALHO' || e.type_turno2 !== 'TRABALHO');
           const obsText = "CURSO FORMACAO CONTINUADA DE ACORDO MEMORANDO/CIRC 59/2025 - SEE/SUBEB DE 18/02/2025 - SEI 00080.00049147/2025-76";
 

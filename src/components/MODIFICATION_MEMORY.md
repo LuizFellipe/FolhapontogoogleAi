@@ -1,5 +1,41 @@
 # MODIFICATION_MEMORY.md - Histórico de Alterações
 
+---
+
+## [2026-06-12] - Melhoria: Regra de Recesso por Duração + Aplicação em Folhas Existentes no Lote
+
+### 🔍 Alterações Realizadas
+
+#### 1. BatchTimesheetModal.tsx — Exibição de recessos por tipo e cargo
+- Removida constante `showRecessos` (dependia exclusivamente de `cargoFilter === 'PROFESSOR DE EDUC. BASICA'`).
+- Adicionado helper `isSingleDay(r: Recesso)`: `dayInicio === dayFim && monthInicio === monthFim && yearInicio === yearFim`.
+- Recessos agora são **sempre** buscados via API ao abrir o modal (independente do cargo).
+- Seção de recessos exibida quando existe ao menos um recesso de 1 dia OU cargo = PROFESSOR DE EDUC. BASICA.
+- Lista filtrada: recessos multi-dia só aparecem quando cargo = PROFESSOR; recessos de 1 dia aparecem para qualquer cargo.
+- Badge `(multi-dia · só PROF. BÁSICA)` exibido em recessos com duração > 1 dia.
+- `useEffect` de cleanup: ao trocar cargo para não-PROFESSOR, desmarca automaticamente recessos multi-dia do `selectedRecessoIds`.
+
+#### 2. App.tsx — Função auxiliar `applyRecessosToEntries` + aplicação em folhas existentes
+- Adicionados `RECESSO_REPLACEABLE = new Set(['TRABALHO', 'CPIP', 'CURSO'])` e função `applyRecessosToEntries` acima de `handleBatchGenerate`.
+- Regras da função:
+  - Recesso multi-dia: só aplicado se profissional for PROFESSOR DE EDUC. BASICA.
+  - Recesso 1 dia: aplicado para qualquer profissional.
+  - Só substitui dias cujo tipo atual seja `TRABALHO`, `CPIP` ou `CURSO` — nunca sobrescreve Férias, Atestados, Feriados, etc.
+  - Verifica mês/ano (`d.getMonth() !== mes || d.getFullYear() !== ano`) — não aplica recesso fora do mês da folha.
+- `handleBatchGenerate` — branch `if (folhas.length > 0)`:
+  - **Antes**: sempre só carregava a folha existente.
+  - **Agora**: se há `selectedRecessos`, carrega as entradas existentes, aplica recessos via `applyRecessosToEntries`, salva via `saveLancamentosDiarios` e recarrega; sem recessos o comportamento original é preservado.
+- Branch `else` (folha nova): substituído o loop de recessos inline pela chamada a `applyRecessosToEntries` (elimina duplicação).
+
+### ✅ Arquivos Modificados
+- `src/components/BatchTimesheetModal.tsx`
+- `src/App.tsx`
+
+### 🎯 Objetivo
+Permitir que recessos de 1 dia sejam aplicados a todos os profissionais (não apenas PROFESSOR DE EDUC. BASICA) durante a geração em lote, e garantir que recessos sejam aplicados mesmo em folhas já existentes — desde que o dia não tenha um lançamento especial (Férias, Atestado, Feriado, etc.).
+
+---
+
 Este arquivo registra as modificações significativas realizadas nos componentes e lógica do sistema.
 
 ---

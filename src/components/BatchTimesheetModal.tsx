@@ -39,7 +39,10 @@ export const BatchTimesheetModal: React.FC<Props> = ({
   const [recessos, setRecessos] = useState<Recesso[]>([]);
   const [selectedRecessoIds, setSelectedRecessoIds] = useState<Set<number | string>>(new Set());
 
-  const showRecessos = cargoFilter === 'PROFESSOR DE EDUC. BASICA';
+  const isSingleDay = (r: Recesso) =>
+    r.dayInicio === r.dayFim &&
+    r.monthInicio === r.monthFim &&
+    r.yearInicio === r.yearFim;
 
   // Reiniciar seleção ao abrir o modal
   useEffect(() => {
@@ -52,9 +55,9 @@ export const BatchTimesheetModal: React.FC<Props> = ({
     }
   }, [isOpen]);
 
-  // Buscar recessos quando cargo for PROFESSOR DE EDUC. BASICA
+  // Buscar recessos ao abrir o modal
   useEffect(() => {
-    if (!isOpen || !showRecessos) {
+    if (!isOpen) {
       setRecessos([]);
       setSelectedRecessoIds(new Set());
       return;
@@ -72,7 +75,18 @@ export const BatchTimesheetModal: React.FC<Props> = ({
       })));
       setSelectedRecessoIds(new Set());
     }).catch(() => setRecessos([]));
-  }, [isOpen, showRecessos, selectedAno]);
+  }, [isOpen, selectedAno]);
+
+  // Desmarcar recessos multi-dia ao trocar para cargo sem professor
+  useEffect(() => {
+    if (cargoFilter !== 'PROFESSOR DE EDUC. BASICA') {
+      setSelectedRecessoIds(prev => {
+        const next = new Set(prev);
+        recessos.filter(r => !isSingleDay(r)).forEach(r => next.delete(r.id));
+        return next;
+      });
+    }
+  }, [cargoFilter]);
 
   const CARGO_FILTERS = [
     'ANA.POL.PUB.G.E',
@@ -199,15 +213,14 @@ export const BatchTimesheetModal: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Recessos — exibido apenas para PROFESSOR DE EDUC. BASICA */}
-        {showRecessos && (
+        {/* Recessos */}
+        {recessos.length > 0 && recessos.some(r => isSingleDay(r) || cargoFilter === 'PROFESSOR DE EDUC. BASICA') && (
           <div className="px-6 py-3 border-b border-stone-100 bg-stone-50">
             <p className="text-xs font-medium text-stone-500 uppercase tracking-wider mb-2">Recessos para aplicar no pré-preenchimento</p>
-            {recessos.length === 0 ? (
-              <p className="text-xs text-stone-400">Nenhum recesso cadastrado para {selectedAno}.</p>
-            ) : (
-              <ul className="space-y-1">
-                {recessos.map((r) => (
+            <ul className="space-y-1">
+              {recessos
+                .filter(r => isSingleDay(r) || cargoFilter === 'PROFESSOR DE EDUC. BASICA')
+                .map((r) => (
                   <li key={r.id}>
                     <label className="flex items-center gap-2 cursor-pointer text-sm text-stone-700 hover:text-stone-900">
                       <input
@@ -228,11 +241,13 @@ export const BatchTimesheetModal: React.FC<Props> = ({
                       <span className="text-stone-400 text-xs">
                         {r.dayInicio}/{r.monthInicio + 1}/{r.yearInicio} → {r.dayFim}/{r.monthFim + 1}/{r.yearFim}
                       </span>
+                      {!isSingleDay(r) && (
+                        <span className="text-xs text-amber-600 font-medium">(multi-dia · só PROF. BÁSICA)</span>
+                      )}
                     </label>
                   </li>
                 ))}
-              </ul>
-            )}
+            </ul>
           </div>
         )}
 
