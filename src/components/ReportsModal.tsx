@@ -54,7 +54,6 @@ interface Props {
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const EXCLUDED_FROM_REPORT = new Set(['TRABALHO', 'CPIP', 'CURSO']);
-const WORKED_TYPES = new Set(['TRABALHO', 'CPIP', 'CURSO']);
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

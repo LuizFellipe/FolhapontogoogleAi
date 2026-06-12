@@ -2,6 +2,28 @@
 
 ---
 
+## [2026-06-12] - Ajuste: Adicional Noturno conta somente TRABALHO NORMAL + remoção de dead code
+
+### 🔍 Alterações Realizadas
+
+#### 1. vw_adicional_noturno (banco de dados) — filtro de tipo restrito
+- View ajustada para retornar apenas lançamentos com `tipo = 'TRABALHO'` (TRABALHO NORMAL).
+- Anteriormente incluía `TRABALHO`, `CPIP` e `CURSO` no WHERE, o que inflava a contagem.
+- Nenhuma alteração necessária no frontend: `ReportAdicionaNoturno` já era agnóstico ao tipo, delegando o filtro inteiramente à view.
+
+#### 2. ReportsModal.tsx — remoção de `WORKED_TYPES`
+- Removida constante `WORKED_TYPES = new Set(['TRABALHO', 'CPIP', 'CURSO'])` (linha 57).
+- Era dead code: nunca referenciada em nenhuma lógica do componente.
+
+### ✅ Arquivos Modificados
+- `vw_adicional_noturno` (banco de dados)
+- `src/components/ReportsModal.tsx`
+
+### 🎯 Objetivo
+Garantir que a contagem de horas de adicional noturno reflita somente dias de TRABALHO NORMAL, excluindo CPIP e CURSO que não geram direito ao adicional.
+
+---
+
 ## [2026-06-12] - Melhoria: Regra de Recesso por Duração + Aplicação em Folhas Existentes no Lote
 
 ### 🔍 Alterações Realizadas
