@@ -549,6 +549,36 @@ def get_tipos_lancamento():
     )
     return jsonify(rows or [])
 
+# Rota — checagem de atestados por bimestre civil
+@app.route('/api/atestados-bimestrais', methods=['GET'])
+def get_atestados_bimestrais():
+    """Retorna contagem de ATESTADO MEDICO DE ATE 03 por bimestre civil para um profissional/ano.
+    Consulta a view vw_relatorio_atestados_bimestrais (conta sequências consecutivas como 1 ocorrência).
+    Parâmetros: matricula (string), ano (int)
+    """
+    matricula = request.args.get('matricula')
+    ano = request.args.get('ano')
+
+    if not matricula or not ano:
+        return jsonify({'error': 'Parâmetros matricula e ano são obrigatórios'}), 400
+
+    query = """
+    SELECT bimestre1, bimestre2, bimestre3, bimestre4, bimestre5, bimestre6
+    FROM vw_relatorio_atestados_bimestrais
+    WHERE matricula = %s AND ano = %s
+    """
+
+    rows = execute_query(query, (matricula, ano))
+
+    if rows:
+        return jsonify(rows[0])
+
+    # Profissional sem nenhum atestado no ano → retorna zeros
+    return jsonify({
+        'bimestre1': 0, 'bimestre2': 0, 'bimestre3': 0,
+        'bimestre4': 0, 'bimestre5': 0, 'bimestre6': 0
+    })
+
 # Rota de saúde
 @app.route('/api/health', methods=['GET'])
 def health_check():

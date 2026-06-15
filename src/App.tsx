@@ -1025,6 +1025,7 @@ export default function App() {
                 year={year}
                 onChange={handleEntriesChange}
                 employeeCh={employee.ch}
+                matricula={employee.registration}
                 entryTypes={dynamicTypes}
               />
 

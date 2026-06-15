@@ -2,6 +2,48 @@
 
 ---
 
+## [2026-06-14] - Funcionalidade: Regra de Atestado Médico por Bimestre Civil (Hard-Block)
+
+### 🔍 Alterações Realizadas
+
+#### 1. `database/migrations/016_create_vw_eventos_consolidados.sql` — View já existente
+- `vw_relatorio_atestados_bimestrais`: agrupa ocorrências de `ATESTADO MEDICO DE ATE 03`
+  por bimestre civil (0-indexed: bimestre1=meses 0-1, bimestre2=meses 2-3, ..., bimestre6=meses 10-11).
+- Dias consecutivos com o mesmo tipo = **1 ocorrência** (via `NOT EXISTS` detectando início de sequência).
+- Cobre `tipo` **e** `tipo_turno2` — qualquer turno conta.
+
+#### 2. `backend/app.py` — Novo endpoint
+- `GET /api/atestados-bimestrais?matricula=<mat>&ano=<ano>`
+- Consulta `vw_relatorio_atestados_bimestrais` filtrando por matrícula + ano.
+- Retorna `{ bimestre1..6: number }`. Sem dados → retorna zeros.
+
+#### 3. `src/services/api.ts` — Nova interface + método
+- Interface exportada: `AtestadosBimestraisResponse { bimestre1..6: number }`.
+- Método: `getAtestadosBimestrais(matricula, ano)` → chama o novo endpoint.
+
+#### 4. `src/components/TimesheetGrid.tsx` — Checagem + Modal
+- Nova prop: `matricula: string`.
+- `useEffect` carrega contagem bimestral ao montar / trocar profissional ou ano.
+- `handleEntryChange`: se `value === 'ATESTADO MEDICO DE ATE 03'` e view retorna `>= 1`
+  ocorrência no bimestre civil do mês atual → **hard-block** (não aplica mudança).
+- Modal de aviso inline: exibe bimestre + ano, instrui usar LICENÇA MÉDICA OU ODONTOLÓGICA.
+- Helper `getBimestre(month)` → bimestre 1-6. `getCountFromView(data, month)` → leitura tipada.
+
+#### 5. `src/App.tsx` — Prop nova
+- `<TimesheetGrid matricula={employee.registration} ...>` passado ao componente.
+
+### ✅ Arquivos Modificados
+- `backend/app.py`
+- `src/services/api.ts`
+- `src/components/TimesheetGrid.tsx`
+- `src/App.tsx`
+
+### 🎯 Objetivo
+Garantir que apenas 1 ATESTADO MÉDICO DE ATÉ 03 DIAS seja lançado por bimestre civil
+diretamente pela escola. O segundo atestado exige LICENÇA MÉDICA OU ODONTOLÓGICA (homologação).
+
+---
+
 ## [2026-06-12] - Ajuste: Adicional Noturno conta somente TRABALHO NORMAL + remoção de dead code
 
 ### 🔍 Alterações Realizadas

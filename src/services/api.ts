@@ -5,6 +5,15 @@
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
+export interface AtestadosBimestraisResponse {
+  bimestre1: number;
+  bimestre2: number;
+  bimestre3: number;
+  bimestre4: number;
+  bimestre5: number;
+  bimestre6: number;
+}
+
 class ApiService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
@@ -164,6 +173,13 @@ class ApiService {
   // Relatórios — view vw_adicional_noturno
   async getAdicionaNoturnoRelatorio(mes: number, ano: number) {
     return this.request<any[]>(`/relatorio/adicional-noturno?mes=${mes}&ano=${ano}`);
+  }
+
+  // Atestados bimestrais — checagem de regra por bimestre civil
+  async getAtestadosBimestrais(matricula: string, ano: number): Promise<AtestadosBimestraisResponse> {
+    return this.request<AtestadosBimestraisResponse>(
+      `/atestados-bimestrais?matricula=${encodeURIComponent(matricula)}&ano=${ano}`
+    );
   }
 
   // Saúde da API
