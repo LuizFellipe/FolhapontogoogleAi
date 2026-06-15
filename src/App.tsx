@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { LoginScreen } from './components/LoginScreen';
 import { EmployeeForm } from './components/EmployeeForm';
 import { TimesheetGrid } from './components/TimesheetGrid';
 import { TimesheetPreview } from './components/TimesheetPreview';
@@ -92,6 +93,7 @@ const initialSummary: SummaryEntry[] = Array.from({ length: 8 }, () => ({
 }));
 
 export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [view, setView] = useState<'edit' | 'preview'>('edit');
   const [month, setMonth] = useState(new Date().getMonth());
   const [year, setYear] = useState(new Date().getFullYear());
@@ -879,6 +881,10 @@ export default function App() {
   const handlePrint = () => {
     window.print();
   };
+
+  if (!isAuthenticated) {
+    return <LoginScreen onLogin={() => setIsAuthenticated(true)} />;
+  }
 
   return (
     <div className="min-h-screen bg-stone-50 pb-20">

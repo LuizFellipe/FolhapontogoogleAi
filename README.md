@@ -8,6 +8,7 @@ Um sistema moderno e intuitivo desenvolvido para facilitar a geração e o geren
 
 ## ✨ Funcionalidades
 
+- **🔐 Login com Proteção de Acesso**: Tela de autenticação (usuário e senha) que bloqueia o acesso ao sistema até que as credenciais corretas sejam fornecidas. Credenciais configuradas via variáveis de ambiente (`.env`).
 - **📋 CRUD Completo de Servidores**: Criação, edição, visualização e exclusão de profissionais.
 - **🆕 Matrícula Opcional**: Permite cadastrar servidores sem matrícula (contratados temporários, prestadores de serviço).
 - **🗑️ Exclusão de Profissionais**: Remove servidores e suas folhas de ponto associadas com confirmação.
@@ -119,6 +120,10 @@ Copie `.env.example` para `.env` e ajuste conforme necessário:
 # Ambiente (local | docker)
 VITE_ENVIRONMENT=local
 
+# Login básico
+VITE_APP_USERNAME=admin
+VITE_APP_PASSWORD=senha123
+
 # Banco de dados
 DB_HOST=localhost
 DB_PORT=3306
@@ -181,6 +186,7 @@ FolhapontogoogleAi/
     │   ├── 📄 TimesheetGrid.tsx     # Grade de lançamentos
     │   ├── 📄 TimesheetPreview.tsx  # Preview página 1
     │   ├── 📄 TimesheetSummaryPreview.tsx # Preview página 2
+    │   ├── 📄 LoginScreen.tsx           # Tela de login / portão de acesso
     │   └── 📄 tree.txt              # Estrutura de arquivos dos componentes
     ├── � services/     # Comunicação com API
     │   ├── 📄 api.ts     # Funções de API (axios)

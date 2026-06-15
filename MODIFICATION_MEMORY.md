@@ -1,5 +1,36 @@
 # Memória de Modificações do Projeto
 
+## [2026-06-14] Funcionalidade: Tela de Login com Credenciais via .env
+
+### Arquivos Modificados/Criados:
+- `src/components/LoginScreen.tsx` *(novo)*
+- `src/App.tsx`
+- `.env`
+- `.env.example`
+
+### Alterações:
+
+#### 1. `src/components/LoginScreen.tsx` — Novo componente de login
+- Tela escura (dark) que contrasta com o app claro, com acento verde terminal (`#059669`), evocando o tema cyberpunk do `folha_manager.sh`.
+- Exibe identificador `SEE-DF · SISTEMA OFICIAL` e título `GESTOR FOLHA PONTO` em fonte monoespaciada.
+- Campos de usuário e senha com focus highlight verde. Animação de "shake" no card ao errar a senha.
+- Valida contra `import.meta.env.VITE_APP_USERNAME` e `import.meta.env.VITE_APP_PASSWORD` (client-side).
+- Recebe prop `onLogin: () => void` — chamado ao autenticar com sucesso.
+
+#### 2. `src/App.tsx` — Portão de autenticação
+- Adicionado estado `isAuthenticated` (boolean, inicia `false`).
+- Antes do return principal: se `!isAuthenticated`, renderiza `<LoginScreen onLogin={() => setIsAuthenticated(true)} />` e retorna cedo.
+- Resto do componente inalterado — o sistema só é exibido após login correto.
+
+#### 3. `.env` e `.env.example` — Credenciais padrão
+- Adicionadas variáveis `VITE_APP_USERNAME` e `VITE_APP_PASSWORD`.
+- Padrão: `admin` / `senha123` — alterar conforme necessidade.
+
+### Nota de segurança:
+Solução intencional e básica ("a princípio"). As credenciais ficam embutidas no bundle JS gerado pelo Vite — adequado para uso em rede interna, não recomendado para exposição pública sem uma autenticação de backend real.
+
+---
+
 ## [2026-06-09] Correção: add_entry_type.py — Falha ao adicionar novo tipo de lançamento
 
 ### Arquivos Modificados:
