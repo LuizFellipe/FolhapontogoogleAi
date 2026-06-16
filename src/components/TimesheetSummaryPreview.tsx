@@ -6,10 +6,10 @@ interface Props {
 
 export const TimesheetSummaryPreview: React.FC<Props> = ({ data }) => {
   const renderDigits = (value: string, length: number) => {
-    const padded = (value || '').padStart(length, '0');
+    const chars = value ? value.padStart(length, '0').split('') : Array(length).fill('');
     return (
       <div className="flex">
-        {padded.split('').map((digit, i) => (
+        {chars.map((digit, i) => (
           <div 
             key={i} 
             className="w-5 h-6 border-b border-l border-black flex items-center justify-center last:border-r text-[9px] font-bold"

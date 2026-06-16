@@ -423,7 +423,12 @@ export default function App() {
             }
           } else {
             const data = await apiService.loadCompleteTimesheet(profId, mes, ano);
-            if (data) results.push(data);
+            if (data) {
+              if (!data.summaryEntries || data.summaryEntries.length === 0) {
+                data.summaryEntries = computeSummaryFromEntries(data.entries, prof?.carga_horaria, dynamicTypes);
+              }
+              results.push(data);
+            }
           }
         } else {
           let entries = await computePreFillEntries(profId, mes, ano);
@@ -441,8 +446,21 @@ export default function App() {
             dia: e.day, tipo: e.type, tipo_turno2: e.type_turno2
           }));
           await apiService.saveLancamentosDiarios(novaFolha.id, lancamentos);
+
+          const summaryEntries = computeSummaryFromEntries(entries, prof?.carga_horaria, dynamicTypes);
+          const resumoEntries = summaryEntries.map(e => ({
+            operacao: e.operation, codigo: e.code, carga: e.carga,
+            meses: e.months, horas_dias: e.hoursDays, dia_inicio: e.startDay, dia_fim: e.endDay
+          }));
+          await apiService.saveResumoFolha(novaFolha.id, resumoEntries);
+
           const data = await apiService.loadCompleteTimesheet(profId, mes, ano);
-          if (data) results.push(data);
+          if (data) {
+            if (!data.summaryEntries || data.summaryEntries.length === 0) {
+              data.summaryEntries = summaryEntries;
+            }
+            results.push(data);
+          }
         }
       }
 
@@ -484,7 +502,12 @@ export default function App() {
 
         if (folhas.length > 0) {
           const data = await apiService.loadCompleteTimesheet(profId, mes, ano);
-          if (data) results.push(data);
+          if (data) {
+            if (!data.summaryEntries || data.summaryEntries.length === 0) {
+              data.summaryEntries = computeSummaryFromEntries(data.entries, prof?.carga_horaria, dynamicTypes);
+            }
+            results.push(data);
+          }
         } else {
           // Cria folha vazia temporária para impressão (não salva)
           const employeeData = apiService.convertProfissionalToEmployee(prof);
@@ -493,15 +516,13 @@ export default function App() {
             day: j + 1, type: 'TRABALHO' as any, type_turno2: 'TRABALHO' as any,
             entry1: '', exit1: '', entry2: '', exit2: '',
           }));
-          
+
           results.push({
             month: mes,
             year: ano,
             employee: employeeData,
             entries: emptyEntries,
-            summaryEntries: Array.from({ length: 8 }, () => ({
-              operation: '', code: '', carga: '', months: '', hoursDays: '', startDay: '', endDay: ''
-            })),
+            summaryEntries: computeSummaryFromEntries(emptyEntries, prof?.carga_horaria, dynamicTypes),
             observations: ''
           });
         }
