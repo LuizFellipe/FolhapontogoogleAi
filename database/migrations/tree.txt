@@ -9,4 +9,12 @@
 ├── 008_add_type_abono_de_ponto_bimestral_lei.sql
 ├── 009_add_type_afast_doacao_sangue_art_62.sql
 ├── 010_refactor_tipos_lancamento.sql
-└── README.md
+├── 011_create_feriados_table.sql
+├── 012_add_type_tracejado.sql
+├── 012_create_recessos_table.sql
+├── 013_add_type_afast_casamento_art_62_lei.sql
+├── 014_add_type_afast_falecimento_familia_lei.sql
+├── 015_remove_observacao_columns.sql
+├── 016_create_vw_eventos_consolidados.sql
+├── README.md
+└── tree.txt

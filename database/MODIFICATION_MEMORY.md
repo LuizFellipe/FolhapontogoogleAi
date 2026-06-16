@@ -1,5 +1,17 @@
 # Memória de Modificação - Database (database/)
 
+## [2026-06-15] View de Atestados Bimestrais (Migration 016)
+
+### Arquivos Modificados/Criados:
+- **migrations/016_create_vw_eventos_consolidados.sql**: Nova migration criada e aplicada.
+
+### Alterações:
+- Criada a view `vw_relatorio_atestados_bimestrais`.
+- Lógica utiliza `NOT EXISTS` para identificar o início de sequências de dias consecutivos de atestado, contando o bloco todo como 1 ocorrência.
+- Suporta meses 0-indexed (Jan=0) do sistema.
+
+---
+
 ## [2026-06-10] Remoção de Colunas Mortas (Migration 015)
 
 ### Arquivos Modificados/Criados:
@@ -17,6 +29,19 @@ Investigação revelou que estes campos armazenavam o `label` de feriados/recess
 ### Impacto:
 - Schema mais enxuto. Nenhuma funcionalidade afetada.
 - Migration `003_add_second_turn_columns.sql` adicionava ambas as colunas — em bancos existentes que ainda não rodaram a 015, as colunas permanecem até a execução da migration.
+
+---
+
+## [2026-06-09] Adição de Tipos de Afastamento (Migrations 013 e 014)
+
+### Arquivos Modificados/Criados:
+- **migrations/013_add_type_afast_casamento_art_62_lei.sql**: Nova migration.
+- **migrations/014_add_type_afast_falecimento_familia_lei.sql**: Nova migration.
+- **full_setup.sql**: Adicionados tipos via `INSERT IGNORE INTO tipos_lancamento`.
+
+### Alterações:
+- Adicionados tipos `AFAST CASAMENTO ART 62 LEI` e `AFAST FALECIMENTO FAMILIA LEI`.
+- Inserção na tabela lookup `tipos_lancamento`.
 
 ---
 

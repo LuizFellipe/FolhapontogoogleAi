@@ -1,5 +1,40 @@
 # Memória de Modificação - Frontend (src/)
 
+## [2026-06-15] Funcionalidade: Memorandos de Entrega e Devolução
+
+### Arquivos Modificados:
+- **App.tsx**
+
+### Alterações Detalhadas:
+- Integração dos modais `TimesheetDeliveryModal` e `ReturnMemoModal`.
+- Adição de botões correspondentes no `EmployeeNavigator` (via props).
+- Controle de estado `showDeliveryModal` e `showReturnMemoModal`.
+
+---
+
+## [2026-06-15] Regra de Negócio: Bloqueio de Atestados Bimestrais
+
+### Arquivos Modificados:
+- **App.tsx**
+
+### Alterações Detalhadas:
+- Passagem da prop `matricula` para o `TimesheetGrid` para permitir a consulta da regra bimestral.
+- Lógica de bloqueio delegada ao componente `TimesheetGrid`, que agora consome `getAtestadosBimestrais`.
+
+---
+
+## [2026-06-12] Funcionalidade: Carregamento Dinâmico de Tipos de Lançamento
+
+### Arquivos Modificados:
+- **App.tsx**
+
+### Alterações Detalhadas:
+- `useEffect` na inicialização chama `apiService.getTiposLancamento()`.
+- Novo estado `dynamicTypes` armazena os tipos vindos do banco de dados.
+- `dynamicTypes` passado como prop para `TimesheetGrid` e utilizado no cálculo automático do resumo.
+
+---
+
 ## [2026-06-10] Limpeza: Remoção de `observation`/`observation_turno2` da interface `DailyEntry`
 
 ### Arquivos Modificados:

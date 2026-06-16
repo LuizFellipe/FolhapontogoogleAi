@@ -31,6 +31,10 @@ O backend atua como intermediário entre o frontend React e o banco de dados MyS
 | `/api/recessos` | GET | Lista recessos, com filtro opcional por `ano` (`ano_inicio OR ano_fim`). |
 | `/api/recessos` | POST | Cria novo recesso (dia/mes/ano início + dia/mes/ano fim + label). |
 | `/api/recessos/<id>` | DELETE | Remoção de um recesso. |
+| `/api/relatorio/adicional-noturno` | GET | Retorna dados de adicional noturno (apenas dias de TRABALHO). |
+| `/api/relatorio/lancamentos` | GET | Retorna todos os lançamentos do período via `vw_folhas_lancamento`. |
+| `/api/tipos-lancamento` | GET | Lista os tipos de lançamento cadastrados (valor, label, código). |
+| `/api/atestados-bimestrais` | GET | Retorna contagem de atestados por bimestre civil para um servidor. |
 | `/api/health` | GET | Verifica se a API e o banco de dados estão operacionais. |
 
 ## Tecnologias Utilizadas

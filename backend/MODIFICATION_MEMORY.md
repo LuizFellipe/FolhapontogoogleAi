@@ -1,5 +1,16 @@
 # Memória de Modificação - Backend (backend/)
 
+## [2026-06-15] Funcionalidade: Atestados por Bimestre
+
+### Arquivos Modificados:
+- **app.py**
+
+### Alterações:
+- **Novo Endpoint**: `GET /api/atestados-bimestrais?matricula=<mat>&ano=<ano>`.
+- Consulta a view `vw_relatorio_atestados_bimestrais` para retornar a contagem de atestados agrupada por bimestre civil.
+
+---
+
 ## [2026-06-10] Limpeza: Remoção de `observacao`/`observacao_turno2` do INSERT de lançamentos
 
 ### Arquivos Modificados:
@@ -26,6 +37,18 @@ Alinhar o backend com a remoção física das colunas via migration `015`. Parte
 
 ### Objetivo:
 Suportar o CRUD de recessos via API, permitindo que o `HolidayModal` (aba Recessos) persista e recupere períodos de recesso do banco de dados.
+
+---
+
+## [2026-05-04] Endpoints para Relatórios
+
+### Arquivos Modificados:
+- **app.py**
+
+### Alterações:
+- **Novos Endpoints**:
+  - `GET /api/relatorio/adicional-noturno`: Consulta a view `vw_adicional_noturno` (desacoplamento da lógica de turnos do frontend).
+  - `GET /api/relatorio/lancamentos`: Consulta a view `vw_folhas_lancamento` para obter todos os lançamentos do período em uma única query (correção de N+1).
 
 ---
 

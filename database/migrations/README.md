@@ -55,11 +55,23 @@ Refatoração completa: converte `tipo`/`tipo_turno2` de ENUM para `VARCHAR(80)`
 ### `011_create_feriados_table.sql`
 Cria a tabela `feriados` (`id`, `dia`, `mes`, `ano`, `label`, `criado_em`) com `UNIQUE KEY (dia, mes, ano)` para evitar duplicatas.
 
+### `012_add_type_tracejado.sql`
+Adiciona o tipo `'TRACEJADO'` à tabela de lookup `tipos_lancamento`.
+
 ### `012_create_recessos_table.sql`
 Cria a tabela `recessos` (`id`, `dia_inicio`, `mes_inicio`, `ano_inicio`, `dia_fim`, `mes_fim`, `ano_fim`, `label`, `criado_em`) para armazenar períodos de recesso com data de início e fim.
 
+### `013_add_type_afast_casamento_art_62_lei.sql`
+Adiciona o valor `'AFAST CASAMENTO ART 62 LEI'` ao ENUM/Lookup de tipos de lançamento.
+
+### `014_add_type_afast_falecimento_familia_lei.sql`
+Adiciona o valor `'AFAST FALECIMENTO FAMILIA LEI'` ao ENUM/Lookup de tipos de lançamento.
+
 ### `015_remove_observacao_columns.sql`
 Remove as colunas `observacao` e `observacao_turno2` da tabela `lancamentos_diarios`. Estes campos armazenavam labels de feriado/recesso quando aplicados, mas nunca foram exibidos em nenhuma tela ou relatório do sistema — eram dados mortos.
+
+### `016_create_vw_eventos_consolidados.sql`
+Cria a view `vw_relatorio_atestados_bimestrais` para contagem de atestados médicos agrupados por bimestre civil, considerando dias consecutivos como uma única ocorrência.
 
 ## Como Adicionar Novos Tipos de Lançamento
 

@@ -16,7 +16,9 @@ Esta pasta concentra toda a lógica de aplicação e componentes da interface do
     - **Auto-save**: Persiste automaticamente as alterações da folha no banco de dados em tempo real sempre que um Feriado é aplicado ou revertido via modal.
     - **Impressão em Lote**: Implementa `handleBatchPrintOnly` para imprimir múltiplas folhas de ponto selecionadas sem forçar salvar no BD ou realizar pré-preenchimento.
     - **Modal de Relatórios**: Estado `showReportsModal` controla o `<ReportsModal>` que recebe `profissionais` (array completo), `initialMonth` e `initialYear`. Relatórios operam sobre todas as folhas do período via API.
--   **`main.tsx`**: Ponto de entrada oficial da aplicação React montando a estrutura do DOM no `index.html`.
+    - **Entrega e Devolução**: Integra os componentes `<TimesheetDeliveryModal>` e `<ReturnMemoModal>` para geração de memorandos oficiais de encaminhamento e devolução de servidores à UNIGEP.
+    - **Tipos Dinâmicos**: Carrega a lista oficial de tipos de lançamento (`ENTRY_TYPES`) diretamente do banco de dados na inicialização, garantindo sincronia entre frontend e backend.
+    - **`main.tsx`**: Ponto de entrada oficial da aplicação React montando a estrutura do DOM no `index.html`.
 -   **`index.css`**: Contém todas as declarações de estilos globais, configurações do Tailwind CSS e definições de layout para impressão (como quebras de página controladas).
 -   **`logo.png`**: Logotipo utilizado no cabeçalho e na folha de ponto oficial.
 -   **`MODIFICATION_MEMORY.md`**: Registro consolidado de todas as melhorias visuais e funcionais aplicadas nesta camada.

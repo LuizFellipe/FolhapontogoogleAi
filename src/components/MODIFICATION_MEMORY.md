@@ -2,7 +2,128 @@
 
 ---
 
+## [2026-06-15] - Ajustes de Layout e Validações de Data: ReturnMemoModal
+
+### 🔍 Alterações Realizadas
+
+#### 1. `src/components/ReturnMemoModal.tsx` — Refinamentos de layout e validações
+
+**Layout do documento impresso (`PrintDocument`):**
+- Cabeçalho reestruturado: logo, título e linha "MEMO nº / Guará / data" agora ficam na **mesma célula**, usando CSS Grid (2 colunas). Logo ocupa as 2 linhas à esquerda; título na linha superior direita; MEMO nº/Guará/data na linha inferior direita — fiel ao `layout_memo.jpg` original.
+- Brasão aumentado de 44px → 62px.
+- Espaçador de 6px inserido entre a linha "Ao(À) UNIDADE REGIONAL" e a célula "Nome", replicando o espaçamento intencional do original.
+- Área de assinatura ampliada: 90px → 180px de altura.
+- Fonte alterada de `Times New Roman` para `Arial, Helvetica, sans-serif` em todo o documento impresso, aproximando do original.
+
+**Máscara de data:**
+- Campos "Data de Admissão" e "Último Dia Trabalhado" recebem máscara automática `dd/mm/aaaa` via função `maskDate` (filtra dígitos e insere barras conforme digitação).
+
+**Validação de datas com modal de alerta:**
+- Função `parseDate` valida data completa (rejeita datas inválidas como 31/02).
+- Função `validateDates` disparada no `onBlur` de ambos os campos, com 5 verificações:
+  1. Último dia em ano diferente do atual.
+  2. Último dia no futuro.
+  3. Último dia anterior à data de admissão.
+  4. Diferença > 50 anos entre admissão e último dia.
+  5. Data de admissão no futuro.
+- Estado `alertMsg` controla exibição de modal de alerta (z-index 60, estilo âmbar), sem bloquear preenchimento. Fecha ao clicar "Entendido".
+
+### ✅ Arquivos Modificados
+- `src/components/ReturnMemoModal.tsx`
+
+---
+
+## [2026-06-15] - Funcionalidade: Modal de Memorando de Devolução (ReturnMemoModal)
+
+### 🔍 Alterações Realizadas
+
+#### 1. `src/components/ReturnMemoModal.tsx` — Novo componente
+- Modal para geração do memorando oficial de devolução de servidor à UNIGEP.
+- **Campos do cabeçalho**: Vínculo (EFETIVOS | TEMPORÁRIOS), Mês, Ano, MEMO nº, Data de emissão.
+- **Seleção individual**: radio buttons — somente 1 profissional por vez (diferença do TimesheetDeliveryModal).
+- **Filtro de cargo** (sidebar, somente EFETIVOS): ANA.POL.PUB.G.E, PEDAGOGO, PROF. DE EDUC. BÁSICA.
+- **Painel de detalhes** (aparece ao selecionar profissional):
+  - Matrícula/Nome readonly (vindos do cadastro).
+  - Data de Admissão, Último Dia Trabalhado (texto livre).
+  - Carga (1=20h / 2=40h / Ambas), Turno (Matutino/Vespertino/Noturno).
+  - Abono: radio Não usufruiu / Não faz jus / Usufruiu + campo de dias.
+  - LTS (Portaria 40/2011): radio Não usufruiu / Usufruiu + campo de dias.
+  - TRE: checkbox + campo de dias.
+  - **Motivo da Devolução**: select com 27 motivos oficiais (008 a 000).
+  - Observações (textarea).
+- **Impressão A4** (`window.print()`): `PrintDocument` fiel ao `MemoDevolucao.pdf` oficial:
+  - Cabeçalho institucional (logo 52px + 4 linhas hierárquicas).
+  - Título "Memorando de Devolução" sublinhado.
+  - MEMO nº / GUARÁ-DF data.
+  - Destinatário "Ao(À) UNIDADE REGIONAL DE GESTÃO DE PESSOAS".
+  - Tabela Nome/Matrícula/Disciplina/Cargo/Carga/Admissão/Turno.
+  - Texto de último dia + Motivo.
+  - Checklist de Abono / LTS / TRE com marcações ( X ) conforme seleção.
+  - Rodapé: Assinatura do Servidor + caixa Carimbo/Assinatura do Diretor.
+- **Lista de motivos**: 27 códigos oficiais (008 LOTACAO PROVISORIA … 000 A PEDIDO).
+- Reutiliza classe `.delivery-print-page` (já existente no CSS).
+
+#### 2. `src/components/EmployeeNavigator.tsx` — Novo botão
+- Adicionado ícone `CornerUpLeft` ao import do lucide-react.
+- Adicionada prop `onOpenReturnMemoModal?: () => void`.
+- Botão "Memo Devolução" inserido no grupo DOCUMENTOS, após "Entrega de Folhas", com estilo outline neutro idêntico.
+
+#### 3. `src/App.tsx` — Integração
+- Import de `ReturnMemoModal`.
+- Estado `showReturnMemoModal: boolean`.
+- Prop `onOpenReturnMemoModal={() => setShowReturnMemoModal(true)}` passada ao `EmployeeNavigator`.
+- Renderização de `<ReturnMemoModal ... />` após `<TimesheetDeliveryModal />`.
+
+### ✅ Arquivos Modificados
+- `src/components/ReturnMemoModal.tsx` *(novo)*
+- `src/components/EmployeeNavigator.tsx`
+- `src/App.tsx`
+
+### 🎯 Objetivo
+Gerar o memorando oficial de devolução de servidor, fiel ao PDF `MemoDevolucao.pdf`, com seleção individual de profissional, formulário completo de dados (carga, turno, abono, LTS, TRE, motivo) e 27 motivos oficiais codificados.
+
+---
+
+## [2026-06-15] - Ajuste de fidelidade visual: Memo de Devolução (ReturnMemoModal — PrintDocument)
+
+### 🔍 Alterações Realizadas (`src/components/ReturnMemoModal.tsx` — componente `PrintDocument`)
+
+#### 1. Estrutura geral → tabela com bordas
+- `PrintDocument` reescrito de `flex` com divs soltos para **tabela HTML** com `borderCollapse: collapse` e `1px solid #000` em cada célula.
+- `<colgroup>` define 4 colunas: 18% / 42% / 17% / 23% — garante alinhamento consistente em todo o documento.
+
+#### 2. Linha de cabeçalho
+- Logo (44px) + "Memorando de Devolução" em bold 12pt centralizados dentro da célula bordada (colspan=4).
+
+#### 3. Linha MEMO nº / data
+- Própria célula bordada (colspan=4): `MEMO nº {num}  Guará -DF, {data}.`
+
+#### 4. Linhas institucionais
+- Linha escola CETEG (colspan=4).
+- Linha Ao(À) UNIDADE... | Código: 990210000029 (3 + 1 colunas).
+
+#### 5. Bloco servidor (3 linhas de células)
+- **Nome**: colspan=4, texto uppercase em `<strong>` 10pt com label "Nome" em 7.5pt acima.
+- **Matrícula | Disciplina | Série | Cargo**: 4 células individuais com label mini acima de cada valor.
+- **Carga 1(X) 2(X) | Data Admissão | Turno Mat/Vesp/Not**: carga e admissão em 1 célula cada; turno em colspan=2.
+
+#### 6. Bloco de texto + Informamos ainda
+- Dois blocos bordados (colspan=4) separados: primeiro com "último dia + motivo", segundo com checklist de Abono / LTS / TRE em `( X )` / `(   )`.
+
+#### 7. Rodapé
+- Dois blocos lado a lado (colspan=2 cada): "Assinatura do(a) Servidor(a)" | "Carimbo e Assinatura do(a) Diretor(a)".
+
+### ✅ Arquivos Modificados
+- `src/components/ReturnMemoModal.tsx`
+- `src/components/README.md`
+
+### 🎯 Objetivo
+Tornar o memorando impresso idêntico ao `layout_memo.jpg` e `MemoDevolucao.pdf` oficiais, substituindo layout flex ad-hoc por estrutura de tabela com bordas bem definidas — padrão dos documentos SEEDF.
+
+---
+
 ## [2026-06-15] - UX/UI: Reorganização e despoluição do EmployeeNavigator
+
 
 ### 🔍 Alterações Realizadas (`src/components/EmployeeNavigator.tsx`)
 

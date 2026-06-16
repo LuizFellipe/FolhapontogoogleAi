@@ -45,8 +45,10 @@ O `apiService` encapsula toda a lógica de persistência de dados:
 6.  **Relatórios**
     -   `getLancamentosRelatorio()`: Relatório de lançamentos por período
     -   `getAdicionaNoturnoRelatorio()`: Relatório de adicional noturno
+    -   `getAtestadosBimestrais(matricula, ano)`: Consulta contagem de atestados médicos por bimestre civil.
 
-7.  **Helpers de Conversão**
+7.  **Helpers e Consultas**
+    -   `getTiposLancamento()`: Consulta a lista de tipos de lançamento (valor, label, código) do banco de dados.
     -   `convertEmployeeToProfissional()`: Mapeia objetos do frontend para o formato aceito pelo banco de dados (MySQL).
     -   `convertProfissionalToEmployee()`: Converte do banco para o estado do React.
     -   `saveCompleteTimesheet()`: Orquestrador que agrupa a criação/atualização de profissional, folha, lançamentos e resumo em uma única chamada lógica para o usuário.

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, ChevronRight, User, Trash2, ClipboardList, X, Printer, Calendar, FileText, Send } from 'lucide-react';
+import { ChevronLeft, ChevronRight, User, Trash2, ClipboardList, X, Printer, Calendar, FileText, Send, CornerUpLeft } from 'lucide-react';
 
 interface Profissional {
   id: number;
@@ -20,6 +20,7 @@ interface Props {
   onOpenHolidayModal?: () => void;
   onOpenReportsModal?: () => void;
   onOpenDeliveryModal?: () => void;
+  onOpenReturnMemoModal?: () => void;
   isPreFilling?: boolean;
 }
 
@@ -36,6 +37,7 @@ export const EmployeeNavigator: React.FC<Props> = ({
   onOpenHolidayModal,
   onOpenReportsModal,
   onOpenDeliveryModal,
+  onOpenReturnMemoModal,
   isPreFilling = false,
 }) => {
   const canGoPrevious = currentIndex > 0;
@@ -175,7 +177,7 @@ export const EmployeeNavigator: React.FC<Props> = ({
       </div>
 
       {/* Linha 2: ações agrupadas por escopo (Folha Atual | Documentos) */}
-      {(onPreFill || onClear || onBatchGenerate || onOpenReportsModal || onOpenDeliveryModal) && (
+      {(onPreFill || onClear || onBatchGenerate || onOpenReportsModal || onOpenDeliveryModal || onOpenReturnMemoModal) && (
         <div className="flex items-end gap-2 flex-wrap">
 
           {/* Grupo: FOLHA ATUAL (edita a folha do profissional atual) */}
@@ -220,7 +222,7 @@ export const EmployeeNavigator: React.FC<Props> = ({
           )}
 
           {/* Grupo: DOCUMENTOS (gera/imprime, escopo global) */}
-          {(onOpenReportsModal || onOpenDeliveryModal || onBatchGenerate) && (
+          {(onOpenReportsModal || onOpenDeliveryModal || onBatchGenerate || onOpenReturnMemoModal) && (
             <div className="flex flex-col gap-1">
               <span className="text-[10px] uppercase tracking-wider text-stone-400 font-medium pl-1">Documentos</span>
               <div className="flex items-center gap-1.5 bg-stone-50 border border-stone-200 rounded-xl p-1.5">
@@ -242,6 +244,16 @@ export const EmployeeNavigator: React.FC<Props> = ({
                   >
                     <Send className="w-3.5 h-3.5" />
                     Entrega de Folhas
+                  </button>
+                )}
+                {onOpenReturnMemoModal && (
+                  <button
+                    onClick={onOpenReturnMemoModal}
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium bg-white border border-stone-300 text-stone-700 hover:bg-stone-50 hover:border-stone-400 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
+                    title="Gerar memorando de devolução"
+                  >
+                    <CornerUpLeft className="w-3.5 h-3.5" />
+                    Memo Devolução
                   </button>
                 )}
                 {onBatchGenerate && (

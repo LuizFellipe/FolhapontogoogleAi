@@ -2,6 +2,16 @@
 
 ## Registro de Alterações
 
+### 2026-06-15 - Consulta de Atestados Bimestrais
+- **Motivo**: Bloqueio de lançamentos excedentes de atestado médico por bimestre
+- **Ações**:
+  - Adicionado `getAtestadosBimestrais(matricula, ano)` em `api.ts` — `GET /api/atestados-bimestrais?matricula=<mat>&ano=<ano>`
+
+### 2026-06-12 - Consulta Dinâmica de Tipos de Lançamento
+- **Motivo**: Desacoplar os tipos de lançamento do frontend (types.ts) e usar o banco como fonte de verdade
+- **Ações**:
+  - Adicionado `getTiposLancamento()` em `api.ts` — `GET /api/tipos-lancamento`
+
 ### 2026-06-09 - Adição de Métodos para Recessos
 - **Motivo**: Nova funcionalidade de gestão de recessos (períodos com data início + fim)
 - **Ações**:
