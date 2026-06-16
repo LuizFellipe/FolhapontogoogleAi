@@ -114,3 +114,15 @@
   background: white;
   box-sizing: border-box;
 }
+
+/* Entrega de Folhas de Ponto — formato A4 */
+@media print {
+  .delivery-print-page {
+    width: 210mm !important;
+    min-height: 297mm !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    page-break-after: always;
+  }
+}

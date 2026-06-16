@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, ChevronRight, User, Trash2, ClipboardList, X, Printer, Calendar, FileText } from 'lucide-react';
+import { ChevronLeft, ChevronRight, User, Trash2, ClipboardList, X, Printer, Calendar, FileText, Send } from 'lucide-react';
 
 interface Profissional {
   id: number;
@@ -19,6 +19,7 @@ interface Props {
   onBatchGenerate?: () => void;
   onOpenHolidayModal?: () => void;
   onOpenReportsModal?: () => void;
+  onOpenDeliveryModal?: () => void;
   isPreFilling?: boolean;
 }
 
@@ -34,6 +35,7 @@ export const EmployeeNavigator: React.FC<Props> = ({
   onBatchGenerate,
   onOpenHolidayModal,
   onOpenReportsModal,
+  onOpenDeliveryModal,
   isPreFilling = false,
 }) => {
   const canGoPrevious = currentIndex > 0;
@@ -153,7 +155,7 @@ export const EmployeeNavigator: React.FC<Props> = ({
           {onNew && (
             <button
               onClick={onNew}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 hover:bg-green-100 rounded-lg transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 hover:bg-green-100 rounded-lg transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400"
               title="Novo profissional"
             >
               <User className="w-3.5 h-3.5" />
@@ -163,7 +165,7 @@ export const EmployeeNavigator: React.FC<Props> = ({
           {onDelete && currentProfissional && (
             <button
               onClick={() => onDelete(currentProfissional.id, currentProfissional.nome)}
-              className="p-1.5 text-red-500 hover:bg-red-50 hover:text-red-700 border border-transparent hover:border-red-200 rounded-lg transition-all"
+              className="p-1.5 text-red-500 hover:bg-red-50 hover:text-red-700 border border-transparent hover:border-red-200 rounded-lg transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
               title="Excluir profissional"
             >
               <Trash2 className="w-4 h-4" />
@@ -172,74 +174,89 @@ export const EmployeeNavigator: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* Linha 2: ações de lançamento agrupadas */}
-      {(onPreFill || onClear) && (
-        <div className="flex items-center gap-2 flex-wrap">
+      {/* Linha 2: ações agrupadas por escopo (Folha Atual | Documentos) */}
+      {(onPreFill || onClear || onBatchGenerate || onOpenReportsModal || onOpenDeliveryModal) && (
+        <div className="flex items-end gap-2 flex-wrap">
 
-          {/* Grupo 1: Lançamentos (Pré Preenchimento + Limpar + Feriados) */}
-          <div className="flex items-center gap-1.5 bg-stone-50 border border-stone-200 rounded-xl p-1.5">
-            {onPreFill && (
-              <button
-                onClick={onPreFill}
-                disabled={isPreFilling || isNewProfissional}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
-                title="Pré preenchimento com CPIP e CURSO de folha anterior do mesmo ano"
-              >
-                <ClipboardList className="w-3.5 h-3.5" />
-                {isPreFilling ? 'Buscando...' : 'Pré Preenchimento'}
-              </button>
-            )}
-            {onClear && (
-              <button
-                onClick={onClear}
-                disabled={isNewProfissional}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium text-stone-600 hover:bg-stone-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                title="Limpar todos os lançamentos para TRABALHO NORMAL"
-              >
-                <X className="w-3.5 h-3.5" />
-                Limpar
-              </button>
-            )}
-            {onOpenHolidayModal && (
-              <button
-                onClick={onOpenHolidayModal}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium text-indigo-700 hover:bg-indigo-100 transition-all"
-                title="Lançar Feriados"
-              >
-                <Calendar className="w-3.5 h-3.5" />
-                Feriados
-              </button>
-            )}
-          </div>
-
-          {/* Separador */}
-          {(onBatchGenerate || onOpenReportsModal) && (
-            <div className="w-px h-8 bg-stone-300 flex-shrink-0" />
+          {/* Grupo: FOLHA ATUAL (edita a folha do profissional atual) */}
+          {(onPreFill || onClear || onOpenHolidayModal) && (
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] uppercase tracking-wider text-stone-400 font-medium pl-1">Folha Atual</span>
+              <div className="flex items-center gap-1.5 bg-stone-50 border border-stone-200 rounded-xl p-1.5">
+                {onPreFill && (
+                  <button
+                    onClick={onPreFill}
+                    disabled={isPreFilling || isNewProfissional}
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+                    title="Pré preenchimento com CPIP e CURSO de folha anterior do mesmo ano"
+                  >
+                    <ClipboardList className="w-3.5 h-3.5" />
+                    {isPreFilling ? 'Buscando...' : 'Pré Preenchimento'}
+                  </button>
+                )}
+                {onClear && (
+                  <button
+                    onClick={onClear}
+                    disabled={isNewProfissional}
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium text-stone-600 hover:bg-stone-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
+                    title="Limpar todos os lançamentos para TRABALHO NORMAL"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    Limpar
+                  </button>
+                )}
+                {onOpenHolidayModal && (
+                  <button
+                    onClick={onOpenHolidayModal}
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium text-stone-600 hover:bg-stone-200 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
+                    title="Lançar Feriados"
+                  >
+                    <Calendar className="w-3.5 h-3.5" />
+                    Feriados
+                  </button>
+                )}
+              </div>
+            </div>
           )}
 
-          {/* Grupo 2: Operações globais (Lote + Relatórios) */}
-          <div className="flex items-center gap-1.5">
-            {onBatchGenerate && (
-              <button
-                onClick={onBatchGenerate}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium bg-stone-800 text-stone-100 hover:bg-stone-700 transition-all shadow-sm"
-                title="Gerar folhas de ponto em lote para vários profissionais"
-              >
-                <Printer className="w-3.5 h-3.5" />
-                Gerar em Lote
-              </button>
-            )}
-            {onOpenReportsModal && (
-              <button
-                onClick={onOpenReportsModal}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium bg-teal-700 text-white hover:bg-teal-800 transition-all shadow-sm"
-                title="Relatórios do profissional"
-              >
-                <FileText className="w-3.5 h-3.5" />
-                Relatórios
-              </button>
-            )}
-          </div>
+          {/* Grupo: DOCUMENTOS (gera/imprime, escopo global) */}
+          {(onOpenReportsModal || onOpenDeliveryModal || onBatchGenerate) && (
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] uppercase tracking-wider text-stone-400 font-medium pl-1">Documentos</span>
+              <div className="flex items-center gap-1.5 bg-stone-50 border border-stone-200 rounded-xl p-1.5">
+                {onOpenReportsModal && (
+                  <button
+                    onClick={onOpenReportsModal}
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium bg-white border border-stone-300 text-stone-700 hover:bg-stone-50 hover:border-stone-400 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
+                    title="Relatórios do profissional"
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    Relatórios
+                  </button>
+                )}
+                {onOpenDeliveryModal && (
+                  <button
+                    onClick={onOpenDeliveryModal}
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium bg-white border border-stone-300 text-stone-700 hover:bg-stone-50 hover:border-stone-400 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
+                    title="Gerar memorando de entrega de folhas de ponto"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    Entrega de Folhas
+                  </button>
+                )}
+                {onBatchGenerate && (
+                  <button
+                    onClick={onBatchGenerate}
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium bg-white border border-stone-300 text-stone-700 hover:bg-stone-50 hover:border-stone-400 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
+                    title="Gerar folhas de ponto em lote para vários profissionais"
+                  >
+                    <Printer className="w-3.5 h-3.5" />
+                    Gerar em Lote
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

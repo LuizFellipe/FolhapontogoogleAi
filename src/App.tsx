@@ -9,6 +9,7 @@ import { EmployeeNavigator } from './components/EmployeeNavigator';
 import { BatchTimesheetModal } from './components/BatchTimesheetModal';
 import { HolidayModal, Holiday, Recesso } from './components/HolidayModal';
 import { ReportsModal } from './components/ReportsModal';
+import { TimesheetDeliveryModal } from './components/TimesheetDeliveryModal';
 import { TimesheetData, EmployeeData, DailyEntry, EntryType, SummaryEntry, MONTHS, ENTRY_TYPES } from './types';
 import { Printer, FileText, Settings, Download, Save, Database } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -126,6 +127,9 @@ export default function App() {
 
   // Estados para Modal de Relatórios
   const [showReportsModal, setShowReportsModal] = useState(false);
+
+  // Estados para Modal de Entrega de Folhas
+  const [showDeliveryModal, setShowDeliveryModal] = useState(false);
 
   const [dynamicTypes, setDynamicTypes] = useState<typeof ENTRY_TYPES>(ENTRY_TYPES);
 
@@ -1009,6 +1013,7 @@ export default function App() {
                     onBatchGenerate={() => setShowBatchModal(true)}
                     onOpenHolidayModal={() => setShowHolidayModal(true)}
                     onOpenReportsModal={() => setShowReportsModal(true)}
+                    onOpenDeliveryModal={() => setShowDeliveryModal(true)}
                     isPreFilling={isPreFilling}
                   />
                 </div>
@@ -1115,6 +1120,14 @@ export default function App() {
       <ReportsModal
         isOpen={showReportsModal}
         onClose={() => setShowReportsModal(false)}
+        profissionais={profissionais}
+        initialMonth={month}
+        initialYear={year}
+      />
+
+      <TimesheetDeliveryModal
+        isOpen={showDeliveryModal}
+        onClose={() => setShowDeliveryModal(false)}
         profissionais={profissionais}
         initialMonth={month}
         initialYear={year}

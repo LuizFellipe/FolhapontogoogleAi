@@ -2,7 +2,108 @@
 
 ---
 
-## [2026-06-14] - Funcionalidade: Regra de Atestado Médico por Bimestre Civil (Hard-Block)
+## [2026-06-15] - UX/UI: Reorganização e despoluição do EmployeeNavigator
+
+### 🔍 Alterações Realizadas (`src/components/EmployeeNavigator.tsx`)
+
+#### 1. Reorganização da Linha 2 por escopo
+- Ações agrupadas em **dois clusters rotulados** (eyebrow `text-[10px] uppercase tracking-wider text-stone-400`):
+  - **FOLHA ATUAL** (edita a folha do profissional atual): Pré Preenchimento · Limpar · Feriados.
+  - **DOCUMENTOS** (escopo global): Relatórios · Entrega de Folhas · Gerar em Lote.
+- Grupo DOCUMENTOS reordenado (antes: Lote → Relatórios → Entrega) e envolvido no mesmo container `bg-stone-50 border border-stone-200 rounded-xl p-1.5` do grupo FOLHA ATUAL (simetria).
+
+#### 2. Paleta — monocromático + 3 sinais semânticos
+- **Eliminados** os accents indigo e teal. Cor agora só carrega significado:
+  - verde = criar (Novo); vermelho = destruir (Excluir); amber = ação primária (Pré Preenchimento, único âncora visual).
+- Três níveis de botão: *primário* (amber), *ghost* stone (Limpar, Feriados), *outline neutro* `bg-white border-stone-300` (Relatórios, Entrega, Lote).
+- Feriados: `text-indigo-700` → ghost stone. Lote: `bg-stone-800` → outline. Relatórios: `bg-teal-700` → outline. Entrega: `bg-indigo-700` → outline.
+
+#### 3. Acessibilidade
+- Adicionado `focus-visible:ring-2` a todos os botões de ação (incluindo Novo, Excluir, Feriados, Relatórios, Entrega, Lote).
+- Linha 2 mantém `flex-wrap` (responsivo).
+
+### ✅ Arquivos Modificados
+- `src/components/EmployeeNavigator.tsx`
+
+### 🎯 Objetivo
+Reduzir poluição visual (arco-íris de accents) e reorganizar botões por função/escopo, com layout mais moderno e simples. Mudança 100% presentacional — props, wiring e API inalterados.
+
+---
+
+## [2026-06-15] - Ajuste de fidelidade visual: Memo de Entrega (TimesheetDeliveryModal)
+
+### 🔍 Alterações Realizadas (`src/components/TimesheetDeliveryModal.tsx` — componente `PrintDocument`)
+
+#### 1. Cabeçalho institucional
+- 1ª linha "GOVERNO DO DISTRITO FEDERAL" em **13pt**; demais 3 linhas em **11pt**, `lineHeight 1.3` (hierarquia igual ao PDF).
+- Logo reduzida de 64px → **52px**.
+
+#### 2. Espaçamento / tipografia do corpo
+- Parágrafo do corpo `lineHeight` 1.55 → **1.4**.
+- Folgas verticais MEMO/data, vocativo e corpo de 28px → **24px**.
+
+#### 3. Texto dos parágrafos
+- Mês renderizado em **CAIXA ALTA** (`mesLabel.toUpperCase()`) nos dois vínculos (ex.: JUNHO/2026).
+- Texto Efetivo encerra com `;` ("...abaixo relacionado(s);").
+
+#### 4. Tabela
+- Fonte das linhas (Matrícula/Nome/Cargo) 11pt → **9.5pt**.
+- Coluna **Cargo** estreitada (150px → **105px**) → encosta a coluna mais à direita da página.
+
+#### 5. Rodapé reformulado (fiel a `fim_relatorio_folhaponto_ambos.jpg`)
+- Caixa esquerda Carimbo/Assinatura: **300×150**, texto centralizado na base.
+- Caixa direita UNIGEP: título "RECEBIDO NA UNIGEP GUARA EM" + data `___/___/___` na **mesma célula**; linha "ÀS ... MINUTOS"; base com duas linhas de assinatura (borda superior) rotuladas `visto` / `matrícula` (sem divisória vertical).
+- Container do rodapé com **`breakInside`/`pageBreakInside: avoid`** → nunca dividido entre 2 páginas.
+
+### ✅ Arquivos Modificados
+- `src/components/TimesheetDeliveryModal.tsx`
+- `src/components/README.md`
+
+### 🎯 Objetivo
+Aproximar ao máximo o memorando impresso dos PDFs oficiais `MemoEntregaFP.pdf` (Efetivos) e `MemoEntregaContrato.pdf` (Temporários), corrigindo tipografia, alinhamento da coluna Cargo e impedindo quebra do rodapé entre páginas.
+
+---
+
+## [2026-06-15] - Funcionalidade: Modal de Entrega de Folhas de Ponto (TimesheetDeliveryModal)
+
+### 🔍 Alterações Realizadas
+
+#### 1. `src/components/TimesheetDeliveryModal.tsx` — Novo componente
+- Modal para geração do memorando de encaminhamento de folhas de ponto à UNIGEP.
+- **Campos do cabeçalho**: Vínculo (EFETIVOS | TEMPORÁRIOS), Mês, Ano, MEMO nº (manual), Data de emissão.
+- **Filtro de vínculo**: EFETIVOS → `!cargo.includes('TEMP')`; TEMPORÁRIOS → `cargo.includes('TEMP')`.
+- **Filtro de cargo multi-seleção** (somente EFETIVOS): ANA.POL.PUB.G.E, PEDAGOGO, PROF. DE EDUC. BÁSICA — checkboxes que podem ser combinados simultaneamente.
+- **Lista de profissionais**: todos do vínculo/filtro ativo, ordem alfabética, checkbox individual + "Selecionar todos".
+- **Impressão A4** (`window.print()`): `PrintDocument` usa inline styles + classe `delivery-print-page`. Cabeçalho institucional com `logo.png`, MEMO nº / data, vocativo "Senhor(a) Coordenador(a),", parágrafo diferenciado por vínculo, tabela Matrícula · Nome (uppercase) · Cargo (abreviado), rodapé com 2 caixas (assinatura e recebimento UNIGEP).
+- **`abbreviateCargo()`**: TEMP → 'PROF TEMP'; PROFESSOR DE EDUC. BASICA → 'PROF'; PEDAGOGO → 'PEDAGOGO'; ANA.POL → 'ANA.POL.PUB.G.E'; demais → primeiro segmento.
+- **Isolamento de impressão**: modal UI usa classe `no-print`; conteúdo A4 usa `hidden print:block` — ao imprimir, apenas o documento aparece.
+
+#### 2. `src/components/EmployeeNavigator.tsx` — Novo botão
+- Adicionada prop `onOpenDeliveryModal?: () => void`.
+- Adicionado ícone `Send` ao import do lucide-react.
+- Botão "Entrega de Folhas" (fundo `indigo-700`) inserido no Grupo 2 de ações, após o botão "Relatórios".
+
+#### 3. `src/App.tsx` — Integração
+- Import de `TimesheetDeliveryModal`.
+- Estado `showDeliveryModal: boolean`.
+- Prop `onOpenDeliveryModal={() => setShowDeliveryModal(true)}` passada ao `EmployeeNavigator`.
+- Renderização de `<TimesheetDeliveryModal ... />` após o `<ReportsModal />`.
+
+#### 4. `src/index.css` — Regra de impressão
+- Adicionada regra `.delivery-print-page` em `@media print`: `width: 210mm`, `min-height: 297mm`, `page-break-after: always`.
+
+### ✅ Arquivos Modificados
+- `src/components/TimesheetDeliveryModal.tsx` *(novo)*
+- `src/components/EmployeeNavigator.tsx`
+- `src/App.tsx`
+- `src/index.css`
+
+### 🎯 Objetivo
+Gerar o memorando oficial de encaminhamento das folhas de ponto à UNIGEP, em formato A4 fiel aos modelos `modal_formato_relatorio_folhaponto_efetivo.jpg` e `modal_formato_relatorio_folhaponto_temporario.jpg`, com seleção multi-cargo e distinção clara entre vínculos Efetivo e Temporário.
+
+---
+
+
 
 ### 🔍 Alterações Realizadas
 
