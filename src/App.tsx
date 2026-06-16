@@ -418,8 +418,21 @@ export default function App() {
                 dia: e.day, tipo: e.type, tipo_turno2: e.type_turno2,
               }));
               await apiService.saveLancamentosDiarios(folhas[0].id, lancamentos);
+
+              const summaryEntries = computeSummaryFromEntries(updatedEntries, prof?.carga_horaria, dynamicTypes);
+              const resumoEntries = summaryEntries.map(e => ({
+                operacao: e.operation, codigo: e.code, carga: e.carga,
+                meses: e.months, horas_dias: e.hoursDays, dia_inicio: e.startDay, dia_fim: e.endDay
+              }));
+              await apiService.saveResumoFolha(folhas[0].id, resumoEntries);
+
               const data = await apiService.loadCompleteTimesheet(profId, mes, ano);
-              if (data) results.push(data);
+              if (data) {
+                if (!data.summaryEntries || data.summaryEntries.length === 0) {
+                  data.summaryEntries = summaryEntries;
+                }
+                results.push(data);
+              }
             }
           } else {
             const data = await apiService.loadCompleteTimesheet(profId, mes, ano);
