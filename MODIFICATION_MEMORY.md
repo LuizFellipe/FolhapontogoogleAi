@@ -1,5 +1,52 @@
 # Memória de Modificações do Projeto
 
+## [2026-06-15] Auditoria de Raiz e Melhoria de Documentação
+
+### Arquivos Modificados/Removidos:
+- `opencode.json` *(removido — exposição de API Key)*
+- `tree.txt` *(reescrito com comentários úteis)*
+- `README.md` *(reescrito com design moderno)*
+
+### Alterações:
+
+#### 1. Remoção de Arquivo com Segurança Crítica
+- **`opencode.json`** continha API Key de OpenRouter exposta
+- Arquivo removido imediatamente
+- **Recomendação**: Revogar chave em OpenRouter se foi commitado antes
+
+#### 2. `tree.txt` — Árvore com Documentação
+- Adicionados comentários descritivos a cada arquivo/pasta
+- Emojis para facilitar leitura
+- Documentação de scripts helper (`sync_tipos_lancamento.py`)
+- Seção de sumário técnico
+
+#### 3. `README.md` — Redesign Completo
+- **Antes**: Placeholder com imagens genéricas (picsum.photos)
+- **Depois**: Documentação técnica e visual
+  - Seção **Funcionalidades Destaque**: 10+ features com ícones
+  - **Guia Rápido**: 4 passos (setup → entrada → resumo → impressão)
+  - **Interface em Ação**: Diagrama ASCII da tela principal + Página 1 + Página 2
+  - **Tecnologias**: Tabela com versões
+  - **Ambientes**: Comparação Local vs Docker
+  - **Endpoints**: Tabela de 11+ rotas da API
+  - **Deploy**: Instruções Docker Compose
+  - **Fluxo de Dados**: Diagrama visual
+  - **Scripts**: Documentação de automação
+
+### Objetivos Alcançados:
+- ✅ Remover risco de segurança
+- ✅ Documentar scripts helper não registrados
+- ✅ Melhorar experiência de onboarding
+- ✅ Substituir placeholders por conteúdo real
+- ✅ Adicionar diagrama visual de fluxo
+
+### Próximos Passos:
+- Capturar screenshots reais do sistema via `docker-compose up`
+- Atualizar seção "📸 Interface em Ação" com imagens PNG
+- Documentar como executar screenshots (guia para colaboradores)
+
+---
+
 ## [2026-06-14] Funcionalidade: Tela de Login com Credenciais via .env
 
 ### Arquivos Modificados/Criados:

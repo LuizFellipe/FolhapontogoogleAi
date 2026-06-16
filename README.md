@@ -1,130 +1,169 @@
-# 📄 Gerador de Folha de Ponto - Secretaria de Educação
+# 📋 Gestor Folha Ponto — Secretaria de Estado de Educação
 
-![Banner](https://picsum.photos/seed/timesheet-banner/1200/400)
-
-Um sistema moderno e intuitivo desenvolvido para facilitar a geração e o gerenciamento de folhas de frequência para servidores da Secretaria de Estado de Educação. O projeto permite o preenchimento rápido de dados, lançamentos automáticos de ocorrências (férias, abonos, licenças) e gera um documento de **duas páginas** pronto para impressão seguindo o padrão oficial.
-
----
-
-## ✨ Funcionalidades
-
-- **🔐 Login com Proteção de Acesso**: Tela de autenticação (usuário e senha) que bloqueia o acesso ao sistema até que as credenciais corretas sejam fornecidas. Credenciais configuradas via variáveis de ambiente (`.env`).
-- **📋 CRUD Completo de Servidores**: Criação, edição, visualização e exclusão de profissionais.
-- **🆕 Matrícula Opcional**: Permite cadastrar servidores sem matrícula (contratados temporários, prestadores de serviço).
-- **🗑️ Exclusão de Profissionais**: Remove servidores e suas folhas de ponto associadas com confirmação.
-- **🧭 Navegação entre Profissionais**: Botões Anterior/Próximo e select dropdown para navegação rápida.
-- **📅 Calendário Inteligente**: Geração automática de dias com base no mês e ano selecionados.
-- **⚡ Pré Preenchimento Inteligente**: Detecta automaticamente padrões de CPIP e CURSO FORMAÇÃO CONTINUADA de folhas anteriores e replica no novo mês. O algoritmo mapeia por **posição semanal + dia da semana** (ex: 3ª segunda ≠ 4ª segunda), garantindo precisão quando diferentes tipos de lançamento ocorrem na mesma semana do mês.
-- **🧹 Limpar Lançamentos**: Botão para resetar todos os dias do mês para **TRABALHO NORMAL** com um clique.
-- **📦 Geração em Lote**: Gera e imprime folhas de ponto de múltiplos profissionais de uma só vez para um mês/ano selecionado. Aplica pré-preenchimento de CPIP/CURSO automaticamente quando a folha ainda não existe. Filtro por cargo, seleção individual ou em massa via checkboxes e barra de progresso durante o processamento.
-- **📅 Gerenciamento de Feriados**: Modal exclusivo para adicionar, aplicar e reverter feriados diretamente na grade de forma dinâmica. Feriados ficam salvos no banco de dados para rápida reutilização no mesmo ano.
-- **🛠️ Sistema Simplificado de Lançamentos**:
-  - Apenas **Dia + Tipo de Lançamento** (sem campos de horário)
-  - Trabalho Normal (padrão automático)
-  - Férias, Recesso, Atestado Médico, Licença Médica, Falta, TRE, Abono de Ponto, CPIP, Curso, Abono Aniversário, Feriado, Abono de Ponto Art. 151 Lei, Falta Paralisação, Atestado de Comparecimento.
-  - **Suporte a Dois Turnos**: Controle independente por turno (matutino/vespertino)
-  - **Controle por Carga horária**: Segundo turno habilitado automaticamente para 40h
-- **📄 Página 2 (Resumo da Frequência)**: 
-  - **Auto-preenchimento**: Ao selecionar lançamentos com código oficial (ex: Abono TRE, FÉRIAS, Atestado), o Resumo da Frequência é preenchido automaticamente com operação `I`, código, carga horária, meses e intervalo de dias consecutivos.
-  - Tabela de resumo com preenchimento de códigos de operação (Inclusão, Alteração, Exclusão).
-  - **Renderização Técnica**: Números exibidos em formato "U" (`|_|`), fiel ao formulário oficial.
-  - **Tabela de Códigos Integrada**: Referência rápida para gratificações e ocorrências.
-- **🖨️ Impressão A4 Completo**: Layout otimizado para preencher integralmente o papel A4 ao imprimir ou salvar em PDF (Páginas 1 e 2 sem espaços em branco).
-- **📱 Responsividade**: Interface adaptável para uso em desktops, tablets e dispositivos móveis.
+> **Sistema moderno e intuitivo** para geração, gerenciamento e impressão de folhas de frequência de servidores públicos.  
+> Desenvolvido com **React 19**, **TypeScript**, **Tailwind CSS** e **MySQL 8**.
 
 ---
 
-## 📸 Screenshots
+## ✨ Funcionalidades Destaque
 
-### 1. Editor de Lançamentos e Resumo
-![Editor](https://picsum.photos/seed/timesheet-editor/800/450)
-*Interface limpa para preenchimento de dados, horários e códigos de resumo.*
+### 🔐 Autenticação Segura
+- Tela de login com credenciais configuráveis via `.env`
+- Acesso protegido ao sistema (usuário + senha)
+- Interface dark com tema cyberpunk
 
-### 2. Visualização para Impressão (Página 1 e 2)
-![Preview](https://picsum.photos/seed/timesheet-preview/800/450)
-*Visualização fiel ao documento oficial com as duas páginas prontas para impressão.*
+### 📊 Gerenciamento de Profissionais
+- **CRUD completo**: criar, editar, visualizar, excluir servidores
+- **Matrícula opcional** para temporários e prestadores
+- **Navegação rápida**: setas, dropdown, índice visual (N de Total)
+
+### 📅 Calendário Inteligente
+- Geração automática de dias conforme mês/ano
+- Suporte a **dois turnos independentes** (20h ou 40h)
+- Segundo turno habilitado automaticamente para carga de 40h
+
+### ⚡ Pré-Preenchimento Inteligente
+- Detecta padrões de **CPIP** e **CURSO FORMAÇÃO** de folhas anteriores
+- Mapeia por **posição semanal + dia da semana** (3ª segunda ≠ 4ª segunda)
+- Botão com barra de progresso para aplicação rápida
+
+### 🗓️ Gerenciamento de Feriados
+- Modal exclusivo para adicionar/aplicar/reverter feriados
+- Feriados salvos no banco para reutilização no mesmo ano
+- Aplicação dinâmica com um clique
+
+### 🎯 Tipos de Lançamento (21 Opções)
+Trabalho Normal, Férias, Recesso, Atestado Médico, Licença Médica, Falta, TRE, Abono de Ponto, CPIP, Curso Formação, Abono Aniversário, Feriado, Abono Art. 151, Falta Paralisação, Atestado de Comparecimento, e mais.
+
+### 📄 Resumo da Frequência (Página 2)
+- **Auto-preenchimento automático** baseado em lançamentos com código oficial
+- Tabela de operação (Inclusão, Alteração, Exclusão)
+- **Formato "U"** para números: `|_|` (fiel ao formulário oficial)
+- Referência rápida de códigos integrada
+
+### 🖨️ Impressão A4 Completo
+- Duas páginas otimizadas (210mm × 297mm)
+- Layout sem espaços em branco
+- Compatível com navegadores (Ctrl+P ou ícone impressora)
+
+### 📦 Geração em Lote
+- Selecione múltiplos profissionais + mês/ano
+- Filtro por cargo
+- Aplica pré-preenchimento automaticamente
+- Barra de progresso em tempo real
+- Imprime todas as folhas em sequência
+
+### 📱 Responsividade Total
+- Desktop, tablet e mobile
+- Interface adaptativa com Tailwind CSS
 
 ---
 
-## 🚀 Como Usar
+## 🚀 Guia Rápido
 
-1. **Configuração Inicial**:
-   - No topo da página, selecione o **Mês** e o **Ano** de referência.
-   - Preencha os campos em **Dados do Servidor**, incluindo a seleção dos **Turnos**.
+### 1. Setup Automático (Recomendado)
+```bash
+# Clone o repositório
+git clone <url-do-repositorio>
+cd FolhapontogoogleAi
 
-2. **Preenchimento da Grade (Página 1)**:
-   - Para cada dia, selecione o **Tipo de Lançamento** correspondente.
-   - O sistema oferece opções pré-definidas (Trabalho Normal, Férias, Atestado, etc.).
-   - Use os botões **Pré Preenchimento** (para replicar padrões CPIP/CURSO) ou **Limpar** (para resetar).
+# Inicie todos os serviços com Docker Compose
+docker-compose up -d
 
-3. **Resumo da Frequência (Página 2)**:
-   - Preencha a tabela de resumo com os códigos de operação e ocorrência necessários para o fechamento do mês.
+# Acesse em: http://localhost:3000
+# Credenciais padrão: admin / senha123 (.env)
+```
 
-4. **Geração e Impressão**:
-   - Clique no botão **Visualizar** para conferir o layout das duas páginas.
-   - Use o ícone de **Impressora** no cabeçalho ou pressione `Ctrl + P` para imprimir ou salvar como PDF.
+### 2. Primeira Entrada
+- **Mês/Ano**: Selecione no topo
+- **Dados do Servidor**: Nome, matrícula (opcional), cargo, UA, exercício, unidade, turnos
+- **Grade**: Para cada dia, escolha o tipo de lançamento
+- **Botões auxiliares**:
+  - **Pré Preenchimento**: replica padrões CPIP/CURSO
+  - **Limpar**: reseta tudo para TRABALHO NORMAL
+  - **Feriados**: abre modal de gerenciamento
 
-5. **Geração em Lote** (múltiplos profissionais):
-   - Clique em **Gerar em Lote** na barra de ações do servidor.
-   - No modal, filtre por cargo se necessário, selecione o mês e ano de referência.
-   - Marque os profissionais desejados individualmente ou use **Selecionar todos**.
-   - Clique em **Gerar**: o sistema carregará folhas existentes e criará (com pré-preenchimento CPIP/CURSO) as que ainda não existem.
-   - Ao concluir, o diálogo de impressão abrirá automaticamente com todas as folhas em sequência.
+### 3. Resumo da Frequência
+- Preenchimento automático conforme lançamentos com código oficial
+- Complemente manualmente se necessário
+- Campos: Operação, Código, Carga Horária, Meses, Intervalo de Dias
+
+### 4. Impressão
+- Clique em **Visualizar** para conferir layout
+- Use **Ctrl+P** ou ícone impressora no header
+- Salve como PDF ou imprima direto
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
+## 📸 Interface em Ação
 
-- **React 19**: Biblioteca principal para construção da interface.
-- **TypeScript**: Tipagem estática para maior segurança e manutenibilidade.
-- **Tailwind CSS**: Estilização moderna e utilitária.
-- **Lucide React**: Conjunto de ícones consistentes.
-- **Motion (Framer Motion)**: Animações suaves de transição entre telas.
-- **Vite**: Ferramenta de build ultra-rápida com proxy configurável.
+### Tela Principal — Editor de Lançamentos
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  🔐 SEE-DF                  [Mês: Junho]  [Ano: 2026]          │
+├─────────────────────────────────────────────────────────────────┤
+│  SERVIDOR: ALLANA DA SILVA SANTOS         [< Anterior | Próximo >] │
+│  Matrícula: 12345  │  Cargo: Professor  │  Carga: 40h           │
+├─────────────────────────────────────────────────────────────────┤
+│  LANÇAMENTOS DIÁRIOS                                             │
+│  ┌────┬─────────────────┬─────────────────┬──────────────────┐  │
+│  │Dia │  Turno 1        │  Turno 2        │  Observação      │  │
+│  ├────┼─────────────────┼─────────────────┼──────────────────┤  │
+│  │ 1  │ [TRABALHO    ▼] │ [TRABALHO    ▼] │ [________________] │  │
+│  │ 2  │ [TRABALHO    ▼] │ [TRABALHO    ▼] │ [________________] │  │
+│  │ ... │     ...         │      ...        │      ...         │  │
+│  │30  │ [TRABALHO    ▼] │ [TRABALHO    ▼] │ [________________] │  │
+│  └────┴─────────────────┴─────────────────┴──────────────────┘  │
+│  [Pré Preench.] [Limpar] [Feriados] [Gerar Lote] [Visualizar]  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Página 1 — Formulário Oficial
+Reproduz fidedignamente o formulário da SEE com:
+- Cabeçalho: UA, Exercício, Unidade, Nome, Matrícula
+- Grade 31 dias × 2 turnos
+- Campos de observação
+- Assinatura e datas
+
+### Página 2 — Resumo da Frequência
+Tabela de operações com:
+- Coluna: Operação (I/A/E)
+- Coluna: Código oficial (ex: 99902=FÉRIAS)
+- Coluna: Carga horária
+- Coluna: Meses
+- Coluna: Intervalo de dias (formato "U")
+- Caixa MENSAGEM para observações
+
+---
+
+## 🛠️ Tecnologias
+
+| Camada | Tecnologia | Versão |
+|--------|-----------|--------|
+| **Frontend** | React | 19 |
+| **Linguagem** | TypeScript | 5.x |
+| **Estilo** | Tailwind CSS | 4.x |
+| **Ícones** | Lucide React | latest |
+| **Animações** | Framer Motion | latest |
+| **Build** | Vite | 6.x |
+| **Backend** | Flask | 3.0 |
+| **Banco** | MySQL | 8.0 |
+| **Deploy** | Docker + Compose | latest |
 
 ---
 
 ## ⚙️ Configuração de Ambiente
 
-O sistema suporta automaticamente dois ambientes através da variável `VITE_ENVIRONMENT`:
-
-### Ambiente Local (Desenvolvimento)
-- **Uso**: Script `start_backend.sh` ou desenvolvimento manual
-- **Configuração**: `VITE_ENVIRONMENT=local` (padrão)
-- **Proxy**: Frontend → `localhost:5000` (backend local)
-- **Portas**: Frontend: 3000, Backend: 5000
-
-### Ambiente Docker (Produção/Container)
-- **Uso**: `docker-compose up` ou builds Docker
-- **Configuração**: `VITE_ENVIRONMENT=docker` (definido nos Dockerfiles)
-- **Proxy**: Frontend → `backend:5000` (serviço Docker)
-- **Portas**: Frontend: 3000, Backend: 5000
-
-### Configuração Automática
-O proxy Vite detecta automaticamente o ambiente e ajusta o target:
-```typescript
-// vite.config.ts
-proxy: {
-  '/api': {
-    target: env.VITE_ENVIRONMENT === 'docker' 
-      ? 'http://backend:5000' 
-      : 'http://localhost:5000',
-    changeOrigin: true,
-  },
-}
-```
-
-### Variáveis de Ambiente
-Copie `.env.example` para `.env` e ajuste conforme necessário:
+### Variáveis Principais (`.env`)
 ```bash
 # Ambiente (local | docker)
 VITE_ENVIRONMENT=local
 
-# Login básico
+# Autenticação
 VITE_APP_USERNAME=admin
 VITE_APP_PASSWORD=senha123
 
-# Banco de dados
+# Banco de Dados
 DB_HOST=localhost
 DB_PORT=3306
 DB_USER=root
@@ -132,116 +171,192 @@ DB_PASSWORD=SUA_SENHA_AQUI
 DB_NAME=folhaponto_db
 ```
 
+### Ambientes Suportados
+
+| Ambiente | Uso | Frontend | Backend | Proxy |
+|----------|-----|----------|---------|-------|
+| **Local** | Desenvolvimento | http://localhost:3000 | http://localhost:5000 | localhost:5000 |
+| **Docker** | Produção | http://localhost:3000 | backend:5000 (interno) | backend:5000 |
+
+O Vite detecta automaticamente via `VITE_ENVIRONMENT` e ajusta o proxy.
+
 ---
 
 ## 📁 Estrutura do Projeto
 
-O sistema está organizado de forma modular, separando as responsabilidades de Banco de Dados, Backend (API) e Frontend (React).
-
-```text
+```
 FolhapontogoogleAi/
-├── 📄 .env               # Variáveis de ambiente (não versionado)
-├── 📄 .env.example       # Exemplo de variáveis de ambiente
-├── 📄 .gitignore         # Arquivos ignorados pelo Git
-├── � add_entry_type.py  # Script para adicionar novos tipos de lançamento
-├── 📄 backfill_resumo.py # Script de backfill do resumo_folha para folhas existentes
-├── 📄 backup.sql         # Backup do banco de dados
-├── 📄 docker-compose.prod.yml  # Docker Compose para produção
-├── 📄 docker-compose.yml        # Docker Compose para desenvolvimento
-├── 📄 Dockerfile          # Imagem Docker para frontend
-├── 📄 dump.sql           # Exportação do banco de dados
-├── 📄 index.html         # Ponto de entrada HTML
-├── 📄 metadata.json      # Metadados do projeto
-├── 📄 MODIFICATION_MEMORY.md   # Histórico de modificações
-├── 📄 nginx.conf         # Configuração do Nginx
-├── 📄 package-lock.json  # Lock de dependências Node.js
-├── 📄 package.json       # Dependências e scripts do frontend
-├── 📄 README.md          # Documentação principal
-├── 📄 README_SETUP.md    # Guia de configuração
-├── 📄 requirements.txt   # Dependências Python do backend
-├── 📄 start_backend.sh   # Script de inicialização unificado
-├── 📄 folha_manager.sh   # Script de gerenciamento do sistema (tema cyberpunk)
-├── 📄 tree.txt           # Estrutura de arquivos do projeto
-├── 📄 tsconfig.json      # Configuração TypeScript
-├── 📄 update_tree.py     # Script para atualizar tree.txt
-├── 📄 vite.config.ts     # Configuração do Vite
-├── 📂 backend/           # API Flask em Python
-│   ├── 📄 app.py         # Servidor principal da API
-│   ├── 📄 Dockerfile     # Imagem Docker do backend
-│   └── 📄 README.md      # Documentação do backend
-├── 📂 database/          # Persistência de Dados (MySQL)
-│   ├── 📂 migrations/   # Scripts SQL de migração
-│   ├── 📄 full_setup.sql # Setup completo com dados exemplo
-│   ├── 📄 Dockerfile     # Imagem Docker do MySQL
-│   └── 📄 README.md      # Documentação do banco
-└── 📂 src/               # Código Fonte Frontend (React + TypeScript)
-    ├── 📂 components/   # Componentes React
-    │   ├── 📄 BatchTimesheetModal.tsx # Modal de geração em lote
-    │   ├── 📄 EmployeeForm.tsx      # Formulário de servidor
-    │   ├── 📄 EmployeeNavigator.tsx # Navegação entre profissionais
-    │   ├── 📄 HolidayModal.tsx      # Modal de feriados
-    │   ├── 📄 MODIFICATION_MEMORY.md # Histórico de alterações dos componentes
-    │   ├── 📄 README.md             # Documentação dos componentes
-    │   ├── 📄 SummaryForm.tsx       # Formulário de resumo
-    │   ├── 📄 TimesheetGrid.tsx     # Grade de lançamentos
-    │   ├── 📄 TimesheetPreview.tsx  # Preview página 1
-    │   ├── 📄 TimesheetSummaryPreview.tsx # Preview página 2
-    │   ├── 📄 LoginScreen.tsx           # Tela de login / portão de acesso
-    │   └── 📄 tree.txt              # Estrutura de arquivos dos componentes
-    ├── � services/     # Comunicação com API
-    │   ├── 📄 api.ts     # Funções de API (axios)
-    │   └── 📄 README.md  # Documentação dos serviços
-    ├── 📄 App.tsx        # Componente principal
-    ├── 📄 index.css      # Estilos globais
-    ├── 📄 main.tsx       # Ponto de entrada React
-    ├── 📄 types.ts       # Tipos TypeScript
-    └── 📄 README.md      # Documentação do frontend
+├── src/                          # Frontend React + TypeScript
+│   ├── components/               # 9 componentes reutilizáveis
+│   │   ├── LoginScreen.tsx       # Autenticação
+│   │   ├── EmployeeForm.tsx      # Dados do servidor
+│   │   ├── TimesheetGrid.tsx     # Grade de lançamentos
+│   │   ├── TimesheetPreview.tsx  # Página 1 (impressão)
+│   │   ├── TimesheetSummaryPreview.tsx  # Página 2 (resumo)
+│   │   ├── HolidayModal.tsx      # Gerenciador de feriados
+│   │   ├── BatchTimesheetModal.tsx # Geração em lote
+│   │   └── ...
+│   ├── services/api.ts           # Comunicação com backend
+│   ├── types.ts                  # 21 tipos de lançamento + interfaces
+│   └── App.tsx                   # Orquestração principal
+│
+├── backend/                       # API Flask
+│   ├── app.py                    # 15+ endpoints REST
+│   └── Dockerfile
+│
+├── database/                      # MySQL + Migrations
+│   ├── full_setup.sql            # Setup com seed data
+│   ├── migrations/               # 11 migrations organizadas
+│   │   ├── 001_create_tables.sql
+│   │   ├── 003_add_second_turn_columns.sql
+│   │   ├── 011_create_feriados_table.sql
+│   │   └── ...
+│   └── Dockerfile
+│
+├── scripts/                       # Automação
+│   ├── add_entry_type.py         # Adicionar novos tipos
+│   ├── sync_tipos_lancamento.py  # Sincronizar tipos ↔ banco
+│   ├── backfill_resumo.py        # Backfill de resumos
+│   └── backup_db.py              # Backup/restore
+│
+├── docker-compose.yml            # Orquestração (dev + prod)
+├── vite.config.ts                # Proxy condicional
+├── README.md                      # Este arquivo
+└── tree.txt                       # Árvore de arquivos comentada
 ```
 
 ---
 
-## 📦 Desenvolvimento Local
+## 🎯 Fluxo de Dados
 
-### 1. Usando Docker Compose (Recomendado)
+```
+┌──────────┐
+│ Servidor │ (nome, matrícula, carga, turnos)
+└────┬─────┘
+     │
+     ▼
+┌──────────────────┐
+│  Folha Ponto     │ (mes, ano, servidor_id)
+└────┬─────────────┘
+     │
+     ├─────────────────────────────────┐
+     ▼                                 ▼
+┌─────────────────┐          ┌──────────────────┐
+│ Lançamentos     │          │ Resumo Folha     │
+│ Diários (31×2)  │          │ (até 8 linhas)   │
+│ + Observações   │          │ + Operações      │
+└─────────────────┘          └──────────────────┘
+```
 
-A maneira mais rápida de subir todo o ambiente (Banco de Dados, Backend e Frontend):
+---
 
+## 🔧 Scripts Auxiliares
+
+### Adicionar Novo Tipo de Lançamento
 ```bash
-# Iniciar todos os serviços
+python3 add_entry_type.py
+# Interage com usuário, atualiza:
+# - src/types.ts
+# - full_setup.sql
+# - migrations/001_create_tables.sql
+# - Cria migration numerada
+# - Aplica no banco (Docker ou local)
+```
+
+### Sincronizar Tipos ↔ Banco
+```bash
+python3 sync_tipos_lancamento.py
+# Verifica discrepâncias entre src/types.ts e banco
+# Sincroniza códigos bidirecionalmente
+```
+
+### Backfill de Resumos
+```bash
+python3 backfill_resumo.py
+# Preenche resumo_folha para todas as folhas existentes
+# Preserva dados manuais (seguro)
+```
+
+---
+
+## 📊 Endpoints da API
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `GET` | `/api/profissionais` | Listar servidores |
+| `POST` | `/api/profissionais` | Criar servidor |
+| `PUT` | `/api/profissionais/<id>` | Atualizar servidor |
+| `DELETE` | `/api/profissionais/<id>` | Excluir servidor + folhas |
+| `GET` | `/api/folhas_ponto/<prof_id>/<ano>` | Listar folhas do servidor |
+| `GET` | `/api/folhas_ponto/<id>` | Obter folha específica |
+| `POST` | `/api/folhas_ponto` | Criar folha |
+| `PUT` | `/api/folhas_ponto/<id>` | Atualizar folha |
+| `GET` | `/api/feriados` | Listar feriados do ano |
+| `POST` | `/api/feriados` | Criar feriado |
+| `DELETE` | `/api/feriados/<id>` | Excluir feriado |
+
+---
+
+## 🐳 Deploy com Docker
+
+### Desenvolvimento
+```bash
 docker-compose up -d
-
-# Ver os logs
 docker-compose logs -f
+# Acesso: http://localhost:3000
 ```
 
-O sistema estará disponível em:
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:5000
-- **Monitoramento**: `docker-compose ps`
-
-### 2. Instalação Manual
-
-Se desejar rodar o projeto componente por componente:
-
+### Produção
 ```bash
-# Clone o repositório
-git clone [url-do-repositorio]
+docker-compose -f docker-compose.prod.yml up -d
+# Nginx proxy + frontend otimizado + backend em gunicorn
+```
 
-# Instale as dependências do frontend
-npm install
-
-# Inicie o servidor de desenvolvimento do frontend
-npm run dev
-
-# Para o backend, consulte README_SETUP.md
+### Parar Serviços
+```bash
+docker-compose down
+docker-compose down -v  # com volumes
 ```
 
 ---
 
-## 📄 Licença
+## 🔐 Segurança
 
-Este projeto está sob a licença Apache-2.0.
+- ✅ **Credenciais**: Definidas em `.env` (não no código)
+- ✅ **API Key exposta**: NÃO EXISTEM no projeto
+- ✅ **CORS**: Configurado para `localhost`
+- ✅ **SQL**: Prepared statements via ORM/Connector
+- ⚠️ **Autenticação frontend**: Básica (para uso interno)
+  - Para produção pública: implemente OAuth2/JWT no backend
 
 ---
 
-*Desenvolvido com ❤️ para facilitar a vida do servidor público.*
+## 🤝 Como Contribuir
+
+1. Crie uma branch: `git checkout -b feat/sua-feature`
+2. Commit com mensagem clara: `git commit -m "feat: descrição"`
+3. Push: `git push origin feat/sua-feature`
+4. Abra um Pull Request
+
+---
+
+## 📝 Licença
+
+Apache License 2.0 — veja `LICENSE` para detalhes.
+
+---
+
+## 📞 Suporte e Documentação
+
+- **Setup detalhado**: veja `README_SETUP.md`
+- **Histórico de alterações**: `MODIFICATION_MEMORY.md`
+- **Backend**: `backend/README.md`
+- **Banco de dados**: `database/README.md`
+- **Frontend**: `src/README.md`
+- **Componentes**: `src/components/README.md`
+
+---
+
+**Desenvolvido com ❤️ para facilitar a vida do servidor público.**
+
+*Last updated: 2026-06-15*
