@@ -1,5 +1,36 @@
 # Memória de Modificações do Projeto
 
+## [2026-06-25] Correção: Liberação das Portas 3000-3010 e 5000 nos Scripts de Inicialização
+
+### Arquivos Modificados:
+- `start_backend.sh`
+- `folha_manager.sh`
+
+### Problema:
+O Vite, ao detectar a porta 3000 ocupada, abria automaticamente na próxima porta disponível (3001, 3002, etc.) sem avisar o usuário. Isso ocorria porque:
+1. Nenhum dos dois scripts (`start_backend.sh` e `folha_manager.sh`) verificava ou liberava a porta 3000 antes de iniciar o frontend.
+2. A função `stop_system()` do `folha_manager.sh` usava apenas `kill $PID`, que não matava processos filhos do Node/Vite, deixando as portas ocupadas após o encerramento.
+
+### Correções:
+
+#### 1. `start_backend.sh` — Checagem das portas 3000-3010
+- Adicionado loop `for PORT in $(seq 3000 3010)` antes de iniciar o Vite, que verifica e mata processos em cada porta via `lsof`/`kill -9`.
+- Garante que instâncias órfãs de execuções anteriores sejam encerradas antes de subir o frontend.
+
+#### 2. `folha_manager.sh` — Checagem das portas 3000-3010 na função `start_backend()`
+- Mesmo loop de verificação adicionado antes da linha `nohup npm run dev`, com mensagens no estilo do script (`warning`).
+
+#### 3. `folha_manager.sh` — Correção da função `stop_system()`
+- Adicionado fallback após o `kill` por PID: um loop que varre as portas 5000 e 3000-3010 com `lsof`/`kill -9`.
+- Resolve o problema de processos filhos órfãos do Node que o `kill $PID` sozinho não alcançava.
+
+### Resultado:
+- O frontend agora sempre inicia na porta 3000.
+- O `stop_system()` limpa completamente todas as portas utilizadas.
+- Instâncias órfãs em portas 3001-3010 de execuções anteriores são eliminadas na próxima inicialização.
+
+---
+
 ## [2026-06-15] Auditoria de Raiz e Melhoria de Documentação
 
 ### Arquivos Modificados/Removidos:

@@ -77,6 +77,15 @@ cd ..
 echo "Aguardando backend iniciar..."
 sleep 3
 
+# Matar processos anteriores nas portas 3000-3010 se existirem
+for PORT in $(seq 3000 3010); do
+    if lsof -ti :$PORT >/dev/null 2>&1; then
+        echo "Porta $PORT em uso. Encerrando processo anterior..."
+        lsof -ti :$PORT | xargs kill -9
+    fi
+done
+sleep 1
+
 # Iniciar o frontend em background
 echo "Iniciando frontend Vite na porta 3000..."
 npm run dev &

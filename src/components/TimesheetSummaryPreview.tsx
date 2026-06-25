@@ -49,7 +49,7 @@ export const TimesheetSummaryPreview: React.FC<Props> = ({ data }) => {
   ];
 
   return (
-    <div className="print-page-2 bg-white p-4 sm:p-8 shadow-lg max-w-[210mm] min-h-[297mm] mx-auto text-[9px] font-sans leading-tight border border-stone-300 mt-4 break-before-page flex flex-col">
+    <div className="print-page-2 bg-white p-4 sm:p-8 shadow-lg max-w-[210mm] min-h-[297mm] mx-auto text-[9px] font-sans leading-tight border border-stone-300 mt-4 print:mt-0 flex flex-col">
       {/* Identificação blocks */}
       <div className="border border-black border-b-0 flex divide-x divide-black text-[8px]">
         <div className="p-1.5 w-32">

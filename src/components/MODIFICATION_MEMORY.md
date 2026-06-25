@@ -2,6 +2,38 @@
 
 ---
 
+## [2026-06-25] - Correção: 3ª página em branco ao imprimir no Chrome
+
+### 🔴 Problema Identificado
+Ao clicar em Imprimir (Ctrl+P) no Google Chrome, o preview do navegador exibia 3 páginas — a 3ª saindo completamente em branco. Na visualização em tela ("Visualizar"), apenas as 2 páginas corretas eram exibidas.
+
+### 🔍 Causa Raiz
+Combinação de espaçamentos residuais nos containers pai que, somados à altura fixa de 297mm das páginas, geravam overflow para uma 3ª página:
+1. **`space-y-8`** no wrapper de preview (`App.tsx`) adicionava `margin-top: 2rem` na Página 2 via Tailwind, não zerado pelo CSS de impressão.
+2. **`py-8`** no `<main>`, **`pb-20`** e **`min-h-screen`** no root div contribuíam com padding/min-height extras.
+3. **`break-before-page`** na Página 2 era redundante com `break-after-page` da Página 1, podendo causar dupla quebra em alguns browsers.
+
+### ✅ Soluções Aplicadas
+
+#### 1. `src/index.css` — Reset agressivo dos containers no `@media print`
+- Nova regra zera `#root`, `#root > *`, `main` e `.print-wrapper`: `display: block`, `width/height: auto`, `padding/margin/gap: 0`, `min-height: 0`, `max-width: none`, `border: none`, `background: none`, `overflow: visible`.
+- `.print-wrapper > *` recebe `margin: 0 !important` para anular o `space-y-8` do Tailwind.
+- `.print-page` recebe `page-break-after: always !important` (mais compatível com Chrome que `break-after: page`).
+- `.print-page-2` recebe `page-break-after: avoid !important` e `break-after: avoid !important` para impedir 3ª página.
+
+#### 2. `src/components/TimesheetSummaryPreview.tsx` — Remoção de classes redundantes
+- Removida classe `break-before-page` (redundante com `page-break-after: always` da Página 1).
+- Adicionada classe `print:mt-0` para garantir margem zero no print.
+
+### ✅ Arquivos Modificados
+- `src/index.css`
+- `src/components/TimesheetSummaryPreview.tsx`
+
+### 🎯 Objetivo
+Garantir que a impressão no Google Chrome gere exatamente 2 páginas A4 (Página 1 e Página 2), sem página em branco adicional.
+
+---
+
 ## [2026-06-15] - Ajustes de Layout e Validações de Data: ReturnMemoModal
 
 ### 🔍 Alterações Realizadas

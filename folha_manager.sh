@@ -220,6 +220,15 @@ start_backend() {
         return 1
     fi
 
+    # Matar processos anteriores nas portas 3000-3010 se existirem
+    for PORT in $(seq 3000 3010); do
+        if lsof -ti :$PORT >/dev/null 2>&1; then
+            warning "Porta $PORT em uso. Encerrando processo anterior..."
+            lsof -ti :$PORT | xargs kill -9 2>/dev/null
+        fi
+    done
+    sleep 1
+
     # Iniciar o frontend em background
     info "Iniciando frontend Vite na porta 3000..."
     nohup npm run dev > frontend.log 2>&1 &
@@ -337,9 +346,17 @@ stop_system() {
         echo -e "${ORANGE}⚠ Frontend já estava parado${NC}"
     fi
     
+    # Fallback: matar qualquer processo restante nas portas
+    for PORT in 5000 $(seq 3000 3010); do
+        if lsof -ti :$PORT >/dev/null 2>&1; then
+            warning "Porta $PORT ainda em uso. Forçando encerramento..."
+            lsof -ti :$PORT | xargs kill -9 2>/dev/null
+        fi
+    done
+
     # Remover arquivo de PIDs
     rm -f "$PID_FILE"
-    
+
     success "Sistema Mágico parado com sucesso!"
 }
 
