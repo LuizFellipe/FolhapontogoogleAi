@@ -1,4 +1,4 @@
-.
+# Directory Structure for: src/components
 ├── BatchTimesheetModal.tsx
 ├── EmployeeForm.tsx
 ├── EmployeeNavigator.tsx
@@ -13,6 +13,4 @@
 ├── TimesheetGrid.tsx
 ├── TimesheetPreview.tsx
 ├── TimesheetSummaryPreview.tsx
-└── tree.txt
-
-0 directories, 15 files
+└── verify.md

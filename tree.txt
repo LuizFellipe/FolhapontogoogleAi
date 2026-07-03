@@ -1,4 +1,3 @@
-.
 ├── 📄 add_entry_type.py                            # Script interativo para adicionar novos tipos de lançamento
 ├── 📄 backfill_resumo.py                           # Backfill do resumo_folha para folhas existentes
 ├── 📄 backup_db.py                                 # Utilitário de backup/restore do banco de dados
@@ -92,3 +91,36 @@
 - DB: MySQL 8 com migrations automáticas
 - Deploy: Docker Compose (dev + prod)
 - Scripts: Python para automação (tipos, backups, sincronização)
+
+# Root Directory Structure (Shallow)
+📄 AGENTS.md
+📄 AUDIT_REPORT_2026-06-15.md
+📄 CLAUDE.local.md
+📄 Dockerfile
+📄 MODIFICATION_MEMORY.md
+📄 README.md
+📄 README_SETUP.md
+📄 SCREENSHOTS_GUIDE.md
+📄 add_entry_type.py
+📁 backend
+📄 backfill_resumo.py
+📄 backup_db.py
+📁 database
+📁 dist
+📄 docker-compose.prod.yml
+📄 docker-compose.yml
+📄 folha_manager.sh
+📄 index.html
+📄 metadata.json
+📄 nginx.conf
+📄 package-lock.json
+📄 package.json
+📄 requirements.txt
+📄 skills-lock.json
+📁 src
+📄 start_backend.sh
+📄 sync_tipos_lancamento.py
+📄 tsconfig.json
+📄 update_tree.py
+📄 upgrade.md
+📄 vite.config.ts

@@ -1,8 +1,5 @@
-.
-├── app.py
+# Directory Structure for: backend
 ├── Dockerfile
 ├── MODIFICATION_MEMORY.md
 ├── README.md
-└── tree.txt
-
-1 directory, 5 files
+└── app.py

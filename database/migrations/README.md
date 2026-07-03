@@ -2,7 +2,7 @@
 Adiciona o valor `'ABONO DE PONTO ART 151 LEI'` ao ENUM das colunas `tipo` e `tipo_turno2` da tabela `lancamentos_diarios`.
 > **Nota:** Aplica-se apenas a bancos criados antes de 2026-04-22. Bancos novos já inicializam com o valor incluído no `001_create_tables.sql` e `full_setup.sql`.
 
-### `005_add_type_falta_paralisação.sql`
+### `005_add_type_falta_paralisacao.sql`
 Adiciona o valor `'FALTA PARALISAÇÃO'` ao ENUM das colunas `tipo` e `tipo_turno2` da tabela `lancamentos_diarios`.
 > **Nota:** Aplica-se apenas a bancos criados antes de 2026-04-23.
 
@@ -58,9 +58,6 @@ Cria a tabela `feriados` (`id`, `dia`, `mes`, `ano`, `label`, `criado_em`) com `
 ### `012_add_type_tracejado.sql`
 Adiciona o tipo `'TRACEJADO'` à tabela de lookup `tipos_lancamento`.
 
-### `012_create_recessos_table.sql`
-Cria a tabela `recessos` (`id`, `dia_inicio`, `mes_inicio`, `ano_inicio`, `dia_fim`, `mes_fim`, `ano_fim`, `label`, `criado_em`) para armazenar períodos de recesso com data de início e fim.
-
 ### `013_add_type_afast_casamento_art_62_lei.sql`
 Adiciona o valor `'AFAST CASAMENTO ART 62 LEI'` ao ENUM/Lookup de tipos de lançamento.
 
@@ -72,6 +69,9 @@ Remove as colunas `observacao` e `observacao_turno2` da tabela `lancamentos_diar
 
 ### `016_create_vw_eventos_consolidados.sql`
 Cria a view `vw_relatorio_atestados_bimestrais` para contagem de atestados médicos agrupados por bimestre civil, considerando dias consecutivos como uma única ocorrência.
+
+### `017_create_recessos_table.sql`
+Cria a tabela `recessos` (`id`, `dia_inicio`, `mes_inicio`, `ano_inicio`, `dia_fim`, `mes_fim`, `ano_fim`, `label`, `criado_em`) para armazenar períodos de recesso com data de início e fim.
 
 ## Como Adicionar Novos Tipos de Lançamento
 

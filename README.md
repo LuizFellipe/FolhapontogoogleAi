@@ -206,18 +206,29 @@ FolhapontogoogleAi/
 │
 ├── database/                      # MySQL + Migrations
 │   ├── full_setup.sql            # Setup com seed data
+<<<<<<< HEAD
 │   ├── migrations/               # 11 migrations organizadas
+=======
+│   ├── migrations/               # 16 migrations organizadas
+>>>>>>> 2fa36ab (Atualização de Documentação)
 │   │   ├── 001_create_tables.sql
 │   │   ├── 003_add_second_turn_columns.sql
 │   │   ├── 011_create_feriados_table.sql
 │   │   └── ...
 │   └── Dockerfile
 │
+<<<<<<< HEAD
 ├── scripts/                       # Automação
 │   ├── add_entry_type.py         # Adicionar novos tipos
 │   ├── sync_tipos_lancamento.py  # Sincronizar tipos ↔ banco
 │   ├── backfill_resumo.py        # Backfill de resumos
 │   └── backup_db.py              # Backup/restore
+=======
+├── add_entry_type.py             # Adicionar novos tipos
+├── sync_tipos_lancamento.py      # Sincronizar tipos ↔ banco
+├── backfill_resumo.py            # Backfill de resumos
+├── backup_db.py                  # Backup/restore
+>>>>>>> 2fa36ab (Atualização de Documentação)
 │
 ├── docker-compose.yml            # Orquestração (dev + prod)
 ├── vite.config.ts                # Proxy condicional
@@ -294,6 +305,26 @@ python3 backfill_resumo.py
 | `GET` | `/api/feriados` | Listar feriados do ano |
 | `POST` | `/api/feriados` | Criar feriado |
 | `DELETE` | `/api/feriados/<id>` | Excluir feriado |
+=======
+| `GET` | `/api/folhas-ponto` | Listar folhas (filtros opcionais: profissional_id, mes, ano) |
+| `GET` | `/api/folhas-ponto/<id>` | Obter folha específica com lançamentos e resumo |
+| `POST` | `/api/folhas-ponto` | Criar folha |
+| `PUT` | `/api/folhas-ponto/<id>` | Atualizar folha |
+| `DELETE` | `/api/folhas-ponto/<id>` | Excluir folha |
+| `POST` | `/api/folhas-ponto/<id>/lancamentos` | Salvar lançamentos diários em lote |
+| `POST` | `/api/folhas-ponto/<id>/resumo` | Salvar resumo da folha em lote |
+| `GET` | `/api/feriados` | Listar feriados do ano |
+| `POST` | `/api/feriados` | Criar feriado |
+| `DELETE` | `/api/feriados/<id>` | Excluir feriado |
+| `GET` | `/api/recessos` | Listar recessos do ano |
+| `POST` | `/api/recessos` | Criar recesso |
+| `DELETE` | `/api/recessos/<id>` | Excluir recesso |
+| `GET` | `/api/relatorio/adicional-noturno?mes=&ano=` | Relatório de adicional noturno |
+| `GET` | `/api/relatorio/lancamentos?mes=&ano=` | Relatório de lançamentos |
+| `GET` | `/api/tipos-lancamento` | Listar tipos de lançamento |
+| `GET` | `/api/atestados-bimestrais?matricula=&ano=` | Contagem de atestados por bimestre |
+| `GET` | `/api/health` | Health check da API |
+
 
 ---
 

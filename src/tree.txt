@@ -17,15 +17,13 @@
 │   ├── TimesheetGrid.tsx
 │   ├── TimesheetPreview.tsx
 │   ├── TimesheetSummaryPreview.tsx
-│   └── tree.txt
+│   └── verify.md
 ├── index.css
 ├── logo.png
 ├── main.tsx
 ├── services
 │   ├── MODIFICATION_MEMORY.md
 │   ├── README.md
-│   ├── api.ts
-│   └── tree.txt
-├── tree.txt
+│   └── api.ts
 ├── types.ts
 └── vite-env.d.ts

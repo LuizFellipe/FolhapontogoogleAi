@@ -249,14 +249,14 @@ start_backend() {
 
     echo ""
     echo -e "${GREEN}═══════════════════════════════════════════════════════════════${NC}"
-    success "Sistema Mágico iniciado em background!"
+    success "Gestor Folha Ponto iniciado em background!"
     echo -e "${WHITE}📍 Backend: ${CYAN}http://localhost:5000${NC}"
     echo -e "${WHITE}📍 Frontend: ${CYAN}http://localhost:3000${NC}"
     echo -e "${WHITE}📋 Logs: backend.log e frontend.log${NC}"
     echo -e "${GREEN}═══════════════════════════════════════════════════════════════${NC}"
     echo ""
-    echo -e "${PINK}🌸 O sistema está rodando em background! 🌸${NC}"
-    echo -e "${PINK}🌸 Você pode voltar ao menu para outras operações! 🌸${NC}"
+    echo -e "${PINK}Sistema rodando em background${NC}"
+    echo -e "${PINK}Você pode voltar ao menu para outras operações${NC}"
     echo ""
     
     pause
@@ -286,13 +286,13 @@ show_system_status() {
     PID_FILE="$HOME/.folha_manager_pids"
     
     if [ ! -f "$PID_FILE" ]; then
-        echo -e "${RED}🐛 Sistema Mágico não está rodando${NC}"
+        echo -e "${RED}🐛 Gestor Folha Ponto não está rodando${NC}"
         return 1
     fi
     
     source "$PID_FILE"
     
-    echo -e "${WHITE}📋 Status dos Processos Mágicos:${NC}"
+    echo -e "${WHITE}📋 Status dos Processos:${NC}"
     echo ""
     
     # Verificar backend
@@ -322,13 +322,13 @@ stop_system() {
     PID_FILE="$HOME/.folha_manager_pids"
     
     if [ ! -f "$PID_FILE" ]; then
-        warning "Nenhum processo do Sistema Mágico encontrado!"
+        warning "Nenhum processo do Gestor Folha Ponto encontrado!"
         return 1
     fi
     
     source "$PID_FILE"
     
-    echo -e "${YELLOW}🛑 Parando Sistema Mágico...${NC}"
+    echo -e "${YELLOW}🛑 Parando Gestor Folha Ponto...${NC}"
     
     # Parar backend
     if [ -n "$BACKEND_PID" ] && kill -0 $BACKEND_PID 2>/dev/null; then
@@ -357,15 +357,16 @@ stop_system() {
     # Remover arquivo de PIDs
     rm -f "$PID_FILE"
 
-    success "Sistema Mágico parado com sucesso!"
+    success "Gestor Folha Ponto parado com sucesso!"
+
 }
 
 # ==============================================================================
-# FUNÇÃO 2: Status do Sistema Mágico
+# FUNÇÃO 2: Status do Gestor Folha Ponto
 # ==============================================================================
 system_status() {
     show_header
-    echo -e "${MAGENTA}🗝️ Status do Sistema Mágico${NC}"
+    echo -e "${MAGENTA}⚡ Status do Gestor Folha Ponto${NC}"
     echo -e "${PURPLE}═══════════════════════════════════════════════════════════════${NC}"
     echo ""
     
@@ -376,23 +377,23 @@ system_status() {
 }
 
 # ==============================================================================
-# FUNÇÃO 3: Parar Sistema Mágico
+# FUNÇÃO 3: Parar Gestor Folha Ponto
 # ==============================================================================
 stop_system_menu() {
     show_header
-    echo -e "${MAGENTA}🛑 Parar Sistema Mágico${NC}"
+    echo -e "${MAGENTA}🛑 Parar Gestor Folha Ponto${NC}"
     echo -e "${PURPLE}═══════════════════════════════════════════════════════════════${NC}"
     echo ""
     
     if ! check_system_running; then
-        error "O Sistema Mágico não está rodando!"
+        error "O Gestor Folha Ponto não está rodando!"
         pause
         return 1
     fi
     
     show_system_status
     echo ""
-    echo -e "${YELLOW}Tem certeza que deseja parar o Sistema Mágico? (S/N)${NC}"
+    echo -e "${YELLOW}Tem certeza que deseja parar o Gestor Folha Ponto? (S/N)${NC}"
     read -r confirm
     
     if [[ "$confirm" =~ ^[Ss]$ ]]; then
@@ -408,7 +409,7 @@ stop_system_menu() {
 # ==============================================================================
 add_entry_type() {
     show_header
-    echo -e "${MAGENTA}🌷 Adicionar Novo Tipo de Lançamento${NC}"
+    echo -e "${MAGENTA}➕ Adicionar Novo Tipo de Lançamento${NC}"
     echo -e "${PURPLE}═══════════════════════════════════════════════════════════════${NC}"
     
     # Verificar se o script Python existe
@@ -445,7 +446,7 @@ add_entry_type() {
 # ==============================================================================
 backup_db() {
     show_header
-    echo -e "${MAGENTA}🍰 Backup do Banco de Dados${NC}"
+    echo -e "${MAGENTA}💾 Backup do Banco de Dados${NC}"
     echo -e "${PURPLE}═══════════════════════════════════════════════════════════════${NC}"
     
     # Verificar se o script Python existe
@@ -519,10 +520,10 @@ update_tree() {
 # ==============================================================================
 show_system_info() {
     show_header
-    echo -e "${MAGENTA}⏰ Informações do Sistema Mágico${NC}"
+    echo -e "${MAGENTA}⏰ Informações do Gestor Folha Ponto${NC}"
     echo -e "${PURPLE}═══════════════════════════════════════════════════════════════${NC}"
     
-    echo -e "${WHITE}📋 Status dos Componentes Mágicos:${NC}"
+    echo -e "${WHITE}📋 Status dos Componentes:${NC}"
     echo ""
     
     # Verificar Docker
@@ -562,7 +563,7 @@ show_system_info() {
     fi
     
     echo ""
-    echo -e "${WHITE}📁 Estrutura de Diretórios Mágicos:${NC}"
+    echo -e "${WHITE}📁 Estrutura de Diretórios:${NC}"
     echo ""
     
     # Verificar diretórios importantes
@@ -597,7 +598,7 @@ show_system_info() {
     fi
     
     echo ""
-    echo -e "${WHITE}🔗 URLs do Sistema Mágico:${NC}"
+    echo -e "${WHITE}🔗 URLs do Gestor Folha Ponto:${NC}"
     echo ""
     echo -e "${CYAN}• Frontend: http://localhost:3000${NC}"
     echo -e "${CYAN}• Backend:  http://localhost:5000${NC}"
@@ -605,10 +606,10 @@ show_system_info() {
     # Mostrar status do sistema se estiver rodando
     echo ""
     if check_system_running; then
-        echo -e "${GREEN}🌸 Sistema Mágico está rodando! 🌸${NC}"
+        echo -e "${GREEN}✅ Gestor Folha Ponto está rodando!${NC}"
         show_system_status
     else
-        echo -e "${ORANGE}⏰ Sistema Mágico está parado${NC}"
+        echo -e "${ORANGE}⏰ Gestor Folha Ponto está parado${NC}"
     fi
     
     echo ""
@@ -620,7 +621,7 @@ show_system_info() {
 # ==============================================================================
 clean_and_optimize() {
     show_header
-    echo -e "${MAGENTA}🧹 Limpar e Otimizar o País das Maravilhas${NC}"
+    echo -e "${MAGENTA}🧹 Limpar e Otimizar o Sistema${NC}"
     echo -e "${PURPLE}═══════════════════════════════════════════════════════════════${NC}"
     
     echo -e "${YELLOW}Opções de limpeza mágica:${NC}"
@@ -630,7 +631,7 @@ clean_and_optimize() {
     echo -e "${WHITE}3.${NC} Limpar arquivos temporários"
     echo -e "${WHITE}4.${NC} Limpar logs do sistema"
     echo -e "${WHITE}5.${NC} Limpar tudo (inclusive sistema rodando)"
-    echo -e "${WHITE}6.${NC} Voltar ao menu mágico"
+    echo -e "${WHITE}6.${NC} Voltar ao menu"
     echo ""
     
     read -p "Escolha uma opção [1-6]: " choice

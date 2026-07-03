@@ -29,7 +29,6 @@ O Vite, ao detectar a porta 3000 ocupada, abria automaticamente na próxima port
 - O `stop_system()` limpa completamente todas as portas utilizadas.
 - Instâncias órfãs em portas 3001-3010 de execuções anteriores são eliminadas na próxima inicialização.
 
----
 
 ## [2026-06-15] Auditoria de Raiz e Melhoria de Documentação
 
