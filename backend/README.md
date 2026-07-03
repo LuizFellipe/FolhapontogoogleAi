@@ -6,6 +6,7 @@ Esta pasta contém o servidor API desenvolvido em Python para o sistema Folha de
 
 -   **`app.py`**: O arquivo de lógica principal da API. Define as rotas Flask para gerenciar profissionais, folhas de ponto e lançamentos.
 -   **`MODIFICATION_MEMORY.md`**: Registro histórico de alterações realizadas no backend.
+-   **`scripts/`**: Scripts auxiliares e de manutenção (ex: `backfill_resumo_recesso.py` para recálculo retroativo de resumo de recesso de Junho/2026).
 -   **`__pycache__/`**: Arquivos temporários gerados pelo Python (podem ser ignorados).
 
 ## Principais Responsabilidades (Funções de `app.py`)
