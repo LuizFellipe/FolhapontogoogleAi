@@ -1,5 +1,24 @@
 # Memória de Modificações do Projeto
 
+## [2026-07-02] Auditoria e Resolução de Consistência de Documentação e Migrações
+
+### Arquivos Modificados/Renomeados:
+- `database/migrations/012_create_recessos_table.sql` -> `database/migrations/017_create_recessos_table.sql` *(resolução de colisão de numeração)*
+- `database/migrations/005_add_type_falta_paralisação.sql` -> `database/migrations/005_add_type_falta_paralisacao.sql` *(remoção de acento para evitar incompatibilidades de filesystem)*
+- `README.md` *(correção de endpoints com hífen e caminhos de scripts para raiz)*
+- `folha_manager.sh` *(substituição do antigo vocabulário "Mágico" e emojis por tema padrão do Gestor Folha Ponto)*
+- `database/migrations/README.md` *(correção de cabeçalhos duplicados e atualização de mapeamento de migrações)*
+- `database/migrations/tree.txt`, `database/tree.txt`, `tree.txt` *(regenerados)*
+
+### Problema:
+Colisões de numeração de migrations (`012`), acentuação gráfica no nome de arquivo de migration (`005`), termos e emojis obsoletos ("Mágico") remanescentes no script `folha_manager.sh`, e endpoints/caminhos de scripts incorretos no `README.md`.
+
+### Correções:
+1. **Consistência de Migrações**: Renomeada a migração de recessos para `017` e a de paralisação para remover acento gráfico.
+2. **Atualização da Documentação**: `README.md` e `database/migrations/README.md` atualizados com endpoints reais (hífen) e referências corretas.
+3. **Limpeza do Manager**: `folha_manager.sh` unificado sob a persona do Gestor Folha Ponto sem termos mágicos.
+4. **Árvores de Diretórios**: Atualizadas com os scripts de sincronização de árvore.
+
 ## [2026-06-25] Correção: Liberação das Portas 3000-3010 e 5000 nos Scripts de Inicialização
 
 ### Arquivos Modificados:

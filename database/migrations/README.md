@@ -1,28 +1,4 @@
-### `004_add_abono_art151_type.sql`
-Adiciona o valor `'ABONO DE PONTO ART 151 LEI'` ao ENUM das colunas `tipo` e `tipo_turno2` da tabela `lancamentos_diarios`.
-> **Nota:** Aplica-se apenas a bancos criados antes de 2026-04-22. Bancos novos já inicializam com o valor incluído no `001_create_tables.sql` e `full_setup.sql`.
-
-### `005_add_type_falta_paralisacao.sql`
-Adiciona o valor `'FALTA PARALISAÇÃO'` ao ENUM das colunas `tipo` e `tipo_turno2` da tabela `lancamentos_diarios`.
-> **Nota:** Aplica-se apenas a bancos criados antes de 2026-04-23.
-
-### `006_add_type_atestado_de_comparecimento.sql`
-Adiciona o valor `'ATESTADO DE COMPARECIMENTO'` ao ENUM das colunas `tipo` e `tipo_turno2` da tabela `lancamentos_diarios`.
-> **Nota:** Aplica-se apenas a bancos criados antes de 2026-04-24.
-
-### `007_add_type_lic_acomp_pessoa_doente.sql`
-Adiciona o valor `'AFAST DOACAO SANGUE ART 62'` ao ENUM das colunas `tipo` e `tipo_turno2` da tabela `lancamentos_diarios`.
-> **Nota:** Aplica-se apenas a bancos criados antes de 2026-04-25.
-
-### `008_add_type_abono_de_ponto_bimestral_lei.sql`
-Adiciona os valores `'LIC. ACOMP. PESSOA DOENTE'` e `'ABONO DE PONTO BIMESTRAL LEI'` ao ENUM das colunas `tipo` e `tipo_turno2` da tabela `lancamentos_diarios`.
-> **Nota:** Aplica-se apenas a bancos criados antes de 2026-04-25.
-
-### `009_add_type_afast_doacao_sangue_art_62.sql`
-Adiciona o valor `'ABONO DE PONTO BIMESTRAL LEI'` ao ENUM das colunas `tipo` e `tipo_turno2` da tabela `lancamentos_diarios`.
-> **Nota:** Aplica-se apenas a bancos criados antes de 2026-04-25.
-
-## Como Adicionar Novos Tipos de Lançamento# Migrações do Banco de Dados
+# Migrações do Banco de Dados
 
 Esta pasta contém os scripts SQL necessários para inicializar e atualizar a estrutura do banco de dados MySQL do sistema.
 
@@ -49,6 +25,26 @@ Adiciona `tipo_turno2` à tabela `lancamentos_diarios` para suporte a lançament
 Adiciona o valor `'ABONO DE PONTO ART 151 LEI'` ao ENUM das colunas `tipo` e `tipo_turno2` da tabela `lancamentos_diarios`.
 > **Nota:** Aplica-se apenas a bancos criados antes de 2026-04-22. Bancos novos já inicializam com o valor incluído no `001_create_tables.sql` e `full_setup.sql`.
 
+### `005_add_type_falta_paralisacao.sql`
+Adiciona o valor `'FALTA PARALISAÇÃO'` ao ENUM das colunas `tipo` e `tipo_turno2` da tabela `lancamentos_diarios`.
+> **Nota:** Aplica-se apenas a bancos criados antes de 2026-04-23.
+
+### `006_add_type_atestado_de_comparecimento.sql`
+Adiciona o valor `'ATESTADO DE COMPARECIMENTO'` ao ENUM das colunas `tipo` e `tipo_turno2` da tabela `lancamentos_diarios`.
+> **Nota:** Aplica-se apenas a bancos criados antes de 2026-04-24.
+
+### `007_add_type_lic_acomp_pessoa_doente.sql`
+Adiciona os valores `'LIC. ACOMP. PESSOA DOENTE'`, `'AFAST DOACAO SANGUE ART 62'` e `'ABONO DE PONTO BIMESTRAL LEI'` ao ENUM das colunas `tipo` e `tipo_turno2` da tabela `lancamentos_diarios`.
+> **Nota:** Aplica-se apenas a bancos criados antes de 2026-04-25.
+
+### `008_add_type_abono_de_ponto_bimestral_lei.sql`
+Garante a adição do valor `'ABONO DE PONTO BIMESTRAL LEI'` ao ENUM das colunas `tipo` e `tipo_turno2` da tabela `lancamentos_diarios`.
+> **Nota:** Aplica-se apenas a bancos criados antes de 2026-04-25.
+
+### `009_add_type_afast_doacao_sangue_art_62.sql`
+Garante a adição do valor `'AFAST DOACAO SANGUE ART 62'` ao ENUM das colunas `tipo` e `tipo_turno2` da tabela `lancamentos_diarios`.
+> **Nota:** Aplica-se apenas a bancos criados antes de 2026-04-25.
+
 ### `010_refactor_tipos_lancamento.sql`
 Refatoração completa: converte `tipo`/`tipo_turno2` de ENUM para `VARCHAR(80)` e cria a tabela lookup `tipos_lancamento` com 21 tipos oficiais e seus códigos.
 
@@ -59,10 +55,10 @@ Cria a tabela `feriados` (`id`, `dia`, `mes`, `ano`, `label`, `criado_em`) com `
 Adiciona o tipo `'TRACEJADO'` à tabela de lookup `tipos_lancamento`.
 
 ### `013_add_type_afast_casamento_art_62_lei.sql`
-Adiciona o valor `'AFAST CASAMENTO ART 62 LEI'` ao ENUM/Lookup de tipos de lançamento.
+Adiciona o valor `'AFAST CASAMENTO ART 62 LEI'` à tabela lookup de tipos de lançamento.
 
 ### `014_add_type_afast_falecimento_familia_lei.sql`
-Adiciona o valor `'AFAST FALECIMENTO FAMILIA LEI'` ao ENUM/Lookup de tipos de lançamento.
+Adiciona o valor `'AFAST FALECIMENTO FAMILIA LEI'` à tabela lookup de tipos de lançamento.
 
 ### `015_remove_observacao_columns.sql`
 Remove as colunas `observacao` e `observacao_turno2` da tabela `lancamentos_diarios`. Estes campos armazenavam labels de feriado/recesso quando aplicados, mas nunca foram exibidos em nenhuma tela ou relatório do sistema — eram dados mortos.
