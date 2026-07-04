@@ -201,7 +201,7 @@ start_backend() {
         lsof -ti :5000 | xargs kill -9
         sleep 1
     fi
-    FLASK_APP=app.py nohup flask run --host=0.0.0.0 --port=5000 > ../backend.log 2>&1 &
+    FLASK_APP=app.py nohup flask run --host=0.0.0.0 --port=5000 > /dev/null 2>&1 &
     BACKEND_PID=$!
     echo "BACKEND_PID=$BACKEND_PID" > "$PID_FILE"
 
@@ -231,7 +231,7 @@ start_backend() {
 
     # Iniciar o frontend em background
     info "Iniciando frontend Vite na porta 3000..."
-    nohup npm run dev > frontend.log 2>&1 &
+    nohup npm run dev > /dev/null 2>&1 &
     FRONTEND_PID=$!
     echo "FRONTEND_PID=$FRONTEND_PID" >> "$PID_FILE"
 
@@ -252,7 +252,6 @@ start_backend() {
     success "Gestor Folha Ponto iniciado em background!"
     echo -e "${WHITE}📍 Backend: ${CYAN}http://localhost:5000${NC}"
     echo -e "${WHITE}📍 Frontend: ${CYAN}http://localhost:3000${NC}"
-    echo -e "${WHITE}📋 Logs: backend.log e frontend.log${NC}"
     echo -e "${GREEN}═══════════════════════════════════════════════════════════════${NC}"
     echo ""
     echo -e "${PINK}Sistema rodando em background${NC}"
@@ -413,8 +412,8 @@ add_entry_type() {
     echo -e "${PURPLE}═══════════════════════════════════════════════════════════════${NC}"
     
     # Verificar se o script Python existe
-    if [ ! -f "add_entry_type.py" ]; then
-        error "Script add_entry_type.py não encontrado!"
+    if [ ! -f "scripts/add_entry_type.py" ]; then
+        error "Script scripts/add_entry_type.py não encontrado!"
         pause
         return 1
     fi
@@ -430,7 +429,7 @@ add_entry_type() {
     echo ""
     
     # Executar o script Python
-    python3 add_entry_type.py
+    python3 scripts/add_entry_type.py
     
     if [ $? -eq 0 ]; then
         success "Tipo de lançamento adicionado com sucesso!"
@@ -450,8 +449,8 @@ backup_db() {
     echo -e "${PURPLE}═══════════════════════════════════════════════════════════════${NC}"
     
     # Verificar se o script Python existe
-    if [ ! -f "backup_db.py" ]; then
-        error "Script backup_db.py não encontrado!"
+    if [ ! -f "scripts/backup_db.py" ]; then
+        error "Script scripts/backup_db.py não encontrado!"
         pause
         return 1
     fi
@@ -467,7 +466,7 @@ backup_db() {
     echo ""
     
     # Executar o script Python
-    python3 backup_db.py
+    python3 scripts/backup_db.py
     
     if [ $? -eq 0 ]; then
         success "Backup realizado com sucesso!"
@@ -487,8 +486,8 @@ update_tree() {
     echo -e "${PURPLE}═══════════════════════════════════════════════════════════════${NC}"
     
     # Verificar se o script Python existe
-    if [ ! -f "update_tree.py" ]; then
-        error "Script update_tree.py não encontrado!"
+    if [ ! -f "scripts/update_tree.py" ]; then
+        error "Script scripts/update_tree.py não encontrado!"
         pause
         return 1
     fi
@@ -504,7 +503,7 @@ update_tree() {
     echo ""
     
     # Executar o script Python
-    python3 update_tree.py
+    python3 scripts/update_tree.py
     
     if [ $? -eq 0 ]; then
         success "Árvore de diretórios atualizada com sucesso!"
@@ -703,8 +702,8 @@ sync_entry_types() {
     echo -e "${MAGENTA}🔄 Sincronizar Tipos de Lançamento${NC}"
     echo -e "${PURPLE}═══════════════════════════════════════════════════════════════${NC}"
 
-    if [ ! -f "sync_tipos_lancamento.py" ]; then
-        error "Script sync_tipos_lancamento.py não encontrado!"
+    if [ ! -f "scripts/sync_tipos_lancamento.py" ]; then
+        error "Script scripts/sync_tipos_lancamento.py não encontrado!"
         pause
         return 1
     fi
@@ -718,7 +717,7 @@ sync_entry_types() {
     info "Executando sincronização de tipos de lançamento..."
     echo ""
 
-    python3 sync_tipos_lancamento.py
+    python3 scripts/sync_tipos_lancamento.py
 
     if [ $? -eq 0 ]; then
         success "Sincronização concluída!"

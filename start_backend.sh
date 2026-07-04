@@ -67,7 +67,7 @@ fi
 # Iniciar o backend em background
 echo "Iniciando servidor Flask na porta 5000..."
 cd backend
-FLASK_APP=app.py flask run --host=0.0.0.0 --port=5000 &
+FLASK_APP=app.py flask run --host=0.0.0.0 --port=5000 > /dev/null 2>&1 &
 BACKEND_PID=$!
 
 # Voltar para o diretório raiz
@@ -88,7 +88,7 @@ sleep 1
 
 # Iniciar o frontend em background
 echo "Iniciando frontend Vite na porta 3000..."
-npm run dev &
+npm run dev > /dev/null 2>&1 &
 FRONTEND_PID=$!
 
 echo ""

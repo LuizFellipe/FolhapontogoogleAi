@@ -1,110 +1,12 @@
-├── 📄 add_entry_type.py                            # Script interativo para adicionar novos tipos de lançamento
-├── 📄 backfill_resumo.py                           # Backfill do resumo_folha para folhas existentes
-├── 📄 backup_db.py                                 # Utilitário de backup/restore do banco de dados
-├── 📄 docker-compose.yml                           # Orquestração Docker (dev)
-├── 📄 docker-compose.prod.yml                      # Orquestração Docker (produção)
-├── 📄 Dockerfile                                   # Imagem Docker do frontend
-├── 📄 .dockerignore                                # Arquivos ignorados no build Docker
-├── 📄 index.html                                   # Ponto de entrada HTML
-├── 📄 package.json                                 # Dependências e scripts do frontend
-├── 📄 package-lock.json                            # Lock de dependências
-├── 📄 tsconfig.json                                # Configuração TypeScript
-├── 📄 vite.config.ts                               # Configuração do Vite
-├── 📄 start_backend.sh                             # Script de inicialização unificado (dev)
-├── 📄 folha_manager.sh                             # Menu de gerenciamento do sistema (tema cyberpunk)
-├── 📄 sync_tipos_lancamento.py                     # Sincroniza tipos entre src/types.ts e banco
-├── 📄 update_tree.py                               # Script para atualizar tree.txt
-├── 📄 .env.example                                 # Exemplo de variáveis de ambiente
-├── 📄 .gitignore                                   # Configuração de versionamento
-├── 📄 metadata.json                                # Metadados do projeto
-├── 📄 nginx.conf                                   # Configuração do Nginx (produção)
-├── 📄 requirements.txt                             # Dependências Python do backend
-├── 📄 README.md                                    # Documentação principal
-├── 📄 README_SETUP.md                              # Guia detalhado de setup
-├── 📄 MODIFICATION_MEMORY.md                       # Histórico de modificações
-├── 📄 tree.txt                                     # Este arquivo
-├── 📁 backend/                                     # API Flask em Python
-│   ├── 📄 app.py                                   # Servidor da API
-│   ├── 📄 Dockerfile                               # Imagem Docker do backend
-│   ├── 📄 README.md                                # Documentação do backend
-│   ├── 📄 MODIFICATION_MEMORY.md                   # Histórico de alterações
-│   └── 📄 tree.txt                                 # Estrutura do backend
-├── 📁 database/                                    # Persistência MySQL
-│   ├── 📄 full_setup.sql                           # Setup completo com seed data
-│   ├── 📄 Dockerfile                               # Imagem Docker do MySQL
-│   ├── 📄 README.md                                # Documentação do banco
-│   ├── 📄 MODIFICATION_MEMORY.md                   # Histórico de alterações do schema
-│   ├── 📄 tree.txt                                 # Estrutura do banco
-│   └── 📁 migrations/                              # Scripts de migração SQL
-│       ├── 001_create_tables.sql                   # Criação das tabelas base
-│       ├── 002_make_matricula_optional.sql
-│       ├── 003_add_second_turn_columns.sql         # Suporte a segundo turno
-│       ├── 004_add_abono_art151_type.sql
-│       ├── 005_add_type_falta_paralisação.sql
-│       ├── 006_add_type_atestado_de_comparecimento.sql
-│       ├── 007_add_type_lic_acomp_pessoa_doente.sql
-│       ├── 008_add_type_abono_de_ponto_bimestral_lei.sql
-│       ├── 009_add_type_afast_doacao_sangue_art_62.sql
-│       ├── 010_refactor_tipos_lancamento.sql       # Refator de tipos → tabela lookup
-│       ├── 011_create_feriados_table.sql           # Tabela de feriados
-│       ├── README.md
-│       └── tree.txt
-├── 📁 src/                                         # Frontend React + TypeScript
-│   ├── 📄 main.tsx                                 # Ponto de entrada
-│   ├── 📄 App.tsx                                  # Componente raiz
-│   ├── 📄 types.ts                                 # Tipos TypeScript globais
-│   ├── 📄 index.css                                # Estilos globais
-│   ├── 📄 vite-env.d.ts                            # Tipos do Vite
-│   ├── 📄 logo.png
-│   ├── 📄 README.md                                # Documentação do frontend
-│   ├── 📄 MODIFICATION_MEMORY.md                   # Histórico de alterações
-│   ├── 📄 tree.txt
-│   ├── 📁 components/                              # Componentes React
-│   │   ├── 📄 LoginScreen.tsx                      # Tela de autenticação
-│   │   ├── 📄 EmployeeForm.tsx                     # Formulário de servidor
-│   │   ├── 📄 EmployeeNavigator.tsx                # Navegação + botões de ação
-│   │   ├── 📄 TimesheetGrid.tsx                    # Grade de lançamentos diários
-│   │   ├── 📄 TimesheetPreview.tsx                 # Prévia página 1
-│   │   ├── 📄 TimesheetSummaryPreview.tsx          # Prévia página 2 (resumo)
-│   │   ├── 📄 HolidayModal.tsx                     # Modal de feriados
-│   │   ├── 📄 BatchTimesheetModal.tsx              # Modal de geração em lote
-│   │   ├── 📄 SummaryForm.tsx                      # Formulário de resumo
-│   │   ├── 📄 README.md
-│   │   ├── 📄 MODIFICATION_MEMORY.md
-│   │   └── 📄 tree.txt
-│   └── 📁 services/                                # Camada de API
-│       ├── 📄 api.ts                               # Funções de requisição (axios)
-│       ├── 📄 README.md
-│       ├── 📄 MODIFICATION_MEMORY.md
-│       └── 📄 tree.txt
-├── 📁 .claude/                                     # Configuração Claude Code
-│   ├── 📄 settings.local.json
-│   └── 📁 skills/                                  # Skills customizadas
-│       ├── caveman → symlink
-│       └── caveman-help → symlink
-├── 📁 .continue/                                   # Configuração Continue IDE
-└── 📁 .venv/                                       # Virtual environment Python (local)
-
-**Sumário:**
-- Frontend: React 19 + TypeScript + Tailwind CSS
-- Backend: Flask + MySQL Connector
-- DB: MySQL 8 com migrations automáticas
-- Deploy: Docker Compose (dev + prod)
-- Scripts: Python para automação (tipos, backups, sincronização)
-
 # Root Directory Structure (Shallow)
 📄 AGENTS.md
-📄 AUDIT_REPORT_2026-06-15.md
 📄 CLAUDE.local.md
 📄 Dockerfile
 📄 MODIFICATION_MEMORY.md
 📄 README.md
 📄 README_SETUP.md
 📄 SCREENSHOTS_GUIDE.md
-📄 add_entry_type.py
 📁 backend
-📄 backfill_resumo.py
-📄 backup_db.py
 📁 database
 📁 dist
 📄 docker-compose.prod.yml
@@ -116,11 +18,10 @@
 📄 package-lock.json
 📄 package.json
 📄 requirements.txt
+📁 scripts
 📄 skills-lock.json
 📁 src
 📄 start_backend.sh
-📄 sync_tipos_lancamento.py
 📄 tsconfig.json
-📄 update_tree.py
 📄 upgrade.md
 📄 vite.config.ts
