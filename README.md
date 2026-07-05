@@ -342,14 +342,23 @@ docker-compose down -v  # com volumes
 
 Diagramas `.drawio` (editáveis) com PNG exportado, em [`docs/diagrams/`](docs/diagrams/):
 
-| Diagrama | Descrição |
-|----------|-----------|
-| [`folhaponto-arquitetura.drawio.png`](docs/diagrams/folhaponto-arquitetura.drawio.png) | Visão geral do projeto: telas React → `api.ts` → rotas Flask → MySQL, incluindo chamada ao Gemini API |
-| [`scripts-fluxo.drawio.png`](docs/diagrams/scripts-fluxo.drawio.png) | Funcionamento dos scripts em `scripts/` (add_entry_type, sync_tipos_lancamento, backfill_resumo, backup_db, update_tree) |
-| [`backend-scripts-fluxo.drawio.png`](docs/diagrams/backend-scripts-fluxo.drawio.png) | Fluxo do script `backend/scripts/backfill_resumo_recesso.py` |
-| [`app-py-fluxo.drawio.png`](docs/diagrams/app-py-fluxo.drawio.png) | Fluxo direto do `backend/app.py`: cada rota agrupada por recurso até `execute_query()`/MySQL |
+### 1. Visão Geral da Arquitetura
+![Visão geral do projeto](docs/diagrams/folhaponto-arquitetura.drawio.png)
+*Visão geral do projeto: telas React → `api.ts` → rotas Flask → MySQL, incluindo chamada ao Gemini API.*
 
-Abra os `.drawio.png` no [draw.io](https://app.diagrams.net/) para editar (XML embutido no PNG).
+### 2. Funcionamento dos Scripts
+![Funcionamento dos scripts em scripts/](docs/diagrams/scripts-fluxo.drawio.png)
+*Funcionamento dos scripts em `scripts/` (add_entry_type, sync_tipos_lancamento, backfill_resumo, backup_db, update_tree).*
+
+### 3. Fluxo de Scripts do Backend
+![Fluxo do script backend/scripts/backfill_resumo_recesso.py](docs/diagrams/backend-scripts-fluxo.drawio.png)
+*Fluxo do script `backend/scripts/backfill_resumo_recesso.py`.*
+
+### 4. Fluxo de app.py (Backend)
+![Fluxo direto do backend/app.py](docs/diagrams/app-py-fluxo.drawio.png)
+*Fluxo direto do `backend/app.py`: cada rota agrupada por recurso até `execute_query()`/MySQL.*
+
+Abra os arquivos `.drawio` no [draw.io](https://app.diagrams.net/) para editá-los diretamente, ou use as imagens PNG exportadas correspondentes.
 
 ---
 
