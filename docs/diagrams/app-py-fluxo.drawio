@@ -1,0 +1,256 @@
+<mxfile>
+  <diagram id="autolayout" name="Page-1">
+    <mxGraphModel dx="800" dy="600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="group_0" value="core" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#6c8ebf;fontColor=#6c8ebf;verticalAlign=top;fontStyle=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="466" y="936" width="318" height="108" as="geometry"/>
+        </mxCell>
+        <mxCell id="group_1" value="feriados" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#d6b656;fontColor=#d6b656;verticalAlign=top;fontStyle=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="286" y="906" width="168" height="258" as="geometry"/>
+        </mxCell>
+        <mxCell id="group_2" value="folhas" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#d79b00;fontColor=#d79b00;verticalAlign=top;fontStyle=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="286" y="1176" width="168" height="418" as="geometry"/>
+        </mxCell>
+        <mxCell id="group_3" value="lancamentos" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#9673a6;fontColor=#9673a6;verticalAlign=top;fontStyle=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="466" y="1446" width="168" height="188" as="geometry"/>
+        </mxCell>
+        <mxCell id="group_4" value="misc" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#6c8ebf;fontColor=#6c8ebf;verticalAlign=top;fontStyle=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="286" y="1606" width="168" height="178" as="geometry"/>
+        </mxCell>
+        <mxCell id="group_5" value="profissionais" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#82b366;fontColor=#82b366;verticalAlign=top;fontStyle=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="286" y="6" width="168" height="348" as="geometry"/>
+        </mxCell>
+        <mxCell id="group_6" value="recessos" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#b85450;fontColor=#b85450;verticalAlign=top;fontStyle=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="286" y="356" width="168" height="268" as="geometry"/>
+        </mxCell>
+        <mxCell id="group_7" value="relatorios" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#666666;fontColor=#666666;verticalAlign=top;fontStyle=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="286" y="626" width="168" height="268" as="geometry"/>
+        </mxCell>
+        <mxCell id="client" value="Cliente&#xa;(frontend api.ts)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="0" y="960" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="flask" value="Flask app&#xa;CORS(app)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="160" y="960" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="get_conn" value="get_db_connection()&#xa;mysql.connector.connect" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="group_0">
+          <mxGeometry x="174" y="24" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="exec_query" value="execute_query()&#xa;cursor + serializa datetime/timedelta&#xa;commit/rollback" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="group_0">
+          <mxGeometry x="24" y="24" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="prof_get" value="GET /api/profissionais&#xa;GET /api/profissionais/{id}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="group_5">
+          <mxGeometry x="24" y="24" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="prof_post" value="POST /api/profissionais&#xa;valida nome + matricula unica" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="group_5">
+          <mxGeometry x="24" y="104" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="prof_put" value="PUT /api/profissionais/{id}&#xa;valida matricula unica" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="group_5">
+          <mxGeometry x="24" y="184" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="prof_del" value="DELETE /api/profissionais/{id}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="group_5">
+          <mxGeometry x="24" y="264" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="folha_get" value="GET /api/folhas-ponto&#xa;(filtros profissional/mes/ano)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="group_2">
+          <mxGeometry x="24" y="24" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="folha_post" value="POST /api/folhas-ponto" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="group_2">
+          <mxGeometry x="24" y="104" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="folha_get_id" value="GET /api/folhas-ponto/{id}&#xa;junta lancamentos + resumo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="group_2">
+          <mxGeometry x="24" y="174" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="folha_put" value="PUT /api/folhas-ponto/{id}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="group_2">
+          <mxGeometry x="24" y="254" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="folha_del" value="DELETE /api/folhas-ponto/{id}&#xa;cascade lancamentos/resumo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="group_2">
+          <mxGeometry x="24" y="334" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="lanc_post" value="POST /folhas-ponto/{id}/lancamentos&#xa;DELETE + INSERT em lote" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="group_3">
+          <mxGeometry x="24" y="104" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="resumo_post" value="POST /folhas-ponto/{id}/resumo&#xa;DELETE + INSERT em lote" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="group_3">
+          <mxGeometry x="24" y="24" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="feriado_get" value="GET /api/feriados&#xa;(filtro ano)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="group_1">
+          <mxGeometry x="24" y="24" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="feriado_post" value="POST /api/feriados&#xa;trata duplicidade" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="group_1">
+          <mxGeometry x="24" y="94" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="feriado_del" value="DELETE /api/feriados/{id}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="group_1">
+          <mxGeometry x="24" y="174" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="recesso_get" value="GET /api/recessos&#xa;(filtro ano)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="group_6">
+          <mxGeometry x="24" y="24" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="recesso_post" value="POST /api/recessos" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="group_6">
+          <mxGeometry x="24" y="104" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="recesso_del" value="DELETE /api/recessos/{id}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="group_6">
+          <mxGeometry x="24" y="184" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="rel_noturno" value="GET /api/relatorio/adicional-noturno&#xa;view vw_adicional_noturno" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="group_7">
+          <mxGeometry x="24" y="24" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="rel_lanc" value="GET /api/relatorio/lancamentos&#xa;view vw_folhas_lancamento" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="group_7">
+          <mxGeometry x="24" y="104" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="rel_atestados" value="GET /api/atestados-bimestrais&#xa;view vw_relatorio_atestados_bimestrais" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="group_7">
+          <mxGeometry x="24" y="184" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="tipos_get" value="GET /api/tipos-lancamento" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="group_4">
+          <mxGeometry x="24" y="24" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="health" value="GET /api/health&#xa;testa conexao" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="group_4">
+          <mxGeometry x="24" y="94" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="mysql" value="MySQL&#xa;folhaponto_db" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="800" y="950" width="150" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="e0" value="HTTP/JSON" style="html=1;rounded=0;" edge="1" parent="1" source="client" target="flask">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="120" y="990"/><mxPoint x="150" y="990"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e1" value="" style="html=1;rounded=0;" edge="1" parent="1" source="flask" target="prof_get">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="170" y="800"/><mxPoint x="170" y="60"/><mxPoint x="170" y="60"/><mxPoint x="170" y="60"/><mxPoint x="300" y="60"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e2" value="" style="html=1;rounded=0;" edge="1" parent="1" source="flask" target="prof_post">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="180" y="810"/><mxPoint x="180" y="140"/><mxPoint x="180" y="140"/><mxPoint x="180" y="140"/><mxPoint x="300" y="140"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e3" value="" style="html=1;rounded=0;" edge="1" parent="1" source="flask" target="prof_put">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="190" y="820"/><mxPoint x="190" y="220"/><mxPoint x="190" y="220"/><mxPoint x="190" y="220"/><mxPoint x="300" y="220"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e4" value="" style="html=1;rounded=0;" edge="1" parent="1" source="flask" target="prof_del">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="200" y="830"/><mxPoint x="200" y="300"/><mxPoint x="200" y="300"/><mxPoint x="200" y="300"/><mxPoint x="300" y="300"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e5" value="" style="html=1;rounded=0;" edge="1" parent="1" source="flask" target="folha_get">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="260" y="1090"/><mxPoint x="260" y="1230"/><mxPoint x="260" y="1230"/><mxPoint x="260" y="1230"/><mxPoint x="300" y="1230"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e6" value="" style="html=1;rounded=0;" edge="1" parent="1" source="flask" target="folha_post">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="240" y="1100"/><mxPoint x="240" y="1310"/><mxPoint x="240" y="1310"/><mxPoint x="240" y="1310"/><mxPoint x="300" y="1310"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e7" value="" style="html=1;rounded=0;" edge="1" parent="1" source="flask" target="folha_get_id">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="230" y="1120"/><mxPoint x="230" y="1380"/><mxPoint x="230" y="1380"/><mxPoint x="230" y="1380"/><mxPoint x="300" y="1380"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e8" value="" style="html=1;rounded=0;" edge="1" parent="1" source="flask" target="folha_put">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="220" y="1130"/><mxPoint x="220" y="1460"/><mxPoint x="220" y="1460"/><mxPoint x="220" y="1460"/><mxPoint x="300" y="1460"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e9" value="" style="html=1;rounded=0;" edge="1" parent="1" source="flask" target="folha_del">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="200" y="1140"/><mxPoint x="200" y="1540"/><mxPoint x="200" y="1540"/><mxPoint x="200" y="1540"/><mxPoint x="300" y="1540"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e10" value="" style="html=1;rounded=0;" edge="1" parent="1" source="flask" target="lanc_post">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="190" y="1150"/><mxPoint x="190" y="1590"/><mxPoint x="190" y="1590"/><mxPoint x="190" y="1590"/><mxPoint x="480" y="1590"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e11" value="" style="html=1;rounded=0;" edge="1" parent="1" source="flask" target="resumo_post">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="210" y="1130"/><mxPoint x="210" y="1500"/><mxPoint x="210" y="1500"/><mxPoint x="210" y="1500"/><mxPoint x="480" y="1500"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e12" value="" style="html=1;rounded=0;" edge="1" parent="1" source="flask" target="feriado_get">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="280" y="980"/><mxPoint x="300" y="980"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e13" value="" style="html=1;rounded=0;" edge="1" parent="1" source="flask" target="feriado_post">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="280" y="1010"/><mxPoint x="300" y="1010"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e14" value="" style="html=1;rounded=0;" edge="1" parent="1" source="flask" target="feriado_del">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="270" y="1060"/><mxPoint x="270" y="1110"/><mxPoint x="270" y="1110"/><mxPoint x="270" y="1110"/><mxPoint x="300" y="1110"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e15" value="" style="html=1;rounded=0;" edge="1" parent="1" source="flask" target="recesso_get">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="210" y="850"/><mxPoint x="210" y="410"/><mxPoint x="210" y="410"/><mxPoint x="210" y="410"/><mxPoint x="300" y="410"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e16" value="" style="html=1;rounded=0;" edge="1" parent="1" source="flask" target="recesso_post">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="220" y="860"/><mxPoint x="220" y="490"/><mxPoint x="220" y="490"/><mxPoint x="220" y="490"/><mxPoint x="300" y="490"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e17" value="" style="html=1;rounded=0;" edge="1" parent="1" source="flask" target="recesso_del">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="230" y="870"/><mxPoint x="230" y="570"/><mxPoint x="230" y="570"/><mxPoint x="230" y="570"/><mxPoint x="300" y="570"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e18" value="" style="html=1;rounded=0;" edge="1" parent="1" source="flask" target="rel_noturno">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="240" y="890"/><mxPoint x="240" y="680"/><mxPoint x="240" y="680"/><mxPoint x="240" y="680"/><mxPoint x="300" y="680"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e19" value="" style="html=1;rounded=0;" edge="1" parent="1" source="flask" target="rel_lanc">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="260" y="900"/><mxPoint x="260" y="760"/><mxPoint x="260" y="760"/><mxPoint x="260" y="760"/><mxPoint x="300" y="760"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e20" value="" style="html=1;rounded=0;" edge="1" parent="1" source="flask" target="rel_atestados">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="270" y="920"/><mxPoint x="270" y="840"/><mxPoint x="270" y="840"/><mxPoint x="270" y="840"/><mxPoint x="300" y="840"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e21" value="" style="html=1;rounded=0;" edge="1" parent="1" source="flask" target="tipos_get">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="180" y="1150"/><mxPoint x="180" y="1660"/><mxPoint x="180" y="1660"/><mxPoint x="180" y="1660"/><mxPoint x="300" y="1660"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e22" value="" style="html=1;rounded=0;" edge="1" parent="1" source="flask" target="health">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="170" y="1160"/><mxPoint x="170" y="1730"/><mxPoint x="170" y="1730"/><mxPoint x="170" y="1730"/><mxPoint x="300" y="1730"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e23" value="" style="html=1;rounded=0;" edge="1" parent="1" source="prof_get" target="exec_query">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="500" y="60"/><mxPoint x="600" y="60"/><mxPoint x="600" y="60"/><mxPoint x="600" y="60"/><mxPoint x="600" y="950"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e24" value="" style="html=1;rounded=0;" edge="1" parent="1" source="prof_post" target="exec_query">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="500" y="140"/><mxPoint x="590" y="140"/><mxPoint x="590" y="140"/><mxPoint x="590" y="140"/><mxPoint x="590" y="950"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e25" value="" style="html=1;rounded=0;" edge="1" parent="1" source="prof_put" target="exec_query">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="490" y="220"/><mxPoint x="580" y="220"/><mxPoint x="580" y="220"/><mxPoint x="580" y="220"/><mxPoint x="580" y="950"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e26" value="" style="html=1;rounded=0;" edge="1" parent="1" source="prof_del" target="exec_query">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="490" y="300"/><mxPoint x="560" y="300"/><mxPoint x="560" y="300"/><mxPoint x="560" y="300"/><mxPoint x="560" y="950"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e27" value="" style="html=1;rounded=0;" edge="1" parent="1" source="folha_get" target="exec_query">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="480" y="1230"/><mxPoint x="530" y="1230"/><mxPoint x="530" y="1230"/><mxPoint x="530" y="1230"/><mxPoint x="530" y="1040"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e28" value="" style="html=1;rounded=0;" edge="1" parent="1" source="folha_post" target="exec_query">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="480" y="1310"/><mxPoint x="550" y="1310"/><mxPoint x="550" y="1310"/><mxPoint x="550" y="1310"/><mxPoint x="550" y="1040"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e29" value="" style="html=1;rounded=0;" edge="1" parent="1" source="folha_get_id" target="exec_query">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="490" y="1380"/><mxPoint x="570" y="1380"/><mxPoint x="570" y="1380"/><mxPoint x="570" y="1380"/><mxPoint x="570" y="1040"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e30" value="" style="html=1;rounded=0;" edge="1" parent="1" source="folha_put" target="exec_query">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="500" y="1450"/><mxPoint x="590" y="1450"/><mxPoint x="590" y="1450"/><mxPoint x="590" y="1450"/><mxPoint x="590" y="1040"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e31" value="" style="html=1;rounded=0;" edge="1" parent="1" source="folha_del" target="exec_query">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="440" y="1520"/><mxPoint x="450" y="1520"/><mxPoint x="450" y="1520"/><mxPoint x="450" y="1520"/><mxPoint x="450" y="1010"/><mxPoint x="450" y="1010"/><mxPoint x="450" y="1010"/><mxPoint x="480" y="1010"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e32" value="" style="html=1;rounded=0;" edge="1" parent="1" source="feriado_get" target="exec_query">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="430" y="980"/><mxPoint x="480" y="980"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e33" value="" style="html=1;rounded=0;" edge="1" parent="1" source="feriado_post" target="exec_query">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="430" y="1010"/><mxPoint x="480" y="1010"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e34" value="" style="html=1;rounded=0;" edge="1" parent="1" source="feriado_del" target="exec_query">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="470" y="1110"/><mxPoint x="510" y="1110"/><mxPoint x="510" y="1110"/><mxPoint x="510" y="1110"/><mxPoint x="510" y="1040"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e35" value="" style="html=1;rounded=0;" edge="1" parent="1" source="recesso_get" target="exec_query">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="490" y="410"/><mxPoint x="550" y="410"/><mxPoint x="550" y="410"/><mxPoint x="550" y="410"/><mxPoint x="550" y="950"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e36" value="" style="html=1;rounded=0;" edge="1" parent="1" source="recesso_post" target="exec_query">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="480" y="490"/><mxPoint x="540" y="490"/><mxPoint x="540" y="490"/><mxPoint x="540" y="490"/><mxPoint x="540" y="950"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e37" value="" style="html=1;rounded=0;" edge="1" parent="1" source="recesso_del" target="exec_query">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="480" y="570"/><mxPoint x="530" y="570"/><mxPoint x="530" y="570"/><mxPoint x="530" y="570"/><mxPoint x="530" y="950"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e38" value="" style="html=1;rounded=0;" edge="1" parent="1" source="rel_noturno" target="exec_query">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="470" y="680"/><mxPoint x="520" y="680"/><mxPoint x="520" y="680"/><mxPoint x="520" y="680"/><mxPoint x="520" y="950"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e39" value="" style="html=1;rounded=0;" edge="1" parent="1" source="rel_lanc" target="exec_query">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="470" y="760"/><mxPoint x="510" y="760"/><mxPoint x="510" y="760"/><mxPoint x="510" y="760"/><mxPoint x="510" y="950"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e40" value="" style="html=1;rounded=0;" edge="1" parent="1" source="rel_atestados" target="exec_query">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="460" y="840"/><mxPoint x="500" y="840"/><mxPoint x="500" y="840"/><mxPoint x="500" y="840"/><mxPoint x="500" y="950"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e41" value="" style="html=1;rounded=0;" edge="1" parent="1" source="tipos_get" target="exec_query">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="450" y="1660"/><mxPoint x="470" y="1660"/><mxPoint x="470" y="1660"/><mxPoint x="470" y="1660"/><mxPoint x="470" y="1020"/><mxPoint x="470" y="1020"/><mxPoint x="470" y="1020"/><mxPoint x="480" y="1020"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e42" value="conexao direta&#xa;(cursor proprio)" style="html=1;rounded=0;" edge="1" parent="1" source="lanc_post" target="get_conn">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="650" y="1580"/><mxPoint x="710" y="1580"/><mxPoint x="710" y="1580"/><mxPoint x="710" y="1580"/><mxPoint x="710" y="1030"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e43" value="" style="html=1;rounded=0;" edge="1" parent="1" source="resumo_post" target="get_conn">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="640" y="1500"/><mxPoint x="680" y="1500"/><mxPoint x="680" y="1500"/><mxPoint x="680" y="1500"/><mxPoint x="680" y="1040"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e44" value="" style="html=1;rounded=0;" edge="1" parent="1" source="health" target="get_conn">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="540" y="1730"/><mxPoint x="730" y="1730"/><mxPoint x="730" y="1730"/><mxPoint x="730" y="1730"/><mxPoint x="730" y="1040"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e45" value="" style="html=1;rounded=0;" edge="1" parent="1" source="exec_query" target="get_conn">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="610" y="990"/><mxPoint x="630" y="990"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e46" value="" style="html=1;rounded=0;" edge="1" parent="1" source="get_conn" target="mysql">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="760" y="990"/><mxPoint x="790" y="990"/></Array></mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

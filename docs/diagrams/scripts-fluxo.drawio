@@ -1,0 +1,247 @@
+<mxfile>
+  <diagram id="autolayout" name="Page-1">
+    <mxGraphModel dx="800" dy="600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="group_0" value="add_entry_type.py" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#6c8ebf;fontColor=#6c8ebf;verticalAlign=top;fontStyle=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="336" y="356" width="488" height="498" as="geometry"/>
+        </mxCell>
+        <mxCell id="group_1" value="backfill_resumo.py" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#d79b00;fontColor=#d79b00;verticalAlign=top;fontStyle=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="166" y="936" width="658" height="108" as="geometry"/>
+        </mxCell>
+        <mxCell id="group_2" value="backup_db.py" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#9673a6;fontColor=#9673a6;verticalAlign=top;fontStyle=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="336" y="1046" width="648" height="108" as="geometry"/>
+        </mxCell>
+        <mxCell id="group_3" value="sync_tipos_lancamento.py" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#82b366;fontColor=#82b366;verticalAlign=top;fontStyle=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="6" y="126" width="328" height="498" as="geometry"/>
+        </mxCell>
+        <mxCell id="group_4" value="update_tree.py" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#d6b656;fontColor=#d6b656;verticalAlign=top;fontStyle=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="6" y="6" width="498" height="108" as="geometry"/>
+        </mxCell>
+        <mxCell id="add_entry" value="add_entry_type.py&#xa;main()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="group_0">
+          <mxGeometry x="24" y="184" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="add_env" value="load_env()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="group_0">
+          <mxGeometry x="184" y="334" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="add_read" value="read_current_types()&#xa;src/types.ts" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="group_0">
+          <mxGeometry x="344" y="24" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="add_updts" value="update_types_ts()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="840" y="360" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="add_enum1" value="add_to_enum_full_setup()&#xa;database/full_setup.sql" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="group_0">
+          <mxGeometry x="184" y="104" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="add_enum2" value="add_to_enum_001()&#xa;migrations/001_create_tables.sql" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="group_0">
+          <mxGeometry x="184" y="24" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="add_mig" value="create_migration()&#xa;nova migration numerada" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="group_0">
+          <mxGeometry x="184" y="264" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="add_setup_upd" value="update_tipos_lancamento_in_setup()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="group_0">
+          <mxGeometry x="184" y="184" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="add_docker" value="find_docker_container()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="group_0">
+          <mxGeometry x="184" y="414" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="add_apply" value="apply_migration()&#xa;aplica SQL no MySQL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="group_0">
+          <mxGeometry x="344" y="414" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="sync_main" value="sync_tipos_lancamento.py&#xa;main()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="group_3">
+          <mxGeometry x="24" y="214" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="sync_parse" value="parse_entry_types_from_ts()&#xa;le ENTRY_TYPES" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="group_3">
+          <mxGeometry x="184" y="104" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="sync_setup" value="get_tipos_in_setup()&#xa;le full_setup.sql" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="group_3">
+          <mxGeometry x="184" y="254" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="sync_mig" value="create_sync_migration()&#xa;INSERT IGNORE ausentes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="group_3">
+          <mxGeometry x="184" y="174" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="sync_query" value="query_db()&#xa;SELECT no MySQL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="group_3">
+          <mxGeometry x="184" y="414" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="sync_codes" value="sync_codes_to_types_ts()&#xa;atualiza campo code" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="group_3">
+          <mxGeometry x="184" y="24" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="sync_reuse" value="reusa funcoes de&#xa;add_entry_type.py" style="dashed=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="group_3">
+          <mxGeometry x="184" y="334" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="backfill_main" value="backfill_resumo.py&#xa;main()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="group_1">
+          <mxGeometry x="24" y="24" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="backfill_query" value="busca folhas sem&#xa;resumo_folha" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="group_1">
+          <mxGeometry x="194" y="24" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="backfill_compute" value="compute_summary()&#xa;replica logica do frontend" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="group_1">
+          <mxGeometry x="354" y="24" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="backfill_insert" value="INSERT resumo_folha&#xa;no MySQL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="group_1">
+          <mxGeometry x="514" y="24" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="backup_main" value="backup_db.py&#xa;create_backup()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="group_2">
+          <mxGeometry x="24" y="24" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="backup_docker" value="get_docker_container_info()&#xa;le docker-compose.yml" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="group_2">
+          <mxGeometry x="184" y="24" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="backup_dump" value="mysqldump via docker exec" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="group_2">
+          <mxGeometry x="344" y="24" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="backup_tar" value="compacta em .tar.gz&#xa;com barra de progresso" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="group_2">
+          <mxGeometry x="504" y="24" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="tree_main" value="update_tree.py&#xa;update_all_trees()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="group_4">
+          <mxGeometry x="24" y="24" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="tree_gen" value="get_tree_string()&#xa;varre diretorios" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="group_4">
+          <mxGeometry x="184" y="24" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="tree_write" value="grava tree.txt&#xa;em cada pasta" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="group_4">
+          <mxGeometry x="354" y="24" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="mysql" value="MySQL&#xa;folhaponto_db" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="830" y="880" width="140" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="types_ts" value="src/types.ts" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="240" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="sql_files" value="database/full_setup.sql&#xa;database/migrations/*.sql" style="note;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="680" y="270" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="backup_file" value="backup_YYYYMMDD.tar.gz" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="1070" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="tree_files" value="tree.txt&#xa;(raiz/backend/scripts)" style="note;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="520" y="30" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="e0" value="" style="html=1;rounded=0;" edge="1" parent="1" source="add_entry" target="add_env">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="440" y="640"/><mxPoint x="440" y="720"/><mxPoint x="440" y="720"/><mxPoint x="440" y="720"/><mxPoint x="510" y="720"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e1" value="" style="html=1;rounded=0;" edge="1" parent="1" source="add_env" target="add_read">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="680" y="720"/><mxPoint x="740" y="720"/><mxPoint x="740" y="720"/><mxPoint x="740" y="720"/><mxPoint x="740" y="450"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e2" value="" style="html=1;rounded=0;" edge="1" parent="1" source="add_read" target="types_ts">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="890" y="430"/><mxPoint x="1070" y="430"/><mxPoint x="1070" y="430"/><mxPoint x="1070" y="430"/><mxPoint x="1070" y="310"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e3" value="" style="html=1;rounded=0;" edge="1" parent="1" source="add_read" target="add_updts">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="800" y="400"/><mxPoint x="830" y="400"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e4" value="escreve" style="html=1;rounded=0;" edge="1" parent="1" source="add_updts" target="types_ts">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="900" y="330"/><mxPoint x="900" y="290"/><mxPoint x="900" y="290"/><mxPoint x="900" y="290"/><mxPoint x="1000" y="290"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e5" value="" style="html=1;rounded=0;" edge="1" parent="1" source="add_entry" target="add_enum1">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="450" y="510"/><mxPoint x="450" y="480"/><mxPoint x="450" y="480"/><mxPoint x="450" y="480"/><mxPoint x="510" y="480"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e6" value="" style="html=1;rounded=0;" edge="1" parent="1" source="add_enum1" target="sql_files">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="650" y="490"/><mxPoint x="650" y="490"/><mxPoint x="650" y="490"/><mxPoint x="650" y="490"/><mxPoint x="650" y="320"/><mxPoint x="650" y="320"/><mxPoint x="650" y="320"/><mxPoint x="670" y="320"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e7" value="" style="html=1;rounded=0;" edge="1" parent="1" source="add_entry" target="add_enum2">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="420" y="490"/><mxPoint x="420" y="400"/><mxPoint x="420" y="400"/><mxPoint x="420" y="400"/><mxPoint x="510" y="400"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e8" value="" style="html=1;rounded=0;" edge="1" parent="1" source="add_enum2" target="sql_files">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="580" y="350"/><mxPoint x="580" y="320"/><mxPoint x="580" y="320"/><mxPoint x="580" y="320"/><mxPoint x="670" y="320"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e9" value="" style="html=1;rounded=0;" edge="1" parent="1" source="add_entry" target="add_mig">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="460" y="620"/><mxPoint x="460" y="650"/><mxPoint x="460" y="650"/><mxPoint x="460" y="650"/><mxPoint x="510" y="650"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e10" value="" style="html=1;rounded=0;" edge="1" parent="1" source="add_mig" target="sql_files">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="660" y="650"/><mxPoint x="670" y="650"/><mxPoint x="670" y="650"/><mxPoint x="670" y="650"/><mxPoint x="670" y="330"/><mxPoint x="670" y="330"/><mxPoint x="670" y="330"/><mxPoint x="670" y="330"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e11" value="" style="html=1;rounded=0;" edge="1" parent="1" source="add_entry" target="add_setup_upd">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="480" y="570"/><mxPoint x="510" y="570"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e12" value="" style="html=1;rounded=0;" edge="1" parent="1" source="add_setup_upd" target="sql_files">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="650" y="570"/><mxPoint x="660" y="570"/><mxPoint x="660" y="570"/><mxPoint x="660" y="570"/><mxPoint x="660" y="330"/><mxPoint x="660" y="330"/><mxPoint x="660" y="330"/><mxPoint x="670" y="330"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e13" value="" style="html=1;rounded=0;" edge="1" parent="1" source="add_entry" target="add_docker">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="410" y="660"/><mxPoint x="410" y="800"/><mxPoint x="410" y="800"/><mxPoint x="410" y="800"/><mxPoint x="510" y="800"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e14" value="" style="html=1;rounded=0;" edge="1" parent="1" source="add_docker" target="add_apply">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="640" y="800"/><mxPoint x="670" y="800"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e15" value="ALTER ENUM" style="html=1;rounded=0;" edge="1" parent="1" source="add_apply" target="mysql">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="820" y="800"/><mxPoint x="840" y="800"/><mxPoint x="840" y="800"/><mxPoint x="840" y="800"/><mxPoint x="840" y="870"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e16" value="" style="html=1;rounded=0;" edge="1" parent="1" source="sync_main" target="sync_reuse">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="110" y="440"/><mxPoint x="110" y="490"/><mxPoint x="110" y="490"/><mxPoint x="110" y="490"/><mxPoint x="180" y="490"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e17" value="import" style="html=1;rounded=0;" edge="1" parent="1" source="sync_reuse" target="add_entry">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="350" y="500"/><mxPoint x="390" y="500"/><mxPoint x="390" y="500"/><mxPoint x="390" y="500"/><mxPoint x="390" y="530"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e18" value="" style="html=1;rounded=0;" edge="1" parent="1" source="sync_main" target="sync_parse">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="110" y="310"/><mxPoint x="110" y="260"/><mxPoint x="110" y="260"/><mxPoint x="110" y="260"/><mxPoint x="180" y="260"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e19" value="" style="html=1;rounded=0;" edge="1" parent="1" source="sync_parse" target="types_ts">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="310" y="260"/><mxPoint x="1000" y="260"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e20" value="" style="html=1;rounded=0;" edge="1" parent="1" source="sync_main" target="sync_setup">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="150" y="390"/><mxPoint x="180" y="390"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e21" value="" style="html=1;rounded=0;" edge="1" parent="1" source="sync_setup" target="sql_files">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="320" y="420"/><mxPoint x="340" y="420"/><mxPoint x="340" y="420"/><mxPoint x="340" y="420"/><mxPoint x="340" y="310"/><mxPoint x="340" y="310"/><mxPoint x="340" y="310"/><mxPoint x="670" y="310"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e22" value="" style="html=1;rounded=0;" edge="1" parent="1" source="sync_main" target="sync_mig">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="150" y="350"/><mxPoint x="180" y="350"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e23" value="" style="html=1;rounded=0;" edge="1" parent="1" source="sync_mig" target="sql_files">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="310" y="310"/><mxPoint x="670" y="310"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e24" value="" style="html=1;rounded=0;" edge="1" parent="1" source="sync_main" target="sync_query">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="70" y="460"/><mxPoint x="70" y="570"/><mxPoint x="70" y="570"/><mxPoint x="70" y="570"/><mxPoint x="180" y="570"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e25" value="" style="html=1;rounded=0;" edge="1" parent="1" source="sync_query" target="mysql">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="250" y="680"/><mxPoint x="250" y="910"/><mxPoint x="250" y="910"/><mxPoint x="250" y="910"/><mxPoint x="820" y="910"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e26" value="" style="html=1;rounded=0;" edge="1" parent="1" source="sync_main" target="sync_codes">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="70" y="290"/><mxPoint x="70" y="180"/><mxPoint x="70" y="180"/><mxPoint x="70" y="180"/><mxPoint x="180" y="180"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e27" value="escreve code" style="html=1;rounded=0;" edge="1" parent="1" source="sync_codes" target="types_ts">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="500" y="180"/><mxPoint x="1070" y="180"/><mxPoint x="1070" y="180"/><mxPoint x="1070" y="180"/><mxPoint x="1070" y="230"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e28" value="" style="html=1;rounded=0;" edge="1" parent="1" source="backfill_main" target="backfill_query">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="310" y="990"/><mxPoint x="350" y="990"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e29" value="SELECT folhas" style="html=1;rounded=0;" edge="1" parent="1" source="backfill_query" target="mysql">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="390" y="940"/><mxPoint x="390" y="930"/><mxPoint x="390" y="930"/><mxPoint x="390" y="930"/><mxPoint x="820" y="930"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e30" value="" style="html=1;rounded=0;" edge="1" parent="1" source="backfill_query" target="backfill_compute">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="480" y="990"/><mxPoint x="510" y="990"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e31" value="" style="html=1;rounded=0;" edge="1" parent="1" source="backfill_compute" target="backfill_insert">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="640" y="990"/><mxPoint x="670" y="990"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e32" value="" style="html=1;rounded=0;" edge="1" parent="1" source="backfill_insert" target="mysql">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="800" y="960"/><mxPoint x="820" y="960"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e33" value="" style="html=1;rounded=0;" edge="1" parent="1" source="backup_main" target="backup_docker">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="480" y="1100"/><mxPoint x="510" y="1100"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e34" value="" style="html=1;rounded=0;" edge="1" parent="1" source="backup_docker" target="backup_dump">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="640" y="1100"/><mxPoint x="670" y="1100"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e35" value="mysqldump" style="html=1;rounded=0;" edge="1" parent="1" source="backup_dump" target="mysql">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="820" y="1090"/><mxPoint x="840" y="1090"/><mxPoint x="840" y="1090"/><mxPoint x="840" y="1090"/><mxPoint x="840" y="980"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e36" value="" style="html=1;rounded=0;" edge="1" parent="1" source="backup_dump" target="backup_tar">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="800" y="1110"/><mxPoint x="830" y="1110"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e37" value="" style="html=1;rounded=0;" edge="1" parent="1" source="backup_tar" target="backup_file">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="960" y="1100"/><mxPoint x="1000" y="1100"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e38" value="" style="html=1;rounded=0;" edge="1" parent="1" source="tree_main" target="tree_gen">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="150" y="60"/><mxPoint x="180" y="60"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e39" value="" style="html=1;rounded=0;" edge="1" parent="1" source="tree_gen" target="tree_write">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="310" y="60"/><mxPoint x="350" y="60"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e40" value="" style="html=1;rounded=0;" edge="1" parent="1" source="tree_write" target="tree_files">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="480" y="60"/><mxPoint x="510" y="60"/></Array></mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -190,29 +190,29 @@ FolhapontogoogleAi/
 │
 ├── database/                      # MySQL + Migrations
 │   ├── full_setup.sql            # Setup com seed data
-<<<<<<< HEAD
-│   ├── migrations/               # 11 migrations organizadas
-=======
-│   ├── migrations/               # 16 migrations organizadas
->>>>>>> 2fa36ab (Atualização de Documentação)
+│   ├── migrations/               # 17 migrations organizadas
 │   │   ├── 001_create_tables.sql
 │   │   ├── 003_add_second_turn_columns.sql
 │   │   ├── 011_create_feriados_table.sql
+│   │   ├── 017_create_recessos_table.sql
 │   │   └── ...
 │   └── Dockerfile
 │
-<<<<<<< HEAD
 ├── scripts/                       # Automação
 │   ├── add_entry_type.py         # Adicionar novos tipos
 │   ├── sync_tipos_lancamento.py  # Sincronizar tipos ↔ banco
 │   ├── backfill_resumo.py        # Backfill de resumos
-│   └── backup_db.py              # Backup/restore
-=======
-├── add_entry_type.py             # Adicionar novos tipos
-├── sync_tipos_lancamento.py      # Sincronizar tipos ↔ banco
-├── backfill_resumo.py            # Backfill de resumos
-├── backup_db.py                  # Backup/restore
->>>>>>> 2fa36ab (Atualização de Documentação)
+│   ├── backup_db.py              # Backup/restore
+│   └── update_tree.py            # Gera tree.txt de cada pasta
+│
+├── backend/scripts/               # Scripts one-off do backend
+│   └── backfill_resumo_recesso.py
+│
+├── docs/diagrams/                 # Diagramas de arquitetura (draw.io)
+│   ├── folhaponto-arquitetura.drawio(.png)
+│   ├── scripts-fluxo.drawio(.png)
+│   ├── backend-scripts-fluxo.drawio(.png)
+│   └── app-py-fluxo.drawio(.png)
 │
 ├── docker-compose.yml            # Orquestração (dev + prod)
 ├── vite.config.ts                # Proxy condicional
@@ -282,14 +282,6 @@ python3 backfill_resumo.py
 | `POST` | `/api/profissionais` | Criar servidor |
 | `PUT` | `/api/profissionais/<id>` | Atualizar servidor |
 | `DELETE` | `/api/profissionais/<id>` | Excluir servidor + folhas |
-| `GET` | `/api/folhas_ponto/<prof_id>/<ano>` | Listar folhas do servidor |
-| `GET` | `/api/folhas_ponto/<id>` | Obter folha específica |
-| `POST` | `/api/folhas_ponto` | Criar folha |
-| `PUT` | `/api/folhas_ponto/<id>` | Atualizar folha |
-| `GET` | `/api/feriados` | Listar feriados do ano |
-| `POST` | `/api/feriados` | Criar feriado |
-| `DELETE` | `/api/feriados/<id>` | Excluir feriado |
-=======
 | `GET` | `/api/folhas-ponto` | Listar folhas (filtros opcionais: profissional_id, mes, ano) |
 | `GET` | `/api/folhas-ponto/<id>` | Obter folha específica com lançamentos e resumo |
 | `POST` | `/api/folhas-ponto` | Criar folha |
@@ -343,6 +335,21 @@ docker-compose down -v  # com volumes
 - ✅ **SQL**: Prepared statements via ORM/Connector
 - ⚠️ **Autenticação frontend**: Básica (para uso interno)
   - Para produção pública: implemente OAuth2/JWT no backend
+
+---
+
+## 🗺️ Diagramas de Arquitetura
+
+Diagramas `.drawio` (editáveis) com PNG exportado, em [`docs/diagrams/`](docs/diagrams/):
+
+| Diagrama | Descrição |
+|----------|-----------|
+| [`folhaponto-arquitetura.drawio.png`](docs/diagrams/folhaponto-arquitetura.drawio.png) | Visão geral do projeto: telas React → `api.ts` → rotas Flask → MySQL, incluindo chamada ao Gemini API |
+| [`scripts-fluxo.drawio.png`](docs/diagrams/scripts-fluxo.drawio.png) | Funcionamento dos scripts em `scripts/` (add_entry_type, sync_tipos_lancamento, backfill_resumo, backup_db, update_tree) |
+| [`backend-scripts-fluxo.drawio.png`](docs/diagrams/backend-scripts-fluxo.drawio.png) | Fluxo do script `backend/scripts/backfill_resumo_recesso.py` |
+| [`app-py-fluxo.drawio.png`](docs/diagrams/app-py-fluxo.drawio.png) | Fluxo direto do `backend/app.py`: cada rota agrupada por recurso até `execute_query()`/MySQL |
+
+Abra os `.drawio.png` no [draw.io](https://app.diagrams.net/) para editar (XML embutido no PNG).
 
 ---
 

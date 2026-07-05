@@ -1,0 +1,100 @@
+<mxfile>
+  <diagram id="autolayout" name="Page-1">
+    <mxGraphModel dx="800" dy="600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="group_0" value="consulta" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#6c8ebf;fontColor=#6c8ebf;verticalAlign=top;fontStyle=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="146" y="76" width="168" height="198" as="geometry"/>
+        </mxCell>
+        <mxCell id="group_1" value="diff" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#82b366;fontColor=#82b366;verticalAlign=top;fontStyle=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="346" y="166" width="168" height="108" as="geometry"/>
+        </mxCell>
+        <mxCell id="start" value="backfill_resumo_recesso.py&#xa;main(dry_run)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="170" y="0" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="query_folhas" value="SELECT folhas_ponto&#xa;JOIN profissionais&#xa;WHERE mes=5 ano=2026" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="group_0">
+          <mxGeometry x="24" y="24" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="loop_folha" value="para cada folha:&#xa;SELECT lancamentos_diarios" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="group_0">
+          <mxGeometry x="24" y="114" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="compute" value="compute_summary_from_entries()&#xa;reimplementa computeSummaryFromEntries&#xa;(src/App.tsx)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="170" y="310" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="codes" value="ENTRY_TYPE_CODES&#xa;(espelha src/types.ts)" style="note;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="0" y="190" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="compare" value="compara expected_set&#xa;vs actual_set&#xa;(resumo_folha atual)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="group_1">
+          <mxGeometry x="24" y="24" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="decision" value="divergente?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="460" y="100" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="dry" value="dry-run:&#xa;apenas imprime&#xa;(nada gravado)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="680" y="190" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="write" value="DELETE + INSERT&#xa;resumo_folha" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="540" y="190" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="commit" value="conn.commit()&#xa;por folha" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="550" y="310" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="report" value="print resumo final&#xa;total sincronizado" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="610" y="420" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="mysql" value="MySQL&#xa;folhaponto_db&#xa;(folhas_ponto, lancamentos_diarios,&#xa;resumo_folha)" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="330" y="290" width="180" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="e0" value="" style="html=1;rounded=0;" edge="1" parent="1" source="start" target="query_folhas">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="230" y="60"/><mxPoint x="230" y="90"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e1" value="SELECT" style="html=1;rounded=0;" edge="1" parent="1" source="query_folhas" target="mysql">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="320" y="140"/><mxPoint x="360" y="140"/><mxPoint x="360" y="140"/><mxPoint x="360" y="140"/><mxPoint x="360" y="280"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e2" value="" style="html=1;rounded=0;" edge="1" parent="1" source="query_folhas" target="loop_folha">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="230" y="160"/><mxPoint x="230" y="180"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e3" value="SELECT" style="html=1;rounded=0;" edge="1" parent="1" source="loop_folha" target="mysql">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="320" y="240"/><mxPoint x="350" y="240"/><mxPoint x="350" y="240"/><mxPoint x="350" y="240"/><mxPoint x="350" y="280"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e4" value="" style="html=1;rounded=0;" edge="1" parent="1" source="loop_folha" target="compute">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="230" y="250"/><mxPoint x="230" y="300"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e5" value="" style="html=1;rounded=0;" edge="1" parent="1" source="codes" target="compute">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="60" y="290"/><mxPoint x="60" y="340"/><mxPoint x="60" y="340"/><mxPoint x="60" y="340"/><mxPoint x="160" y="340"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e6" value="" style="html=1;rounded=0;" edge="1" parent="1" source="compute" target="compare">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="300" y="340"/><mxPoint x="310" y="340"/><mxPoint x="310" y="340"/><mxPoint x="310" y="340"/><mxPoint x="310" y="220"/><mxPoint x="310" y="220"/><mxPoint x="310" y="220"/><mxPoint x="360" y="220"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e7" value="SELECT resumo_folha" style="html=1;rounded=0;" edge="1" parent="1" source="compare" target="mysql">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="430" y="250"/><mxPoint x="430" y="280"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e8" value="" style="html=1;rounded=0;" edge="1" parent="1" source="compare" target="decision">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="480" y="190"/><mxPoint x="480" y="170"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e9" value="nao / proxima folha" style="html=1;rounded=0;" edge="1" parent="1" source="decision" target="loop_folha">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="410" y="120"/><mxPoint x="340" y="120"/><mxPoint x="340" y="120"/><mxPoint x="340" y="120"/><mxPoint x="340" y="210"/><mxPoint x="340" y="210"/><mxPoint x="340" y="210"/><mxPoint x="300" y="210"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e10" value="sim + --dry-run" style="html=1;rounded=0;" edge="1" parent="1" source="decision" target="dry">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="640" y="130"/><mxPoint x="740" y="130"/><mxPoint x="740" y="130"/><mxPoint x="740" y="130"/><mxPoint x="740" y="180"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e11" value="sim" style="html=1;rounded=0;" edge="1" parent="1" source="decision" target="write">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="560" y="160"/><mxPoint x="560" y="180"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e12" value="DELETE/INSERT" style="html=1;rounded=0;" edge="1" parent="1" source="write" target="mysql">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="550" y="270"/><mxPoint x="550" y="300"/><mxPoint x="550" y="300"/><mxPoint x="550" y="300"/><mxPoint x="520" y="300"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e13" value="" style="html=1;rounded=0;" edge="1" parent="1" source="write" target="commit">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="610" y="250"/><mxPoint x="610" y="300"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e14" value="" style="html=1;rounded=0;" edge="1" parent="1" source="dry" target="report">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="700" y="250"/><mxPoint x="700" y="410"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e15" value="" style="html=1;rounded=0;" edge="1" parent="1" source="commit" target="report">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="640" y="370"/><mxPoint x="640" y="410"/></Array></mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
