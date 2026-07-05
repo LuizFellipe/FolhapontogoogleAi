@@ -98,25 +98,9 @@ docker-compose up -d
 ## 📸 Interface em Ação
 
 ### Tela Principal — Editor de Lançamentos
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  🔐 SEE-DF                  [Mês: Junho]  [Ano: 2026]          │
-├─────────────────────────────────────────────────────────────────┤
-│  SERVIDOR: ALLANA DA SILVA SANTOS         [< Anterior | Próximo >] │
-│  Matrícula: 12345  │  Cargo: Professor  │  Carga: 40h           │
-├─────────────────────────────────────────────────────────────────┤
-│  LANÇAMENTOS DIÁRIOS                                             │
-│  ┌────┬─────────────────┬─────────────────┬──────────────────┐  │
-│  │Dia │  Turno 1        │  Turno 2        │  Observação      │  │
-│  ├────┼─────────────────┼─────────────────┼──────────────────┤  │
-│  │ 1  │ [TRABALHO    ▼] │ [TRABALHO    ▼] │ [________________] │  │
-│  │ 2  │ [TRABALHO    ▼] │ [TRABALHO    ▼] │ [________________] │  │
-│  │ ... │     ...         │      ...        │      ...         │  │
-│  │30  │ [TRABALHO    ▼] │ [TRABALHO    ▼] │ [________________] │  │
-│  └────┴─────────────────┴─────────────────┴──────────────────┘  │
-│  [Pré Preench.] [Limpar] [Feriados] [Gerar Lote] [Visualizar]  │
-└─────────────────────────────────────────────────────────────────┘
-```
+
+![Editor de Lançamentos](docs/screenshots/editor_mockup.jpg)
+*Interface de edição e validação de frequências diárias com tema cyberpunk e sincronização automática.*
 
 ### Página 1 — Formulário Oficial
 Reproduz fidedignamente o formulário da SEE com:

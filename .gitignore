@@ -38,3 +38,8 @@ Thumbs.db
 
 #meus arquivos locais
 backup_db.py
+
+# ferramentas locais (nao versionar)
+.tokensave/
+.windsurf/
+.continue/
