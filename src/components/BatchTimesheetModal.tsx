@@ -79,7 +79,7 @@ export const BatchTimesheetModal: React.FC<Props> = ({
 
   // Desmarcar recessos multi-dia ao trocar para cargo sem professor
   useEffect(() => {
-    if (cargoFilter !== 'PROFESSOR DE EDUC. BASICA') {
+    if (cargoFilter !== 'PROFESSOR DE EDUC. BASICA' && cargoFilter !== 'TEMP') {
       setSelectedRecessoIds(prev => {
         const next = new Set(prev);
         recessos.filter(r => !isSingleDay(r)).forEach(r => next.delete(r.id));
@@ -214,12 +214,12 @@ export const BatchTimesheetModal: React.FC<Props> = ({
         </div>
 
         {/* Recessos */}
-        {recessos.length > 0 && recessos.some(r => isSingleDay(r) || cargoFilter === 'PROFESSOR DE EDUC. BASICA') && (
+        {recessos.length > 0 && recessos.some(r => isSingleDay(r) || cargoFilter === 'PROFESSOR DE EDUC. BASICA' || cargoFilter === 'TEMP') && (
           <div className="px-6 py-3 border-b border-stone-100 bg-stone-50">
             <p className="text-xs font-medium text-stone-500 uppercase tracking-wider mb-2">Recessos para aplicar no pré-preenchimento</p>
             <ul className="space-y-1">
               {recessos
-                .filter(r => isSingleDay(r) || cargoFilter === 'PROFESSOR DE EDUC. BASICA')
+                .filter(r => isSingleDay(r) || cargoFilter === 'PROFESSOR DE EDUC. BASICA' || cargoFilter === 'TEMP')
                 .map((r) => (
                   <li key={r.id}>
                     <label className="flex items-center gap-2 cursor-pointer text-sm text-stone-700 hover:text-stone-900">
@@ -242,7 +242,7 @@ export const BatchTimesheetModal: React.FC<Props> = ({
                         {r.dayInicio}/{r.monthInicio + 1}/{r.yearInicio} → {r.dayFim}/{r.monthFim + 1}/{r.yearFim}
                       </span>
                       {!isSingleDay(r) && (
-                        <span className="text-xs text-amber-600 font-medium">(multi-dia · só PROF. BÁSICA)</span>
+                        <span className="text-xs text-amber-600 font-medium">(multi-dia · só PROF. BÁSICA/TEMP)</span>
                       )}
                     </label>
                   </li>

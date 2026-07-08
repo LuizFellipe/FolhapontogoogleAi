@@ -410,7 +410,8 @@ export default function App() {
             const existingData = await apiService.loadCompleteTimesheet(profId, mes, ano);
             if (existingData) {
               const isCh20 = String(prof?.carga_horaria || '').includes('20');
-              const isProfBasica = !!prof?.cargo?.toUpperCase().includes('PROFESSOR DE EDUC. BASICA');
+              const isProfBasica = !!prof?.cargo?.toUpperCase().includes('PROFESSOR DE EDUC. BASICA')
+                || !!prof?.cargo?.toUpperCase().includes('TEMP');
               const updatedEntries = applyRecessosToEntries(
                 existingData.entries, selectedRecessos, mes, ano, isCh20, isProfBasica
               );
@@ -449,7 +450,8 @@ export default function App() {
           if (isCh20) {
             entries = entries.map(e => ({ ...e, type_turno2: 'TRABALHO' as EntryType }));
           }
-          const isProfBasica = !!prof?.cargo?.toUpperCase().includes('PROFESSOR DE EDUC. BASICA');
+          const isProfBasica = !!prof?.cargo?.toUpperCase().includes('PROFESSOR DE EDUC. BASICA')
+            || !!prof?.cargo?.toUpperCase().includes('TEMP');
           entries = applyRecessosToEntries(entries, selectedRecessos, mes, ano, isCh20, isProfBasica);
           const hasPattern = entries.some(e => e.type !== 'TRABALHO' || e.type_turno2 !== 'TRABALHO');
           const obsText = "CURSO FORMACAO CONTINUADA DE ACORDO MEMORANDO/CIRC 59/2025 - SEE/SUBEB DE 18/02/2025 - SEI 00080.00049147/2025-76";
