@@ -68,6 +68,8 @@ def execute_query(query, params=None, fetch=True, return_lastrowid=False):
         print(f"Erro na query: {e}")
         if not fetch:
             connection.rollback()
+        if e.errno == 1062:  # Duplicate entry -> repropaga pro caller tratar
+            raise
         return None
     finally:
         cursor.close()
@@ -90,19 +92,11 @@ def create_profissional():
     if not data.get('nome'):
         return jsonify({'error': 'Campo nome é obrigatório'}), 400
     
-    # Verificar se a matrícula foi fornecida e se já existe (apenas se não for NULL/vazio)
-    if data.get('matricula'):
-        query_check = "SELECT id FROM profissionais WHERE matricula = %s"
-        existing = execute_query(query_check, (data.get('matricula'),))
-        
-        if existing:
-            return jsonify({'error': f'Matrícula "{data.get("matricula")}" já está cadastrada no sistema'}), 400
-    
     query = """
     INSERT INTO profissionais (nome, matricula, cargo, ua, exercicio, carga_horaria, funcao, unidade_lotacao, turno1, turno2)
     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
-    
+
     params = (
         data.get('nome'),
         data.get('matricula') or None,  # Permitir NULL
@@ -115,11 +109,16 @@ def create_profissional():
         data.get('turno1'),
         data.get('turno2')
     )
-    
-    result = execute_query(query, params, fetch=False, return_lastrowid=True)
-    if result:
-        return jsonify({'id': result, 'message': 'Profissional criado com sucesso'}), 201
-    return jsonify({'error': 'Erro ao criar profissional'}), 500
+
+    try:
+        result = execute_query(query, params, fetch=False, return_lastrowid=True)
+        if result:
+            return jsonify({'id': result, 'message': 'Profissional criado com sucesso'}), 201
+        return jsonify({'error': 'Erro ao criar profissional'}), 500
+    except Error as e:
+        if e.errno == 1062:
+            return jsonify({'error': f'Matrícula "{data.get("matricula")}" já está cadastrada no sistema'}), 400
+        return jsonify({'error': f'Erro ao criar profissional: {e}'}), 500
 
 @app.route('/api/profissionais/<int:id>', methods=['GET'])
 def get_profissional(id):
@@ -139,14 +138,6 @@ def update_profissional(id):
     # Validar campos obrigatórios
     if not data.get('nome'):
         return jsonify({'error': 'Campo nome é obrigatório'}), 400
-    
-    # Verificar se a matrícula está sendo alterada e se já existe (apenas se não for NULL/vazio)
-    if data.get('matricula'):
-        query_check = "SELECT matricula FROM profissionais WHERE id != %s AND matricula = %s"
-        existing = execute_query(query_check, (id, data.get('matricula')))
-        
-        if existing:
-            return jsonify({'error': f'Matrícula "{data.get("matricula")}" já está em uso por outro profissional'}), 400
     
     query = """
     UPDATE profissionais 
@@ -169,10 +160,15 @@ def update_profissional(id):
         id
     )
     
-    result = execute_query(query, params, fetch=False)
-    if result:
-        return jsonify({'message': 'Profissional atualizado com sucesso'})
-    return jsonify({'error': 'Erro ao atualizar profissional'}), 500
+    try:
+        result = execute_query(query, params, fetch=False)
+        if result:
+            return jsonify({'message': 'Profissional atualizado com sucesso'})
+        return jsonify({'error': 'Erro ao atualizar profissional'}), 500
+    except Error as e:
+        if e.errno == 1062:
+            return jsonify({'error': f'Matrícula "{data.get("matricula")}" já está em uso por outro profissional'}), 400
+        return jsonify({'error': f'Erro ao atualizar profissional: {e}'}), 500
 
 @app.route('/api/profissionais/<int:id>', methods=['DELETE'])
 def delete_profissional(id):
@@ -488,7 +484,9 @@ def create_recesso():
         if result:
             return jsonify({'id': result, 'message': 'Recesso criado com sucesso'}), 201
         return jsonify({'error': 'Erro ao criar recesso'}), 500
-    except Exception as e:
+    except Error as e:
+        if e.errno == 1062:
+            return jsonify({'error': 'Já existe um recesso com esse período.'}), 400
         return jsonify({'error': f'Erro ao criar recesso: {e}'}), 500
 
 @app.route('/api/recessos/<int:id>', methods=['DELETE'])

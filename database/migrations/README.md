@@ -69,6 +69,12 @@ Cria a view `vw_relatorio_atestados_bimestrais` para contagem de atestados médi
 ### `017_create_recessos_table.sql`
 Cria a tabela `recessos` (`id`, `dia_inicio`, `mes_inicio`, `ano_inicio`, `dia_fim`, `mes_fim`, `ano_fim`, `label`, `criado_em`) para armazenar períodos de recesso com data de início e fim.
 
+### `018_create_schema_migrations.sql`
+Cria a tabela `schema_migrations(version, applied_at)` para rastrear quais migrations já foram aplicadas em cada banco. Marca retroativamente `001`-`018` como aplicadas.
+
+### `019_recessos_unique_constraint.sql`
+Adiciona `UNIQUE KEY unique_recesso_periodo` na tabela `recessos` (dia/mês/ano de início e fim), evitando períodos duplicados.
+
 ## Como Adicionar Novos Tipos de Lançamento
 
 Use o script interativo na raiz do projeto — ele atualiza automaticamente `types.ts`, os SQLs e aplica a migration no banco:
