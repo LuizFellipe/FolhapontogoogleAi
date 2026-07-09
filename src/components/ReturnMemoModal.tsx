@@ -459,7 +459,9 @@ export const ReturnMemoModal: React.FC<Props> = ({
   const parseDate = (str: string): Date | null => {
     const m = str.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
     if (!m) return null;
-    const d = new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
+    const mes = Number(m[2]);
+    if (mes < 1 || mes > 12) return null; // rejeita mês inválido (ex.: 13)
+    const d = new Date(Number(m[3]), mes - 1, Number(m[1]));
     if (isNaN(d.getTime())) return null;
     if (d.getDate() !== Number(m[1])) return null; // rejeita 31/02 etc
     return d;
