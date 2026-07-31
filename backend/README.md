@@ -34,8 +34,10 @@ O backend atua como intermediário entre o frontend React e o banco de dados MyS
 | `/api/recessos/<id>` | DELETE | Remoção de um recesso. |
 | `/api/relatorio/adicional-noturno` | GET | Retorna dados de adicional noturno (apenas dias de TRABALHO). |
 | `/api/relatorio/lancamentos` | GET | Retorna todos os lançamentos do período via `vw_folhas_lancamento`. |
+| `/api/relatorio/resumo` | GET | Totalização anual (janeiro até hoje) de ocorrências por profissional. Param: `ano`. |
 | `/api/tipos-lancamento` | GET | Lista os tipos de lançamento cadastrados (valor, label, código). |
 | `/api/atestados-bimestrais` | GET | Retorna contagem de atestados por bimestre civil para um servidor. |
+| `/api/atestados-comparecimento` | GET | Retorna contagem mensal (`mes0..mes11`) de atestados de comparecimento. Params: `matricula`, `ano`. |
 | `/api/health` | GET | Verifica se a API e o banco de dados estão operacionais. |
 
 ## Tecnologias Utilizadas
@@ -50,3 +52,5 @@ O backend é iniciado através do script `start_backend.sh` na raiz, mas pode se
 python app.py
 ```
 *Certifique-se de ter o ambiente virtual (`venv`) ativado e as dependências instaladas (`pip install -r requirements.txt`).*
+
+> ⚠️ **Reinicie o Flask após editar `app.py`.** O servidor iniciado pelo `start_backend.sh` roda sem auto-reload: alterações em queries/rotas só passam a valer depois de reiniciar o processo da porta 5000. Sintoma típico: o relatório continua exibindo dados no formato antigo (ex.: linhas `FERIADO` no Resumo) mesmo com o código já corrigido.

@@ -1,5 +1,28 @@
 # Memória de Modificações do Projeto
 
+## [2026-07-30] Relatório Resumo: FERIADO oculto e contagem por dia
+
+### Arquivos Modificados:
+- `README.md` *(endpoint `/api/relatorio/resumo` na tabela da API)*
+- `backend/README.md`, `backend/MODIFICATION_MEMORY.md`
+- `src/services/README.md`, `src/services/MODIFICATION_MEMORY.md`
+- `src/components/README.md`, `src/components/MODIFICATION_MEMORY.md`
+
+### Problema:
+O relatório **Resumo** exibia linhas `FERIADO` e suspeitava-se de contagem dobrada quando o mesmo tipo era lançado nos dois turnos (ATESTADO MEDICO DE ATE 03 DIAS, LICENCA MEDICA OU ODONTOLOGICA).
+
+### Diagnóstico:
+Nenhum defeito no SQL. A rota `GET /api/relatorio/resumo` já excluía `FERIADO` e já usava `UNION` (não `UNION ALL`), que agrega turno1+turno2 do mesmo dia como 1 ocorrência. O processo Flask em execução na porta 5000 servia uma **versão antiga de `app.py`** — `start_backend.sh` sobe o servidor sem auto-reload.
+
+### Correções:
+1. Backend reiniciado (processo da porta 5000 encerrado e `flask run` novamente a partir de `backend/`).
+2. Documentação atualizada nas pastas afetadas, incluindo aviso explícito de reinício obrigatório após editar `app.py`.
+
+### Verificação:
+`GET /api/relatorio/resumo?ano=2026` → 192 linhas, sem campo `id`, **0** linhas `FERIADO`; atestado/licença contando dias (SERVIDORA EXEMPLO J = 2, para 16 e 17/03 nos dois turnos).
+
+---
+
 ## [2026-07-02] Auditoria e Resolução de Consistência de Documentação e Migrações
 
 ### Arquivos Modificados/Renomeados:

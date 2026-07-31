@@ -1,5 +1,26 @@
 # Memória de Modificação - Backend (backend/)
 
+## [2026-07-30] Relatório Resumo Anual + verificação de FERIADO / dedupe de turnos
+
+### Arquivos Modificados:
+- **app.py**
+
+### Alterações:
+- **Novo Endpoint**: `GET /api/relatorio/resumo?ano=<ano>` — totaliza ocorrências por profissional de janeiro até `date.today()`.
+  - Fonte: `vw_folhas_lancamento`, com **`UNION` (não `UNION ALL`)** sobre `(nome, matricula, ano, mes, dia, tipo)` e `(… , tipo_turno2)`. Isso faz turno1 e turno2 do mesmo dia contarem como **1** — inclusive para `ATESTADO MEDICO DE ATE 03` e `LICENCA MEDICA OU`, que são lançados nos dois turnos. O total é número de **dias**, não de turnos.
+  - Exclui `RECESSO`, `TRABALHO`, `FERIAS` e **`FERIADO`** nos dois ramos do UNION.
+  - `GROUP BY (nome, matricula, tipo)` sem `fp.id` → cada profissional aparece uma única vez, apesar de ter N `folhas_ponto` no ano.
+  - Retorno: `[{ nome, matricula, tipo, total }]`.
+- **Novo Endpoint**: `GET /api/atestados-comparecimento?matricula=&ano=` — contagem mensal (`mes0..mes11`) via `vw_relatorio_atestados_comparecimento`; sem dados retorna zeros (fail-safe).
+
+### 🔴 Armadilha registrada
+Linhas `FERIADO` continuavam aparecendo no Resumo mesmo com o SQL correto: o processo Flask da porta 5000 (iniciado pelo `start_backend.sh`) **não tem auto-reload** e servia a versão anterior de `app.py`. Correção = reiniciar o backend, não mexer na query.
+
+### 🧪 Verificação
+`GET /api/relatorio/resumo?ano=2026` → 192 linhas, chaves `matricula/nome/tipo/total` (sem `id`), 0 linhas `FERIADO`; SERVIDORA EXEMPLO J com `ATESTADO MEDICO DE ATE 03` = 2 (dias 16 e 17/03, ambos os turnos preenchidos).
+
+---
+
 ## [2026-06-15] Funcionalidade: Atestados por Bimestre
 
 ### Arquivos Modificados:

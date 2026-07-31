@@ -190,11 +190,15 @@ FolhapontogoogleAi/
 │
 ├── database/                      # MySQL + Migrations
 │   ├── full_setup.sql            # Setup com seed data
-│   ├── migrations/               # 17 migrations organizadas
+│   ├── migrations/               # 20 migrations organizadas
 │   │   ├── 001_create_tables.sql
 │   │   ├── 003_add_second_turn_columns.sql
 │   │   ├── 011_create_feriados_table.sql
+│   │   ├── 016_create_vw_eventos_consolidados.sql
 │   │   ├── 017_create_recessos_table.sql
+│   │   ├── 018_create_schema_migrations.sql
+│   │   ├── 019_recessos_unique_constraint.sql
+│   │   ├── 020_create_vw_atestados_comparecimento.sql
 │   │   └── ...
 │   └── Dockerfile
 │
@@ -297,8 +301,10 @@ python3 backfill_resumo.py
 | `DELETE` | `/api/recessos/<id>` | Excluir recesso |
 | `GET` | `/api/relatorio/adicional-noturno?mes=&ano=` | Relatório de adicional noturno |
 | `GET` | `/api/relatorio/lancamentos?mes=&ano=` | Relatório de lançamentos |
+| `GET` | `/api/relatorio/resumo?ano=` | Resumo anual de ocorrências por profissional (jan → hoje) |
 | `GET` | `/api/tipos-lancamento` | Listar tipos de lançamento |
 | `GET` | `/api/atestados-bimestrais?matricula=&ano=` | Contagem de atestados por bimestre |
+| `GET` | `/api/atestados-comparecimento?matricula=&ano=` | Contagem de comparecimentos por mês (limite 12/ano) |
 | `GET` | `/api/health` | Health check da API |
 
 
@@ -390,4 +396,4 @@ Apache License 2.0 — veja `LICENSE` para detalhes.
 
 **Desenvolvido com ❤️ para facilitar a vida do servidor público.**
 
-*Last updated: 2026-06-15*
+*Last updated: 2026-07-30*

@@ -2,6 +2,108 @@
 
 ---
 
+## [2026-07-30] - Verificação: FERIADO no Resumo e contagem por dia (turno1+turno2)
+
+### 🔴 Sintoma
+No relatório **Resumo**, ainda apareciam linhas `FERIADO` e havia suspeita de contagem dobrada quando o mesmo tipo era lançado nos dois turnos do dia (ATESTADO MEDICO DE ATE 03 DIAS e LICENCA MEDICA OU ODONTOLOGICA).
+
+### 🔍 Causa Raiz
+**Backend não reiniciado.** O processo Flask em execução (porta 5000) carregava uma versão anterior de `backend/app.py`: retornava linhas com campo `id`, duplicava profissionais e incluía `FERIADO`. O código atual da rota `GET /api/relatorio/resumo` já estava correto.
+
+### ✅ Conclusão (sem alteração de SQL)
+- `tipo NOT IN ('RECESSO','TRABALHO','FERIAS','FERIADO')` já exclui FERIADO nos dois ramos do UNION.
+- O `UNION` (não `UNION ALL`) sobre `(nome, matricula, ano, mes, dia, tipo)` já agrega turno1+turno2 do mesmo dia como **1** ocorrência. O total exibido é o número de **dias**, não de turnos.
+- Ação executada: reinício do Flask (`FLASK_APP=app.py flask run --host=0.0.0.0 --port=5000` em `backend/`). O `start_backend.sh` também mata a porta 5000 antes de subir.
+
+### 🧪 Verificação
+`GET /api/relatorio/resumo?ano=2026` → 192 linhas, chaves `matricula/nome/tipo/total` (sem `id`), 0 linhas `FERIADO`.
+Ex.: SERVIDORA EXEMPLO J — `ATESTADO MEDICO DE ATE 03` = 2 (dias 16 e 17/03, ambos os turnos preenchidos).
+
+### 📄 Arquivos Modificados
+- `src/components/README.md` (esclarecimento da regra no bullet **Resumo**)
+
+---
+
+## [2026-07-30] - Funcionalidade: Relatório Resumo Anual de Ocorrências
+
+### 🔍 Alterações Realizadas
+
+#### 1. `backend/app.py` — Novo endpoint
+- `GET /api/relatorio/resumo?ano=YYYY`
+- Reutiliza `vw_folhas_lancamento` com UNION (não UNION ALL) para cobrir `tipo` e `tipo_turno2`, deduplicando turno1==turno2 no mesmo dia.
+- Filtra periodo: janeiro até `date.today()` do ano solicitado.
+- Exclui: `RECESSO`, `TRABALHO`, `FERIAS`, `FERIADO`.
+- Agrupa por `(nome, matricula, tipo)` — sem `fp.id` — para que cada profissional apareça **uma única vez** mesmo tendo N folhas_ponto (uma por mês).
+- Retorna: `[{ nome, matricula, tipo, total }]` ordenado por nome, tipo.
+
+#### 2. `src/services/api.ts` — Novo método
+- `getResumoRelatorio(ano: number)` → `GET /relatorio/resumo?ano=`.
+
+#### 3. `src/components/ReportsModal.tsx` — Terceiro relatório
+- Tipo de relatório expandido: `'lancamentos' | 'adicional_noturno' | 'resumo'`.
+- Ícone `List` importado do lucide-react; terceiro botão "Resumo" adicionado na barra de controles.
+- Estado independente: `resumoData: ResumoRow[]`, `isLoadingResumo`.
+- Interface `ResumoRow { nome, matricula, tipo, total }` (sem `id`).
+- `useEffect` próprio — fetch só quando `reportType === 'resumo'`, depende de `filterYear` apenas (não de `filterMonth`).
+- Componente `ReportResumo`: agrupa por `matricula` no frontend, exibe o nome do profissional **uma vez** com sub-linhas por tipo (label via `ENTRY_TYPES`) e total; rodapé com total geral.
+- Cabeçalho dinâmico: "Janeiro a [mês atual] de [ano]" no modo resumo.
+
+### ✅ Arquivos Modificados
+- `backend/app.py`
+- `src/services/api.ts`
+- `src/components/ReportsModal.tsx`
+
+### 🎯 Objetivo
+Oferecer visão acumulada anual de todas as ocorrências especiais por profissional (de janeiro até hoje), excluindo tipos rotineiros (TRABALHO, FERIADO, FÉRIAS, RECESSO), com uma única linha de cabeçalho por servidor e contagem total por tipo de lançamento.
+
+---
+
+## [2026-07-30] - Funcionalidade: Crítica de Atestado de Comparecimento (Limite Anual de 12)
+
+### 🔍 Alterações Realizadas
+
+#### 1. `database/migrations/020_create_vw_atestados_comparecimento.sql` — Nova view
+- Cria `vw_relatorio_atestados_comparecimento` sobre `vw_folhas_lancamento`.
+- Colunas `mes0..mes11` (0-indexed, padrão do sistema).
+- Conta dois tipos em conjunto:
+  - `'ATESTADO DE COMPARECIMENTO'` (servidor)
+  - `'ATESTADO COMPARECIMENTO P.'` (pessoa da família)
+  - **Não conta**: `'ATESTADO COMPARECIMENTO A'` (acompanhante/subsaúde)
+- Cada dia = 1 ocorrência (sem colapso de sequências consecutivas, diferente da view bimestral).
+- Cobre `tipo` **e** `tipo_turno2` — qualquer turno conta.
+- Migration numerada `020` (as `018` e `019` foram aplicadas retroativamente junto).
+
+#### 2. `backend/app.py` — Novo endpoint
+- `GET /api/atestados-comparecimento?matricula=<mat>&ano=<ano>`
+- Consulta `vw_relatorio_atestados_comparecimento` filtrando por matrícula + ano.
+- Retorna `{ mes0..mes11: number }`. Sem dados → retorna zeros (fail-safe).
+- Padrão idêntico ao endpoint `get_atestados_bimestrais`.
+
+#### 3. `src/services/api.ts` — Nova interface + método
+- Interface exportada: `AtestadosComparecimentoResponse { mes0..mes11: number }`.
+- Método: `getAtestadosComparecimento(matricula, ano)` → chama o novo endpoint.
+- Adicionado após `getAtestadosBimestrais`, seguindo o mesmo padrão.
+
+#### 4. `src/components/TimesheetGrid.tsx` — Checagem + Modal
+- Constante `COMPARECIMENTO_VALUES` com os dois tipos sujeitos ao limite.
+- Função pura `getComparecimentoBanco(data, month): number` fora do componente — acumula `mes0..(month-1)` do banco (meses anteriores ao mês em edição). Comentário documenta o invariante de dupla contagem.
+- Estado `comparecimentoData` e `modalComparecimentoVisible` independentes dos bimestrais.
+- `useEffect` paralelo ao bimestral — carrega dados ao montar / trocar `[matricula, year]`.
+- `useCallback isComparecimentoBloqueado()` — soma banco + contagem da tela (`entries.filter(...)`) e compara `>= 12`. Fail-open: sem dados do banco, não bloqueia.
+- Guard em `handleEntryChange` para os dois tipos (`COMPARECIMENTO_VALUES.includes(value)` → exibe modal e cancela mudança).
+- Modal inline com borda `rose` (distinto do `amber` do bimestral): informa limite anual de 12, lista os dois tipos bloqueados, botão "OK, entendi".
+
+### ✅ Arquivos Modificados
+- `database/migrations/020_create_vw_atestados_comparecimento.sql` *(novo)*
+- `backend/app.py`
+- `src/services/api.ts`
+- `src/components/TimesheetGrid.tsx`
+
+### 🎯 Objetivo
+Impedir que o profissional acumule mais de 12 atestados de comparecimento (servidor + pessoa da família) em um mesmo ano civil. A contagem combina dados persistidos no banco (meses jan..mês-1) com lançamentos visíveis na tela (mês atual), evitando dupla contagem. O tipo "acompanhante/subsaúde" não entra no limite.
+
+---
+
 ## [2026-06-25] - Correção: 3ª página em branco ao imprimir no Chrome
 
 ### 🔴 Problema Identificado

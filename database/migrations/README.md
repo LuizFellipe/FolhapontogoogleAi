@@ -75,6 +75,15 @@ Cria a tabela `schema_migrations(version, applied_at)` para rastrear quais migra
 ### `019_recessos_unique_constraint.sql`
 Adiciona `UNIQUE KEY unique_recesso_periodo` na tabela `recessos` (dia/mês/ano de início e fim), evitando períodos duplicados.
 
+### `020_create_vw_atestados_comparecimento.sql`
+Cria a view `vw_relatorio_atestados_comparecimento` para contagem mensal de atestados de comparecimento, agrupados por profissional/ano. Colunas `mes0..mes11` (meses 0-indexed). Cobre dois tipos em conjunto:
+- `ATESTADO DE COMPARECIMENTO` (servidor)
+- `ATESTADO COMPARECIMENTO P.` (pessoa da família)
+
+`ATESTADO COMPARECIMENTO A` (acompanhante/subsaúde) **não** é contabilizado nesta view.
+Cada dia conta como 1 ocorrência (sem colapso de sequências, diferente da view bimestral).
+Utilizada pelo endpoint `/api/atestados-comparecimento` para enforçar o limite de **12 comparecimentos/ano**.
+
 ## Como Adicionar Novos Tipos de Lançamento
 
 Use o script interativo na raiz do projeto — ele atualiza automaticamente `types.ts`, os SQLs e aplica a migration no banco:

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, FileText, Printer, BarChart2 } from 'lucide-react';
+import { X, FileText, Printer, BarChart2, List } from 'lucide-react';
 import { MONTHS, ENTRY_TYPES } from '../types';
 import { apiService } from '../services/api';
 
@@ -291,6 +291,89 @@ const ReportAdicionaNoturno: React.FC<{
   );
 };
 
+// ─── Report: Resumo Anual ─────────────────────────────────────────────────────
+
+interface ResumoRow {
+  nome: string;
+  matricula: string;
+  tipo: string;
+  total: number;
+}
+
+const ReportResumo: React.FC<{
+  resumoData: ResumoRow[];
+  isLoading: boolean;
+  filterYear: number;
+}> = ({ resumoData, isLoading, filterYear }) => {
+  if (isLoading) return null;
+
+  if (resumoData.length === 0) {
+    return (
+      <div className="text-center py-8 text-stone-500 text-sm border border-dashed border-stone-200 rounded-lg">
+        <List className="w-8 h-8 mx-auto mb-2 text-stone-300" />
+        <p>Nenhuma ocorrência encontrada para {filterYear}.</p>
+      </div>
+    );
+  }
+
+  // Agrupar por matricula — um profissional tem N folhas_ponto (uma por mês)
+  const byProf = new Map<string, { nome: string; matricula: string; tipos: { tipo: string; label: string; total: number }[] }>();
+  let totalGeral = 0;
+  for (const r of resumoData) {
+    const key = r.matricula || r.nome;
+    if (!byProf.has(key)) {
+      byProf.set(key, { nome: r.nome, matricula: r.matricula, tipos: [] });
+    }
+    const label = ENTRY_TYPES.find(t => t.value === r.tipo)?.label ?? r.tipo;
+    byProf.get(key)!.tipos.push({ tipo: r.tipo, label, total: r.total });
+    totalGeral += r.total;
+  }
+
+  return (
+    <div className="overflow-x-auto border border-stone-200 rounded-xl bg-white shadow-sm">
+      <table className="w-full text-sm text-left">
+        <thead className="bg-stone-50 text-[10px] font-bold text-stone-500 uppercase tracking-wider border-b border-stone-200">
+          <tr>
+            <th className="py-3 px-4 w-28">Matrícula</th>
+            <th className="py-3 px-4">Nome / Tipo de Ocorrência</th>
+            <th className="py-3 px-4 w-24 text-right">Total</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-stone-100">
+          {Array.from(byProf.values()).map((prof, pi) => (
+            <React.Fragment key={pi}>
+              <tr className="bg-stone-50/50">
+                <td className="py-2.5 px-4 font-mono text-xs text-stone-500">{prof.matricula || '—'}</td>
+                <td className="py-2.5 px-4 font-semibold text-stone-900 uppercase" colSpan={2}>{prof.nome}</td>
+              </tr>
+              {prof.tipos.map((t, i) => (
+                <tr key={i} className="hover:bg-stone-50 transition-colors group">
+                  <td className="py-2 px-4" />
+                  <td className="py-2 px-4 text-stone-700 font-medium uppercase">
+                    <div className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-stone-300 group-hover:bg-stone-500 transition-colors shrink-0" />
+                      {t.label}
+                    </div>
+                  </td>
+                  <td className="py-2 px-4 text-right text-stone-700 font-semibold">{t.total}</td>
+                </tr>
+              ))}
+            </React.Fragment>
+          ))}
+        </tbody>
+        <tfoot className="bg-stone-50 border-t border-stone-200">
+          <tr>
+            <td colSpan={2} className="py-3 px-4 text-xs text-stone-500 font-medium">
+              Total de ocorrências no período
+            </td>
+            <td className="py-3 px-4 text-right font-bold text-stone-900 text-base">{totalGeral}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  );
+};
+
 // ─── Modal ────────────────────────────────────────────────────────────────────
 
 export const ReportsModal: React.FC<Props> = ({
@@ -300,7 +383,7 @@ export const ReportsModal: React.FC<Props> = ({
   initialMonth,
   initialYear,
 }) => {
-  const [reportType, setReportType] = useState<'lancamentos' | 'adicional_noturno'>('lancamentos');
+  const [reportType, setReportType] = useState<'lancamentos' | 'adicional_noturno' | 'resumo'>('lancamentos');
   const [filterMonth, setFilterMonth] = useState(initialMonth);
   const [filterYear, setFilterYear] = useState(initialYear);
 
@@ -313,6 +396,10 @@ export const ReportsModal: React.FC<Props> = ({
   const [adicionaData, setAdicionaData] = useState<AdicionalNoturnoProf[]>([]);
   const [isLoadingAdiciona, setIsLoadingAdiciona] = useState(false);
   const [nenhumaAdiciona, setNenhumaAdiciona] = useState(false);
+
+  // ── state: Relatório de Resumo ───────────────────────────────────────────────
+  const [resumoData, setResumoData] = useState<ResumoRow[]>([]);
+  const [isLoadingResumo, setIsLoadingResumo] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -421,6 +508,24 @@ export const ReportsModal: React.FC<Props> = ({
     load();
   }, [isOpen, reportType, filterMonth, filterYear]);
 
+  // ── fetch: Resumo ────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!isOpen || reportType !== 'resumo') return;
+    const load = async () => {
+      setIsLoadingResumo(true);
+      setResumoData([]);
+      try {
+        const rows: ResumoRow[] = await apiService.getResumoRelatorio(filterYear);
+        setResumoData(rows || []);
+      } catch {
+        setResumoData([]);
+      } finally {
+        setIsLoadingResumo(false);
+      }
+    };
+    load();
+  }, [isOpen, reportType, filterYear]);
+
   if (!isOpen) return null;
 
   const periodoInicio = formatDate(1, filterMonth, filterYear);
@@ -463,6 +568,14 @@ export const ReportsModal: React.FC<Props> = ({
                 <BarChart2 className="w-3.5 h-3.5" />
                 Adicional Noturno
               </button>
+              <button
+                onClick={() => setReportType('resumo')}
+                className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors border-l border-stone-200 ${reportType === 'resumo' ? 'bg-stone-900 text-white' : 'bg-white text-stone-600 hover:bg-stone-100'
+                  }`}
+              >
+                <List className="w-3.5 h-3.5" />
+                Resumo
+              </button>
             </div>
           </div>
 
@@ -502,7 +615,7 @@ export const ReportsModal: React.FC<Props> = ({
 
         {/* Conteúdo */}
         <div className="overflow-y-auto flex-1 px-6 py-6 relative print:overflow-visible print:p-0">
-          {(isLoadingEntries || isLoadingAdiciona) && (
+          {(isLoadingEntries || isLoadingAdiciona || isLoadingResumo) && (
             <div className="absolute inset-0 bg-white/60 flex items-center justify-center z-10">
               <div className="animate-spin w-6 h-6 border-2 border-stone-300 border-t-stone-600 rounded-full" />
             </div>
@@ -512,10 +625,15 @@ export const ReportsModal: React.FC<Props> = ({
             <h1 className="text-xl md:text-2xl font-bold uppercase tracking-tight text-stone-900 print:text-black">
               {reportType === 'lancamentos'
                 ? 'Relatório de Eventos'
-                : 'Relatório de Adicional Noturno'}
+                : reportType === 'adicional_noturno'
+                  ? 'Relatório de Adicional Noturno'
+                  : 'Resumo de Ocorrências'}
             </h1>
             <p className="text-sm font-medium text-stone-500 mt-1.5 print:text-stone-600">
-              Período de apuração: <span className="text-stone-800 print:text-black">{periodoInicio}</span> a <span className="text-stone-800 print:text-black">{periodoFim}</span>
+              {reportType === 'resumo'
+                ? <>Janeiro a {MONTHS[new Date().getMonth()]} de <span className="text-stone-800 print:text-black">{filterYear}</span></>
+                : <>Período de apuração: <span className="text-stone-800 print:text-black">{periodoInicio}</span> a <span className="text-stone-800 print:text-black">{periodoFim}</span></>
+              }
             </p>
           </div>
 
@@ -531,7 +649,7 @@ export const ReportsModal: React.FC<Props> = ({
                 filterYear={filterYear}
               />
             )
-          ) : (
+          ) : reportType === 'adicional_noturno' ? (
             nenhumaAdiciona ? (
               <p className="text-center text-sm text-stone-400 py-8 border border-dashed border-stone-200 rounded-lg">
                 Nenhum lançamento noturno encontrado para {MONTHS[filterMonth]} de {filterYear}.
@@ -544,6 +662,12 @@ export const ReportsModal: React.FC<Props> = ({
                 filterYear={filterYear}
               />
             )
+          ) : (
+            <ReportResumo
+              resumoData={resumoData}
+              isLoading={isLoadingResumo}
+              filterYear={filterYear}
+            />
           )}
         </div>
 

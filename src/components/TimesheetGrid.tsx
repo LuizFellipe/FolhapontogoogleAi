@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { DailyEntry, ENTRY_TYPES } from '../types';
-import { apiService, AtestadosBimestraisResponse } from '../services/api';
+import { apiService, AtestadosBimestraisResponse, AtestadosComparecimentoResponse } from '../services/api';
 
 interface Props {
   entries: DailyEntry[];
@@ -14,11 +14,18 @@ interface Props {
 
 const ATESTADO_VALUE = 'ATESTADO MEDICO DE ATE 03';
 
+/** Tipos sujeitos ao limite anual de 12 comparecimentos. */
+const COMPARECIMENTO_VALUES = [
+  'ATESTADO DE COMPARECIMENTO',        // servidor
+  'ATESTADO COMPARECIMENTO P.',        // pessoa da família
+  // NOTA: 'ATESTADO COMPARECIMENTO A' (acompanhante/subsaúde) não entra no limite
+] as const;
+
 /** Calcula o bimestre civil (1-6) a partir do mês 0-indexed. */
 const getBimestre = (month: number): 1 | 2 | 3 | 4 | 5 | 6 =>
   (Math.floor(month / 2) + 1) as 1 | 2 | 3 | 4 | 5 | 6;
 
-/** Retorna o count da view para o bimestre do mês informado. */
+/** Retorna o count da view bimestral para o bimestre do mês informado. */
 const getCountFromView = (
   data: AtestadosBimestraisResponse,
   month: number
@@ -26,6 +33,24 @@ const getCountFromView = (
   const bim = getBimestre(month);
   const key = `bimestre${bim}` as keyof AtestadosBimestraisResponse;
   return data[key] ?? 0;
+};
+
+/**
+ * Acumula os comparecimentos persistidos no banco de Janeiro até (month - 1).
+ * O mês atual (month) é intencionalmente excluído aqui: ele é contabilizado
+ * separadamente pela contagem dos entries em tela, evitando dupla contagem
+ * caso o usuário tenha salvo e reaberto o mesmo mês.
+ */
+const getComparecimentoBanco = (
+  data: AtestadosComparecimentoResponse,
+  month: number
+): number => {
+  let total = 0;
+  for (let m = 0; m < month; m++) {
+    const key = `mes${m}` as keyof AtestadosComparecimentoResponse;
+    total += data[key] ?? 0;
+  }
+  return total;
 };
 
 export const TimesheetGrid: React.FC<Props> = ({
@@ -40,6 +65,8 @@ export const TimesheetGrid: React.FC<Props> = ({
   const [hoveredDay, setHoveredDay] = useState<number | null>(null);
   const [atestadosData, setAtestadosData] = useState<AtestadosBimestraisResponse | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [comparecimentoData, setComparecimentoData] = useState<AtestadosComparecimentoResponse | null>(null);
+  const [modalComparecimentoVisible, setModalComparecimentoVisible] = useState(false);
 
   const DAY_ABBR = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB'];
 
@@ -54,6 +81,21 @@ export const TimesheetGrid: React.FC<Props> = ({
       if (!cancelled) setAtestadosData(data);
     }).catch(() => {
       if (!cancelled) setAtestadosData(null);
+    });
+    return () => { cancelled = true; };
+  }, [matricula, year]);
+
+  // Carrega contagem anual de comparecimento ao montar / trocar profissional ou ano
+  useEffect(() => {
+    if (!matricula) {
+      setComparecimentoData(null);
+      return;
+    }
+    let cancelled = false;
+    apiService.getAtestadosComparecimento(matricula, year).then((data) => {
+      if (!cancelled) setComparecimentoData(data);
+    }).catch(() => {
+      if (!cancelled) setComparecimentoData(null);
     });
     return () => { cancelled = true; };
   }, [matricula, year]);
@@ -156,10 +198,42 @@ export const TimesheetGrid: React.FC<Props> = ({
     return getCountFromView(atestadosData, month) >= 1;
   }, [atestadosData, month]);
 
+  /**
+   * Verifica se novos comparecimentos devem ser bloqueados.
+   * Regra: banco (jan..mês-1) + tela (mês atual) >= 12 → bloquear.
+   * Fail-open: sem dados do banco não bloqueia.
+   */
+  const isComparecimentoBloqueado = useCallback((): boolean => {
+    if (!comparecimentoData) return false; // fail-open
+
+    // Ocorrências persistidas nos meses anteriores ao mês em edição
+    const dosBanco = getComparecimentoBanco(comparecimentoData, month);
+
+    // Ocorrências visíveis na tela no mês atual (ainda não salvas ou já salvas — 
+    // o banco exclui o mês atual da soma acima, então não há dupla contagem)
+    const daTela = entries.filter(
+      (e) =>
+        COMPARECIMENTO_VALUES.includes(e.type as typeof COMPARECIMENTO_VALUES[number]) ||
+        (e.type_turno2 != null &&
+          COMPARECIMENTO_VALUES.includes(e.type_turno2 as typeof COMPARECIMENTO_VALUES[number]))
+    ).length;
+
+    return dosBanco + daTela >= 12;
+  }, [comparecimentoData, month, entries]);
+
   const handleEntryChange = (day: number, field: keyof DailyEntry, value: string) => {
     // Checagem de regra bimestral: hard-block no ATESTADO MEDICO DE ATE 03
     if (value === ATESTADO_VALUE && isAtestadoBloqueado()) {
       setModalVisible(true);
+      return; // não aplica a mudança
+    }
+
+    // Checagem de regra anual: hard-block nos tipos de comparecimento (máx. 12/ano)
+    if (
+      COMPARECIMENTO_VALUES.includes(value as typeof COMPARECIMENTO_VALUES[number]) &&
+      isComparecimentoBloqueado()
+    ) {
+      setModalComparecimentoVisible(true);
       return; // não aplica a mudança
     }
 
@@ -207,6 +281,44 @@ export const TimesheetGrid: React.FC<Props> = ({
             <div className="flex justify-end">
               <button
                 onClick={() => setModalVisible(false)}
+                className="px-5 py-2 bg-stone-800 hover:bg-stone-700 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer"
+              >
+                OK, entendi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de hard-block — limite anual de 12 comparecimentos atingido */}
+      {modalComparecimentoVisible && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border border-rose-200">
+            <div className="flex items-start gap-4 mb-4">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center">
+                <svg className="w-5 h-5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-stone-800 mb-1">
+                  Limite anual de comparecimentos atingido
+                </h3>
+                <p className="text-sm text-stone-600 leading-relaxed">
+                  Este profissional já atingiu o limite de{' '}
+                  <strong>12 atestados de comparecimento</strong> no ano de{' '}
+                  <strong>{year}</strong>.
+                </p>
+                <p className="text-sm text-stone-600 leading-relaxed mt-2">
+                  Novos lançamentos de <strong>ATESTADO DE COMPARECIMENTO</strong> ou{' '}
+                  <strong>ATESTADO DE COMPARECIMENTO ACOMPANHANTE</strong> não são permitidos.
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setModalComparecimentoVisible(false)}
                 className="px-5 py-2 bg-stone-800 hover:bg-stone-700 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer"
               >
                 OK, entendi

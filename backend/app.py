@@ -539,6 +539,39 @@ def get_relatorio_lancamentos():
     rows = execute_query(query, (mes, ano))
     return jsonify(rows or [])
 
+# Rota de Relatório — Resumo anual de ocorrências por profissional
+@app.route('/api/relatorio/resumo', methods=['GET'])
+def get_relatorio_resumo():
+    """Totaliza lançamentos por profissional de janeiro até hoje, excluindo RECESSO/TRABALHO/FERIAS"""
+    ano = request.args.get('ano')
+    if ano is None:
+        return jsonify({'error': 'Parâmetro ano é obrigatório'}), 400
+
+    from datetime import date as _date
+    hoje = _date.today()
+
+    query = """
+    SELECT t.nome, t.matricula, t.tipo, COUNT(*) AS total
+    FROM (
+        SELECT nome, matricula, ano, mes, dia, tipo
+        FROM vw_folhas_lancamento
+        WHERE tipo IS NOT NULL AND tipo != ''
+          AND tipo NOT IN ('RECESSO','TRABALHO','FERIAS','FERIADO')
+        UNION
+        SELECT nome, matricula, ano, mes, dia, tipo_turno2
+        FROM vw_folhas_lancamento
+        WHERE tipo_turno2 IS NOT NULL AND tipo_turno2 != ''
+          AND tipo_turno2 NOT IN ('RECESSO','TRABALHO','FERIAS','FERIADO')
+    ) t
+    WHERE t.ano = %s
+      AND (t.mes < %s OR (t.mes = %s AND t.dia <= %s))
+    GROUP BY t.nome, t.matricula, t.tipo
+    ORDER BY t.nome, t.tipo
+    """
+
+    rows = execute_query(query, (ano, hoje.month, hoje.month, hoje.day))
+    return jsonify(rows or [])
+
 # Tipos de lançamento
 @app.route('/api/tipos-lancamento', methods=['GET'])
 def get_tipos_lancamento():
@@ -576,6 +609,33 @@ def get_atestados_bimestrais():
         'bimestre1': 0, 'bimestre2': 0, 'bimestre3': 0,
         'bimestre4': 0, 'bimestre5': 0, 'bimestre6': 0
     })
+
+# Rota — checagem de atestados de comparecimento por ano
+@app.route('/api/atestados-comparecimento', methods=['GET'])
+def get_atestados_comparecimento():
+    """Retorna contagem mensal de ATESTADO DE COMPARECIMENTO (e ACOMPANHANTE) para um profissional/ano.
+    Consulta a view vw_relatorio_atestados_comparecimento (cada dia conta como 1 ocorrência).
+    Parâmetros: matricula (string), ano (int)
+    """
+    matricula = request.args.get('matricula')
+    ano = request.args.get('ano')
+
+    if not matricula or not ano:
+        return jsonify({'error': 'Parâmetros matricula e ano são obrigatórios'}), 400
+
+    query = """
+    SELECT mes0, mes1, mes2, mes3, mes4, mes5, mes6, mes7, mes8, mes9, mes10, mes11
+    FROM vw_relatorio_atestados_comparecimento
+    WHERE matricula = %s AND ano = %s
+    """
+
+    rows = execute_query(query, (matricula, ano))
+
+    if rows:
+        return jsonify(rows[0])
+
+    # Profissional sem nenhum comparecimento no ano → retorna zeros
+    return jsonify({f'mes{i}': 0 for i in range(12)})
 
 # Rota de saúde
 @app.route('/api/health', methods=['GET'])

@@ -14,6 +14,12 @@ export interface AtestadosBimestraisResponse {
   bimestre6: number;
 }
 
+export interface AtestadosComparecimentoResponse {
+  mes0: number; mes1: number; mes2: number; mes3: number;
+  mes4: number; mes5: number; mes6: number; mes7: number;
+  mes8: number; mes9: number; mes10: number; mes11: number;
+}
+
 class ApiService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
@@ -175,10 +181,22 @@ class ApiService {
     return this.request<any[]>(`/relatorio/adicional-noturno?mes=${mes}&ano=${ano}`);
   }
 
+  // Relatórios — resumo anual via vw_folhas_lancamento
+  async getResumoRelatorio(ano: number) {
+    return this.request<any[]>(`/relatorio/resumo?ano=${ano}`);
+  }
+
   // Atestados bimestrais — checagem de regra por bimestre civil
   async getAtestadosBimestrais(matricula: string, ano: number): Promise<AtestadosBimestraisResponse> {
     return this.request<AtestadosBimestraisResponse>(
       `/atestados-bimestrais?matricula=${encodeURIComponent(matricula)}&ano=${ano}`
+    );
+  }
+
+  // Atestados de comparecimento — checagem de regra anual (máx. 12/ano)
+  async getAtestadosComparecimento(matricula: string, ano: number): Promise<AtestadosComparecimentoResponse> {
+    return this.request<AtestadosComparecimentoResponse>(
+      `/atestados-comparecimento?matricula=${encodeURIComponent(matricula)}&ano=${ano}`
     );
   }
 

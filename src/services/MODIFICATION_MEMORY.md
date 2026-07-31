@@ -2,6 +2,13 @@
 
 ## Registro de Alterações
 
+### 2026-07-30 - Relatório Resumo Anual e Atestados de Comparecimento
+- **Motivo**: Novo relatório "Resumo" no `ReportsModal` e crítica de limite anual de comparecimentos
+- **Ações**:
+  - Adicionado `getResumoRelatorio(ano)` em `api.ts` — `GET /relatorio/resumo?ano=<ano>`. Depende apenas do ano (período fixo: janeiro até hoje).
+  - Adicionado `getAtestadosComparecimento(matricula, ano)` em `api.ts` — `GET /atestados-comparecimento?matricula=<mat>&ano=<ano>`
+- **Nota**: a exclusão de `FERIADO` e a agregação turno1+turno2 (1 por dia) são feitas **no SQL do backend**; a camada de serviço apenas repassa as linhas. Se o resultado parecer errado, verifique se o Flask foi reiniciado antes de suspeitar do `api.ts`.
+
 ### 2026-06-15 - Consulta de Atestados Bimestrais
 - **Motivo**: Bloqueio de lançamentos excedentes de atestado médico por bimestre
 - **Ações**:
