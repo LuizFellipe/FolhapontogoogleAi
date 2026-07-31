@@ -34,3 +34,5 @@ WHERE (
   AND v1.mes BETWEEN 0 AND 11
   AND v1.dia BETWEEN 1 AND 31
 GROUP BY v1.matricula, v1.nome, v1.ano;
+
+INSERT IGNORE INTO schema_migrations (version) VALUES ('020');

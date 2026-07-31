@@ -55,6 +55,45 @@ LOCK TABLES `folhas_ponto` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `schema_migrations`
+--
+
+DROP TABLE IF EXISTS `schema_migrations`;
+CREATE TABLE `schema_migrations` (
+  `version` varchar(50) NOT NULL,
+  `applied_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`version`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `schema_migrations` (`version`) VALUES
+  ('001'), ('002'), ('003'), ('004'), ('005'), ('006'), ('007'), ('008'),
+  ('009'), ('010'), ('011'), ('012'), ('013'), ('014'), ('015'), ('016'),
+  ('017'), ('018'), ('019'), ('020');
+
+--
+-- Table structure for table `recessos`
+--
+
+DROP TABLE IF EXISTS `recessos`;
+CREATE TABLE `recessos` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `dia_inicio` int NOT NULL,
+  `mes_inicio` int NOT NULL,
+  `ano_inicio` int NOT NULL,
+  `dia_fim` int NOT NULL,
+  `mes_fim` int NOT NULL,
+  `ano_fim` int NOT NULL,
+  `label` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_recesso_periodo` (`dia_inicio`,`mes_inicio`,`ano_inicio`,`dia_fim`,`mes_fim`,`ano_fim`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `recessos` (`id`,`dia_inicio`,`mes_inicio`,`ano_inicio`,`dia_fim`,`mes_fim`,`ano_fim`,`label`,`criado_em`) VALUES
+  (1,11,6,2026,26,6,2026,'RECESSO JULHO','2026-06-09 20:42:05'),
+  (2,4,5,2026,4,5,2026,'CORPUS CHRISTI','2026-06-12 18:17:32');
+
+--
 -- Table structure for table `feriados`
 --
 
@@ -215,6 +254,119 @@ LOCK TABLES `resumo_folha` WRITE;
 /*!40000 ALTER TABLE `resumo_folha` DISABLE KEYS */;
 /*!40000 ALTER TABLE `resumo_folha` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- View structure for view `vw_folhas_lancamento`
+--
+
+DROP VIEW IF EXISTS `vw_folhas_lancamento`;
+CREATE VIEW `vw_folhas_lancamento` AS
+SELECT
+    fp.id,
+    p.matricula,
+    p.carga_horaria,
+    p.nome,
+    ld.dia,
+    fp.mes,
+    fp.ano,
+    (CASE WHEN ld.tipo NOT IN ('TRABALHO','CPIP','CURSO','TRACEJADO') THEN ld.tipo ELSE NULL END) AS tipo,
+    p.turno1,
+    (CASE WHEN ld.tipo_turno2 NOT IN ('TRABALHO','CPIP','CURSO','TRACEJADO') THEN ld.tipo_turno2 ELSE NULL END) AS tipo_turno2,
+    p.turno2
+FROM folhas_ponto fp
+LEFT JOIN lancamentos_diarios ld ON fp.id = ld.folha_ponto_id
+LEFT JOIN profissionais p ON p.id = fp.profissional_id
+WHERE (ld.tipo NOT IN ('TRABALHO','CPIP','CURSO','TRACEJADO') OR ld.tipo_turno2 NOT IN ('TRABALHO','CPIP','CURSO','TRACEJADO'))
+ORDER BY p.nome, fp.ano, fp.mes, fp.profissional_id;
+
+--
+-- View structure for view `vw_adicional_noturno`
+--
+
+DROP VIEW IF EXISTS `vw_adicional_noturno`;
+CREATE VIEW `vw_adicional_noturno` AS
+SELECT
+    fp.id,
+    p.matricula,
+    p.carga_horaria,
+    p.nome,
+    ld.dia,
+    fp.mes,
+    fp.ano,
+    (CASE WHEN ld.tipo = 'TRABALHO' THEN ld.tipo ELSE NULL END) AS tipo,
+    p.turno1,
+    (CASE WHEN ld.tipo_turno2 = 'TRABALHO' THEN ld.tipo_turno2 ELSE NULL END) AS tipo_turno2,
+    p.turno2
+FROM folhas_ponto fp
+LEFT JOIN lancamentos_diarios ld ON fp.id = ld.folha_ponto_id
+LEFT JOIN profissionais p ON p.id = fp.profissional_id
+WHERE p.cargo <> 'PROFESSOR TEMPORÁRIO'
+  AND (ld.tipo = 'TRABALHO' OR ld.tipo_turno2 = 'TRABALHO')
+  AND (p.turno1 = 'Noturno' OR p.turno2 = 'Noturno')
+ORDER BY p.nome, fp.ano, fp.mes, fp.profissional_id;
+
+--
+-- View structure for view `vw_relatorio_atestados_bimestrais` (migration 016)
+--
+
+DROP VIEW IF EXISTS `vw_relatorio_atestados_bimestrais`;
+CREATE VIEW `vw_relatorio_atestados_bimestrais` AS
+SELECT
+    v1.matricula,
+    v1.nome,
+    v1.ano,
+    SUM(CASE WHEN v1.mes IN (0, 1)   THEN 1 ELSE 0 END) AS bimestre1,
+    SUM(CASE WHEN v1.mes IN (2, 3)   THEN 1 ELSE 0 END) AS bimestre2,
+    SUM(CASE WHEN v1.mes IN (4, 5)   THEN 1 ELSE 0 END) AS bimestre3,
+    SUM(CASE WHEN v1.mes IN (6, 7)   THEN 1 ELSE 0 END) AS bimestre4,
+    SUM(CASE WHEN v1.mes IN (8, 9)   THEN 1 ELSE 0 END) AS bimestre5,
+    SUM(CASE WHEN v1.mes IN (10, 11) THEN 1 ELSE 0 END) AS bimestre6
+FROM vw_folhas_lancamento v1
+WHERE (v1.tipo = 'ATESTADO MEDICO DE ATE 03' OR v1.tipo_turno2 = 'ATESTADO MEDICO DE ATE 03')
+  AND v1.mes BETWEEN 0 AND 11
+  AND v1.dia BETWEEN 1 AND 31
+  AND NOT EXISTS (
+      SELECT 1
+      FROM vw_folhas_lancamento v2
+      WHERE v2.matricula = v1.matricula
+        AND (v2.tipo = 'ATESTADO MEDICO DE ATE 03' OR v2.tipo_turno2 = 'ATESTADO MEDICO DE ATE 03')
+        AND v2.mes BETWEEN 0 AND 11
+        AND v2.dia BETWEEN 1 AND 31
+        AND STR_TO_DATE(CONCAT(v2.ano, '-', LPAD(v2.mes + 1, 2, '0'), '-', LPAD(v2.dia, 2, '0')), '%Y-%m-%d') =
+            DATE_SUB(STR_TO_DATE(CONCAT(v1.ano, '-', LPAD(v1.mes + 1, 2, '0'), '-', LPAD(v1.dia, 2, '0')), '%Y-%m-%d'), INTERVAL 1 DAY)
+  )
+GROUP BY v1.matricula, v1.nome, v1.ano;
+
+--
+-- View structure for view `vw_relatorio_atestados_comparecimento` (migration 020)
+--
+
+DROP VIEW IF EXISTS `vw_relatorio_atestados_comparecimento`;
+CREATE VIEW `vw_relatorio_atestados_comparecimento` AS
+SELECT
+    v1.matricula,
+    v1.nome,
+    v1.ano,
+    SUM(CASE WHEN v1.mes = 0  THEN 1 ELSE 0 END) AS mes0,
+    SUM(CASE WHEN v1.mes = 1  THEN 1 ELSE 0 END) AS mes1,
+    SUM(CASE WHEN v1.mes = 2  THEN 1 ELSE 0 END) AS mes2,
+    SUM(CASE WHEN v1.mes = 3  THEN 1 ELSE 0 END) AS mes3,
+    SUM(CASE WHEN v1.mes = 4  THEN 1 ELSE 0 END) AS mes4,
+    SUM(CASE WHEN v1.mes = 5  THEN 1 ELSE 0 END) AS mes5,
+    SUM(CASE WHEN v1.mes = 6  THEN 1 ELSE 0 END) AS mes6,
+    SUM(CASE WHEN v1.mes = 7  THEN 1 ELSE 0 END) AS mes7,
+    SUM(CASE WHEN v1.mes = 8  THEN 1 ELSE 0 END) AS mes8,
+    SUM(CASE WHEN v1.mes = 9  THEN 1 ELSE 0 END) AS mes9,
+    SUM(CASE WHEN v1.mes = 10 THEN 1 ELSE 0 END) AS mes10,
+    SUM(CASE WHEN v1.mes = 11 THEN 1 ELSE 0 END) AS mes11
+FROM vw_folhas_lancamento v1
+WHERE (
+    v1.tipo IN ('ATESTADO DE COMPARECIMENTO', 'ATESTADO COMPARECIMENTO P.')
+    OR v1.tipo_turno2 IN ('ATESTADO DE COMPARECIMENTO', 'ATESTADO COMPARECIMENTO P.')
+)
+  AND v1.mes BETWEEN 0 AND 11
+  AND v1.dia BETWEEN 1 AND 31
+GROUP BY v1.matricula, v1.nome, v1.ano;
 
 --
 -- Dumping routines for database 'folhaponto_db'

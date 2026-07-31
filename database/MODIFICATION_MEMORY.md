@@ -1,5 +1,31 @@
 # Memória de Modificação - Database (database/)
 
+## [2026-07-31] Sincronização de Migrations Pendentes + full_setup.sql
+
+### Arquivos Modificados/Criados:
+- **migrations/020_create_vw_atestados_comparecimento.sql**: Adicionado `INSERT IGNORE INTO schema_migrations (version) VALUES ('020');` ao final, seguindo o padrão das migrations 018/019 (o arquivo original não se auto-registrava).
+- **migrations/README.md**: Nota sobre a correção acima.
+- **full_setup.sql**: Sincronizado com o schema real do banco — estava desatualizado desde a criação das migrations 011-020.
+- **README.md**: Documentadas as views existentes (nenhuma estava listada antes) e a tabela `schema_migrations`.
+
+### Diagnóstico:
+Auditoria do banco real (`meu-mysql`/`folhaponto_db`) via `SHOW TABLES`/`SHOW FULL TABLES WHERE Table_type='VIEW'` contra `schema_migrations` revelou:
+- Migrations **018** (`schema_migrations`), **019** (unique key em `recessos`) e **020** (view de comparecimento) nunca haviam sido aplicadas ao banco — aplicadas nesta sessão.
+- `full_setup.sql` não continha a tabela `schema_migrations`, nem `recessos`, nem nenhuma das 4 views existentes (`vw_folhas_lancamento`, `vw_adicional_noturno`, `vw_relatorio_atestados_bimestrais`, `vw_relatorio_atestados_comparecimento`).
+- `vw_folhas_lancamento` e `vw_adicional_noturno` existem no banco **sem migration correspondente** — criadas manualmente fora do fluxo rastreado. Reconstruídas em `full_setup.sql` a partir do `SHOW CREATE VIEW` atual do banco.
+
+### 🔴 Armadilha crítica registrada — NUNCA testar `full_setup.sql` contra o banco real
+`full_setup.sql` começa com `CREATE DATABASE folhaponto_db; USE folhaponto_db;` — **hardcoded**. Rodar o arquivo via `mysql < full_setup.sql` contra o container `meu-mysql` ignora qualquer banco selecionado no cliente (mesmo `folhaponto_test`) e executa `DROP TABLE`+`CREATE TABLE`+`INSERT` de dados fictícios diretamente no `folhaponto_db` **de produção**.
+
+Isso causou perda de dados em 2026-07-31 durante a validação desta própria mudança: `lancamentos_diarios` zerada, `folhas_ponto` e `feriados` substituídas pelos dados fictícios do arquivo. A execução só não atingiu `profissionais`/`resumo_folha`/views porque abortou antes, num erro pré-existente de `INSERT` em `lancamentos_diarios` (ver bug abaixo). Recuperação pendente via backup (`/media/luiz/Data2/backup.folhaponto/`, mais recente 30/07/2026 17:59) + replay de binlog (`log_bin=ON`, container tem binlogs `.000024`–`.000034`).
+
+**Regra permanente**: para validar `full_setup.sql`, ou (a) editar temporariamente o `CREATE DATABASE`/`USE` para um nome de teste antes de rodar e reverter depois, ou (b) rodar num container MySQL efêmero/descartável, nunca contra `meu-mysql`.
+
+### 🔴 Bug pré-existente não corrigido — dados de `lancamentos_diarios` desalinhados
+A tabela `lancamentos_diarios` tem 7 colunas desde a migration 015 (remoção de `observacao`/`observacao_turno2`), mas o bloco `INSERT INTO lancamentos_diarios VALUES (...)` em `full_setup.sql` ainda tem 9 valores por linha (sobra das colunas removidas). Causa `ERROR 1136: Column count doesn't match value count`. Não corrigido nesta sessão — precisa de nova extração de dados fictícios com a contagem de colunas correta.
+
+---
+
 ## [2026-06-15] View de Atestados Bimestrais (Migration 016)
 
 ### Arquivos Modificados/Criados:

@@ -83,6 +83,7 @@ Cria a view `vw_relatorio_atestados_comparecimento` para contagem mensal de ates
 `ATESTADO COMPARECIMENTO A` (acompanhante/subsaúde) **não** é contabilizado nesta view.
 Cada dia conta como 1 ocorrência (sem colapso de sequências, diferente da view bimestral).
 Utilizada pelo endpoint `/api/atestados-comparecimento` para enforçar o limite de **12 comparecimentos/ano**.
+> Corrigido em 2026-07-31: o arquivo original não fazia `INSERT INTO schema_migrations`, diferente do padrão das migrations 018/019. Agora finaliza com `INSERT IGNORE INTO schema_migrations (version) VALUES ('020');`.
 
 ## Como Adicionar Novos Tipos de Lançamento
 

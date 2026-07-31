@@ -144,7 +144,7 @@ start_backend() {
 
     # Verificar e iniciar container MySQL se necessário
     info "Verificando banco de dados MySQL..."
-    CONTAINER_NAME="folhaponto-mysql"
+    CONTAINER_NAME="meu-mysql"
 
     if command -v docker >/dev/null 2>&1; then
         if [ "$(docker ps -aq -f name=$CONTAINER_NAME)" ]; then
