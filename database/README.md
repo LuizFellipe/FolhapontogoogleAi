@@ -36,7 +36,7 @@ O arquivo **`full_setup.sql`** é o script usado pelos containers Docker (`docke
 > **⚠️ Dados Fictícios:** Este arquivo contém apenas dados fictícios para desenvolvimento e testes. Nomes como "JOÃO DA SILVA", "MARIA SOUZA" e "PEDRO SANTOS" são exemplos criados para demonstrar a funcionalidade do sistema sem expor informações pessoais reais.
 
 > **Importante:** Ao adicionar uma nova migration em `migrations/`, atualize também o `full_setup.sql` para que novas implantações Docker já iniciem com o schema correto.
-> Para adicionar novos tipos de lançamento, use o script interativo na raiz: `python3 add_entry_type.py`. Ele atualiza automaticamente `src/types.ts`, `full_setup.sql`, `001_create_tables.sql` e aplica a migration no banco.
+> Para adicionar novos tipos de lançamento, use o script interativo na raiz: `python3 scripts/add_entry_type.py`. Ele atualiza `src/types.ts`, insere em `tipos_lancamento` no `full_setup.sql` e gera a migration correspondente com `INSERT IGNORE` (não modifica ENUMs — a tabela lookup é a fonte de verdade desde a migration 010).
 
 ## Características Técnicas
 -   **MySQL 8+**: Sistema de gerenciamento de banco de dados utilizado.

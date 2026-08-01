@@ -1,5 +1,18 @@
 # Memória de Modificação - Backend (backend/)
 
+## [2026-08-01] Correções v4flash — backfill_resumo_recesso.py: aviso de escopo
+
+### Arquivos Modificados:
+- **scripts/backfill_resumo_recesso.py**
+
+### Alterações:
+- Adicionada nota ao docstring do script reforçando que é um script **one-off histórico** (backfill de junho/2026) e que `ENTRY_TYPE_CODES` não deve ser atualizado para novas migrações — novos backfills devem ler os códigos diretamente da tabela `tipos_lancamento` do banco.
+
+### Objetivo:
+Prevenir que futuros mantenedores atualizem o dicionário estático `ENTRY_TYPE_CODES` num script descartável, ao invés de criar um novo script que consulte o banco dinamicamente.
+
+---
+
 ## [2026-07-30] Relatório Resumo Anual + verificação de FERIADO / dedupe de turnos
 
 ### Arquivos Modificados:

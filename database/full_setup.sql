@@ -134,7 +134,7 @@ INSERT INTO `tipos_lancamento` (`valor`, `label`, `codigo`) VALUES
   ('ABONO DE PONTO ART 151 LEI',  'ABONO DE PONTO ART 151 LEI COMP 840/2011',     '00219'),
   ('CPIP',                        'CPIP',                                          NULL),
   ('CURSO',                       'CURSO FORMAÇÃO CONTINUADA',                     NULL),
-  ('ABONO_NIVER',                 'ABONO ANIVERSÁRIO',                             NULL),
+  ('ABONO_NIVER',                 'ABONO ANIVERSÁRIO',                             '00717'),
   ('FERIADO',                     'FERIADO',                                       NULL),
   ('FALTA PARALISAÇÃO',           'FALTA PARALISAÇÃO',                             '40034'),
   ('ATESTADO DE COMPARECIMENTO',  'ATESTADO COMPARECIMENTO SERVIDOR',              '00340'),

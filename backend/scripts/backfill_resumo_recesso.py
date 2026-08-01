@@ -6,6 +6,9 @@ que tiveram RECESSO aplicado via Geracao em Lote mas ficaram com resumo_folha va
 
 Reimplementa o mesmo algoritmo de computeSummaryFromEntries (src/App.tsx:19-72)
 usando o mapeamento de codigos de ENTRY_TYPES (src/types.ts:50-75).
+
+ATENÇÃO: script one-off histórico. Não atualizar ENTRY_TYPE_CODES para novas migrações.
+Para novos backfills, ler códigos direto da tabela tipos_lancamento do banco.
 """
 
 import os

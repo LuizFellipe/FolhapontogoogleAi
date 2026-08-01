@@ -1,5 +1,29 @@
 # Memória de Modificação - Database (database/)
 
+## [2026-08-01] Correções v4flash — full_setup.sql: dados de lancamentos_diarios e ABONO_NIVER
+
+### Arquivos Modificados:
+- **full_setup.sql**
+
+### Alterações:
+#### 1. Bug corrigido — INSERT de `lancamentos_diarios` com 9 valores para tabela de 7 colunas
+A migration 015 (2026-06-10) removeu as colunas `observacao` e `observacao_turno2` da tabela `lancamentos_diarios`, reduzindo-a para 7 colunas, mas o bloco `INSERT INTO lancamentos_diarios VALUES (...)` em `full_setup.sql` continuava com 9 valores por tupla (sobra das duas colunas removidas). Isso causava `ERROR 1136 (Column count doesn't match value count)` ao inicializar o banco do zero via Docker.
+
+- Removidos os dois campos extras (posições 6 e 7) de **155 tuplas** nos dois batches de INSERT (IDs 1063–1124 e IDs 1187–1247).
+- Todos os 123 tuplas resultantes têm exatamente 7 valores, alinhados ao schema atual.
+
+#### 2. Inconsistência corrigida — `ABONO_NIVER` sem código na tabela `tipos_lancamento`
+O seed data de `tipos_lancamento` tinha `codigo = NULL` para `ABONO_NIVER`, enquanto `src/types.ts` e `backend/scripts/backfill_resumo_recesso.py` usavam o código `'00717'`. Um banco inicializado do zero ficaria com o código errado, podendo causar divergência nos relatórios de frequência.
+
+- Corrigido: `('ABONO_NIVER', 'ABONO ANIVERSÁRIO', NULL)` → `('ABONO_NIVER', 'ABONO ANIVERSÁRIO', '00717')`.
+
+### Validação:
+- Todos os tuplas de `lancamentos_diarios` têm 7 valores (correto).
+- `SELECT nome, codigo FROM tipos_lancamento WHERE nome='ABONO_NIVER'` deve retornar `'00717'`.
+- ⚠️ **Lembrete**: nunca testar `full_setup.sql` contra o banco real — ver nota crítica abaixo.
+
+---
+
 ## [2026-07-31] Sincronização de Migrations Pendentes + full_setup.sql
 
 ### Arquivos Modificados/Criados:
