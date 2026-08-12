@@ -16,4 +16,7 @@
 ├── 015_remove_observacao_columns.sql
 ├── 016_create_vw_eventos_consolidados.sql
 ├── 017_create_recessos_table.sql
+├── 018_create_schema_migrations.sql
+├── 019_recessos_unique_constraint.sql
+├── 020_create_vw_atestados_comparecimento.sql
 └── README.md

@@ -147,6 +147,8 @@ INSERT INTO `tipos_lancamento` (`valor`, `label`, `codigo`) VALUES
   ('ATESTADO COMPARECIMENTO P.',  'ATESTADO COMPARECIMENTO PESSOA DA FAMILIA',     '00341'),
   ('EXAME MEDICO PREV/PERIOD ART','EXAME MEDICO PREV/PERIOD ART 62 LEI COMP',      '00118'),
   ('TRACEJADO',                   '--- (Tracejado)',                               NULL);
+INSERT IGNORE INTO `tipos_lancamento` (`valor`, `label`, `codigo`) VALUES ('LIC PATERNIDADE ART 150 LEI', 'LIC PATERNIDADE ART 150 LEI', '00289');
+
 INSERT IGNORE INTO `tipos_lancamento` (`valor`, `label`, `codigo`) VALUES ('AFAST FALECIMENTO FAMILIA LEI', 'AFAST FALECIMENTO FAMILIA LEI', NULL);
 
 INSERT IGNORE INTO `tipos_lancamento` (`valor`, `label`, `codigo`) VALUES ('AFAST CASAMENTO ART 62 LEI', 'AFAST CASAMENTO ART 62 LEI', NULL);

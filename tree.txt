@@ -5,13 +5,15 @@
 📄 MODIFICATION_MEMORY.md
 📄 README.md
 📄 README_SETUP.md
-📄 SCREENSHOTS_GUIDE.md
 📁 backend
+📄 backup.folhaponto_db.30.07.2026.17.59.21.tar.gz
+📄 backup.folhaponto_db.31.07.2026.16.48.49.tar.gz
 📁 database
-📁 dist
 📄 docker-compose.prod.yml
 📄 docker-compose.yml
+📁 docs
 📄 folha_manager.sh
+📁 graphify-out
 📄 index.html
 📄 metadata.json
 📄 nginx.conf
@@ -23,5 +25,4 @@
 📁 src
 📄 start_backend.sh
 📄 tsconfig.json
-📄 upgrade.md
 📄 vite.config.ts

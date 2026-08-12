@@ -10,7 +10,7 @@ import sys
 import time
 def get_docker_container_info():
     """Obtém informações do container Docker do MySQL a partir do docker-compose.yml."""
-    container_name = "meu-mysql"  # Nome padrão do container MySQL no docker-compose.yml
+    container_name = "folhaponto-mysql"  # Nome padrão do container MySQL no docker-compose.yml
     
     # Verifica se o docker-compose.yml existe e extrai o nome do container se possível
     compose_files = ["docker-compose.yml", "docker-compose.yaml"]
