@@ -48,7 +48,8 @@ const getComparecimentoBanco = (
   let total = 0;
   for (let m = 0; m < month; m++) {
     const key = `mes${m}` as keyof AtestadosComparecimentoResponse;
-    total += data[key] ?? 0;
+    // Number() garante soma numérica mesmo que a API retorne Decimal serializado como string
+    total += Number(data[key] ?? 0);
   }
   return total;
 };

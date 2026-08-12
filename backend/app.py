@@ -602,7 +602,9 @@ def get_atestados_bimestrais():
     rows = execute_query(query, (matricula, ano))
 
     if rows:
-        return jsonify(rows[0])
+        # Converter Decimal (retorno do SUM do MySQL) para int para evitar serialização como string
+        row = {k: int(v) for k, v in rows[0].items()}
+        return jsonify(row)
 
     # Profissional sem nenhum atestado no ano → retorna zeros
     return jsonify({
@@ -632,7 +634,9 @@ def get_atestados_comparecimento():
     rows = execute_query(query, (matricula, ano))
 
     if rows:
-        return jsonify(rows[0])
+        # Converter Decimal (retorno do SUM do MySQL) para int para evitar serialização como string
+        row = {k: int(v) for k, v in rows[0].items()}
+        return jsonify(row)
 
     # Profissional sem nenhum comparecimento no ano → retorna zeros
     return jsonify({f'mes{i}': 0 for i in range(12)})

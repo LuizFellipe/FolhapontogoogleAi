@@ -104,6 +104,51 @@ Impedir que o profissional acumule mais de 12 atestados de comparecimento (servi
 
 ---
 
+## [2026-08-12] - Correção: Bloqueio Falso de Comparecimento (Decimal serializado como string)
+
+### 🔴 Sintoma
+Ao tentar lançar ATESTADO DE COMPARECIMENTO para Servidora Exemplo B na folha de agosto/2026, a aplicação exibia o modal de bloqueio ("limite anual de 12 atingido") mesmo com apenas 2 atestados no total no ano.
+
+### 🔍 Causa Raiz
+**O MySQL retorna colunas de `SUM()` como `decimal.Decimal`** (tipo Python) ao invés de `int`. O Flask serializa `Decimal` como **string JSON** (`"1"` em vez de `1`). No TypeScript, ao somar string com número (`0 + "1"`), JavaScript faz **concatenação** em vez de soma aritmética:
+
+```
+total = 0
+total += "0"  → total = "00"
+total += "0"  → total = "000"
+...
+total += "1"  → total = "0000010"   (string!)
+total += "1"  → total = "00000101"  (string!)
+```
+
+A comparação `"00000101" >= 12` converte a string para número: `101 >= 12` → **true** → bloqueio disparado erroneamente.
+
+Diagnóstico confirmado via:
+- `curl /api/atestados-comparecimento?matricula=222.222-2&ano=2026` → `{"mes4":"1","mes5":"1",...}` (strings)
+- `python3`: `type(row['mes4'])` → `Decimal('1')`
+
+### ✅ Correção Aplicada
+
+#### 1. `backend/app.py` — Conversão para `int` nos dois endpoints afetados
+- `get_atestados_bimestrais`: `row = {k: int(v) for k, v in rows[0].items()}`
+- `get_atestados_comparecimento`: idem
+
+#### 2. `src/components/TimesheetGrid.tsx` — Proteção defensiva
+- `getComparecimentoBanco`: substituído `total += data[key] ?? 0` por `total += Number(data[key] ?? 0)`.
+- `Number()` garante soma numérica mesmo se a API retornar string em futuros endpoints similares.
+
+### ✅ Arquivos Modificados
+- `backend/app.py`
+- `src/components/TimesheetGrid.tsx`
+
+### 🧪 Verificação
+- `curl /api/atestados-comparecimento?matricula=222.222-2&ano=2026` → `{"mes4":1,"mes5":1,...}` (inteiros ✅)
+- `dosBanco = 0 + 0 + 0 + 0 + 1 + 1 + 0 = 2` (numérico, não string)
+- `daTela = 0` (sem comparecimentos em agosto na tela)
+- `2 + 0 = 2 < 12` → **não bloqueia** ✅
+
+---
+
 ## [2026-06-25] - Correção: 3ª página em branco ao imprimir no Chrome
 
 ### 🔴 Problema Identificado
