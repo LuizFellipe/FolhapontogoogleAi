@@ -138,7 +138,19 @@ def update_tipos_lancamento_in_setup(value: str, label: str, code: str | None):
         print("  [AVISO] Não foi possível localizar bloco tipos_lancamento em full_setup.sql")
 
 
-# --- Execução no banco ---
+def get_db_connection(env: dict):
+    """Cria e retorna uma conexão mysql.connector."""
+    import mysql.connector
+    return mysql.connector.connect(
+        host=env.get("DB_HOST", "127.0.0.1"),
+        port=int(env.get("DB_PORT", 3307)),
+        user=env.get("DB_USER", "root"),
+        password=env.get("DB_PASSWORD", "123456"),
+        database=env.get("DB_NAME", "folhaponto_db"),
+        charset="utf8mb4",
+        collation="utf8mb4_unicode_ci",
+        autocommit=True
+    )
 
 def find_docker_container() -> str | None:
     try:
@@ -147,33 +159,40 @@ def find_docker_container() -> str | None:
             capture_output=True, text=True, timeout=5
         )
         for name in result.stdout.splitlines():
-            if "mysql" in name.lower():
+            if "mysql" in name.lower() or "mariadb" in name.lower():
                 return name
     except Exception:
         pass
     return None
 
 def apply_migration(migration_file: Path, env: dict):
-    container = find_docker_container()
-
-    if container:
-        print(f"  Aplicando via Docker (container: {container})...")
-        cmd = [
-            "docker", "exec", "-i", container,
-            "mysql", "--default-character-set=utf8mb4",
-            "-u", env["DB_USER"], f"-p{env['DB_PASSWORD']}", env["DB_NAME"]
-        ]
-        with open(migration_file) as f:
-            result = subprocess.run(cmd, stdin=f, capture_output=True, text=True)
-        if result.returncode == 0:
-            print("  [OK] Migration aplicada ao banco de dados")
-        else:
-            stderr = result.stderr.replace(f"-p{env['DB_PASSWORD']}", "-p****")
-            print(f"  [ERRO] Falha ao aplicar migration:\n{stderr}")
-            print(f"  Execute manualmente: docker exec -i {container} mysql -u {env['DB_USER']} -p {env['DB_NAME']} < {migration_file}")
-    else:
-        print("  Container MySQL Docker não encontrado.")
-        print(f"  Execute a migration manualmente:\n    mysql -u {env['DB_USER']} -p {env['DB_NAME']} < {migration_file}")
+    print(f"  Conectando ao banco ({env.get('DB_HOST','127.0.0.1')}:{env.get('DB_PORT','3307')})...")
+    try:
+        sql_content = migration_file.read_text(encoding="utf-8")
+        conn = get_db_connection(env)
+        cursor = conn.cursor()
+        for result in cursor.execute(sql_content, multi=True):
+            if result.with_rows:
+                result.fetchall()
+        cursor.close()
+        conn.close()
+        print("  [OK] Migration aplicada ao banco de dados")
+    except Exception as e:
+        print(f"  [ERRO] Falha ao aplicar migration via Python: {e}")
+        container = find_docker_container()
+        if container:
+            print(f"  Tentando fallback via Docker ({container})...")
+            cmd = [
+                "docker", "exec", "-i", container,
+                "mysql", "--default-character-set=utf8mb4",
+                "-u", env["DB_USER"], f"-p{env['DB_PASSWORD']}", env["DB_NAME"]
+            ]
+            with open(migration_file) as f:
+                result = subprocess.run(cmd, stdin=f, capture_output=True, text=True)
+            if result.returncode == 0:
+                print("  [OK] Migration aplicada via Docker")
+            else:
+                print(f"  [ERRO] Fallback Docker falhou: {result.stderr}")
 
 # --- Main ---
 

@@ -77,26 +77,30 @@ VALUES
 
 
 def query_db(sql: str, env: dict) -> list[str]:
-    """Executa uma query no banco e retorna as linhas de saída."""
-    container = find_docker_container()
-    if container:
-        cmd = [
-            "docker", "exec", "-i", container,
-            "mysql", "--default-character-set=utf8mb4", "--batch", "--skip-column-names",
-            "-u", env["DB_USER"], f"-p{env['DB_PASSWORD']}", env["DB_NAME"],
-            "-e", sql,
-        ]
-    else:
-        cmd = [
-            "mysql", "--batch", "--skip-column-names",
-            "-u", env["DB_USER"], f"-p{env['DB_PASSWORD']}",
-            "-h", env["DB_HOST"], env["DB_NAME"],
-            "-e", sql,
-        ]
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    if result.returncode != 0:
+    """Executa uma query no banco e retorna as linhas de saída no formato TSV."""
+    try:
+        from add_entry_type import get_db_connection
+        conn = get_db_connection(env)
+        cursor = conn.cursor()
+        cursor.execute(sql)
+        rows = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return ["\t".join(str(val) if val is not None else "" for val in row) for row in rows]
+    except Exception as e:
+        print(f"  [AVISO] Erro ao consultar via Python: {e}")
+        container = find_docker_container()
+        if container:
+            cmd = [
+                "docker", "exec", "-i", container,
+                "mysql", "--default-character-set=utf8mb4", "--batch", "--skip-column-names",
+                "-u", env["DB_USER"], f"-p{env['DB_PASSWORD']}", env["DB_NAME"],
+                "-e", sql,
+            ]
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            if result.returncode == 0:
+                return [line for line in result.stdout.splitlines() if line.strip()]
         return []
-    return [line for line in result.stdout.splitlines() if line.strip()]
 
 
 def sync_codes_to_types_ts(env: dict) -> int:

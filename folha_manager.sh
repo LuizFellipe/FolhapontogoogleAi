@@ -108,10 +108,27 @@ info() {
 # ==============================================================================
 # FUNÇÃO 1: Iniciar Sistema (Background)
 # ==============================================================================
+# FUNÇÃO 1: Iniciar Sistema (Background)
+# ==============================================================================
 start_backend() {
     show_header
     echo -e "${NEON_CYAN}▶ Initializing Folha Ponto System...${NC}"
     echo -e "${NEON_CYAN}═══════════════════════════════════════════════════════════════${NC}"
+
+    # Carregar variáveis do .env logo no início
+    if [ -f ".env" ]; then
+        set -a
+        source .env
+        set +a
+    fi
+
+    # Defaults para conexão DB
+    DB_HOST="${DB_HOST:-127.0.0.1}"
+    DB_PORT="${DB_PORT:-3307}"
+    DB_USER="${DB_USER:-root}"
+    DB_PASSWORD="${DB_PASSWORD:-123456}"
+    DB_NAME="${DB_NAME:-folhaponto_db}"
+
     # Carregar nvm se disponível
     export NVM_DIR="$HOME/.nvm"
     [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
@@ -128,11 +145,6 @@ start_backend() {
         error "Python3 não encontrado! Instale o Python 3.11+ antes de continuar."
         pause
         return 1
-    fi
-
-    # Docker
-    if ! command -v docker >/dev/null 2>&1; then
-        warning "Docker não encontrado. O banco de dados precisará ser gerenciado manualmente."
     fi
 
     # Node.js — verificar existência e versão mínima
@@ -166,7 +178,6 @@ start_backend() {
             nvm install "$MIN_NODE_MAJOR" && nvm use "$MIN_NODE_MAJOR" && nvm alias default "$MIN_NODE_MAJOR"
             if [ $? -eq 0 ]; then
                 success "Node.js $(node --version) instalado via nvm!"
-                # Forçar reinstalação dos node_modules com o novo Node
                 if [ -d "node_modules" ]; then
                     info "Reinstalando node_modules com Node $(node --version)..."
                     rm -rf node_modules package-lock.json
@@ -222,69 +233,7 @@ start_backend() {
         return 1
     fi
 
-    # Verificar e iniciar container MySQL se necessário
-    info "Verificando banco de dados MySQL..."
-    CONTAINER_NAME="meu-mysql"
-
-    if command -v docker >/dev/null 2>&1; then
-        if [ "$(docker ps -aq -f name=$CONTAINER_NAME)" ]; then
-            if [ ! "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
-                warning "Contêiner $CONTAINER_NAME encontrado mas parado. Iniciando..."
-                docker start $CONTAINER_NAME
-            else
-                success "Contêiner $CONTAINER_NAME já está em execução."
-            fi
-        else
-            info "Contêiner '$CONTAINER_NAME' não encontrado. Criando via docker compose..."
-            docker compose up -d db
-            if [ $? -ne 0 ]; then
-                error "Falha ao criar contêiner $CONTAINER_NAME!"
-                pause
-                return 1
-            fi
-            success "Contêiner $CONTAINER_NAME criado com sucesso."
-        fi
-
-        # Aguardar o container ficar pronto antes de prosseguir
-        info "Aguardando banco de dados ficar pronto..."
-        WAIT_SECONDS=0
-        MAX_WAIT=120
-        DB_READY=false
-
-        # Verificar se o container possui healthcheck configurado
-        HAS_HEALTHCHECK=$(docker inspect --format='{{if .State.Health}}yes{{else}}no{{end}}' $CONTAINER_NAME 2>/dev/null)
-
-        while [ $WAIT_SECONDS -lt $MAX_WAIT ]; do
-            if [ "$HAS_HEALTHCHECK" = "yes" ]; then
-                # Container com healthcheck — usar status nativo
-                HEALTH=$(docker inspect --format='{{.State.Health.Status}}' $CONTAINER_NAME 2>/dev/null)
-                if [ "$HEALTH" = "healthy" ]; then
-                    DB_READY=true
-                    break
-                fi
-            else
-                # Container sem healthcheck — testar conectividade diretamente
-                if docker exec $CONTAINER_NAME mysqladmin ping -u root -p"${DB_PASSWORD:-123456}" --silent 2>/dev/null; then
-                    DB_READY=true
-                    break
-                fi
-            fi
-            sleep 3
-            WAIT_SECONDS=$((WAIT_SECONDS + 3))
-        done
-
-        if [ "$DB_READY" = true ]; then
-            success "Banco de dados pronto!"
-        else
-            error "Timeout aguardando banco de dados ficar pronto (${MAX_WAIT}s)."
-            pause
-            return 1
-        fi
-    else
-        warning "Docker não encontrado. Certifique-se de que o MySQL está rodando manualmente."
-    fi
-
-    # Verificar se as dependências do backend estão instaladas
+    # Verificar dependências do backend
     info "Verificando dependências do backend..."
     if ! python3 -c "import flask, mysql.connector" 2>/dev/null; then
         info "Instalando dependências do backend..."
@@ -298,14 +247,80 @@ start_backend() {
         fi
     fi
 
+    # Verificar conectividade com o banco de dados (MySQL / MariaDB)
+    info "Verificando banco de dados ($DB_HOST:$DB_PORT, db: $DB_NAME)..."
+    DB_STATUS=$(python3 -c "
+import mysql.connector
+try:
+    conn = mysql.connector.connect(
+        host='$DB_HOST',
+        port=int('$DB_PORT'),
+        user='$DB_USER',
+        password='$DB_PASSWORD',
+        database='$DB_NAME',
+        connection_timeout=5
+    )
+    conn.close()
+    print('CONNECTED')
+except Exception as e:
+    print(f'ERROR: {e}')
+" 2>&1)
+
+    if [ "$DB_STATUS" = "CONNECTED" ]; then
+        success "Conexão com o banco de dados estabelecida com sucesso!"
+    else
+        warning "Conexão direta falhou: $DB_STATUS"
+        
+        # Se for local e o docker estiver presente, tentar verificar container
+        CONTAINER_NAME="meu-mysql"
+        if [ "$DB_HOST" = "127.0.0.1" ] || [ "$DB_HOST" = "localhost" ]; then
+            if command -v docker >/dev/null 2>&1; then
+                info "Verificando se há container Docker '$CONTAINER_NAME'..."
+                if [ "$(docker ps -aq -f name=$CONTAINER_NAME)" ]; then
+                    if [ ! "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
+                        info "Iniciando container $CONTAINER_NAME..."
+                        docker start $CONTAINER_NAME
+                        sleep 3
+                    fi
+                fi
+            fi
+        fi
+
+        # Testar novamente
+        DB_RETRY=$(python3 -c "
+import mysql.connector
+try:
+    conn = mysql.connector.connect(
+        host='$DB_HOST',
+        port=int('$DB_PORT'),
+        user='$DB_USER',
+        password='$DB_PASSWORD',
+        database='$DB_NAME',
+        connection_timeout=5
+    )
+    conn.close()
+    print('CONNECTED')
+except Exception as e:
+    print(f'ERROR: {e}')
+" 2>&1)
+
+        if [ "$DB_RETRY" = "CONNECTED" ]; then
+            success "Conexão com o banco de dados restabelecida!"
+        else
+            error "Não foi possível conectar ao banco de dados!"
+            echo -e "${YELLOW}Detalhes da tentativa:${NC}"
+            echo -e "  • Host:     $DB_HOST:$DB_PORT"
+            echo -e "  • Usuário:  $DB_USER"
+            echo -e "  • Banco:    $DB_NAME"
+            echo -e "  • Erro:     $DB_RETRY"
+            echo -e "\n${CYAN}Dica: Verifique se o MariaDB/MySQL está ativo e se o arquivo .env possui as credenciais corretas.${NC}"
+            pause
+            return 1
+        fi
+    fi
+
     # Verificar e executar migrações pendentes
     info "Verificando migrações pendentes do banco de dados..."
-    # Exportar variáveis do .env para que o script Python as receba via os.environ
-    if [ -f ".env" ]; then
-        set -a
-        source .env
-        set +a
-    fi
     python3 scripts/check_run_migrations.py
     if [ $? -ne 0 ]; then
         error "Falha ao aplicar migrações pendentes. Inicialização abortada."
@@ -337,7 +352,7 @@ start_backend() {
         lsof -ti :5000 | xargs kill -9
         sleep 1
     fi
-    FLASK_APP=app.py nohup flask run --host=0.0.0.0 --port=5000 > /dev/null 2>&1 &
+    FLASK_APP=app.py nohup flask run --host=0.0.0.0 --port=5000 > ../backend.log 2>&1 &
     BACKEND_PID=$!
     echo "BACKEND_PID=$BACKEND_PID" > "$PID_FILE"
 
@@ -350,7 +365,8 @@ start_backend() {
 
     # Verificar se o backend iniciou corretamente
     if ! kill -0 $BACKEND_PID 2>/dev/null; then
-        error "Falha ao iniciar o backend!"
+        error "Falha ao iniciar o backend! Últimas linhas do backend.log:"
+        tail -n 15 backend.log
         rm -f "$PID_FILE"
         pause
         return 1
@@ -367,7 +383,7 @@ start_backend() {
 
     # Iniciar o frontend em background
     info "Iniciando frontend Vite na porta 3000..."
-    nohup npm run dev > /dev/null 2>&1 &
+    nohup npm run dev > frontend.log 2>&1 &
     FRONTEND_PID=$!
     echo "FRONTEND_PID=$FRONTEND_PID" >> "$PID_FILE"
 
@@ -376,7 +392,8 @@ start_backend() {
 
     # Verificar se o frontend iniciou corretamente
     if ! kill -0 $FRONTEND_PID 2>/dev/null; then
-        error "Falha ao iniciar o frontend!"
+        error "Falha ao iniciar o frontend! Últimas linhas do frontend.log:"
+        tail -n 15 frontend.log
         kill $BACKEND_PID 2>/dev/null
         rm -f "$PID_FILE"
         pause
@@ -386,12 +403,12 @@ start_backend() {
     echo ""
     echo -e "${GREEN}═══════════════════════════════════════════════════════════════${NC}"
     success "Gestor Folha Ponto iniciado em background!"
-    echo -e "${WHITE}📍 Backend: ${CYAN}http://localhost:5000${NC}"
+    echo -e "${WHITE}📍 Backend:  ${CYAN}http://localhost:5000${NC}"
     echo -e "${WHITE}📍 Frontend: ${CYAN}http://localhost:3000${NC}"
     echo -e "${GREEN}═══════════════════════════════════════════════════════════════${NC}"
     echo ""
-    echo -e "${PINK}Sistema rodando em background${NC}"
-    echo -e "${PINK}Você pode voltar ao menu para outras operações${NC}"
+    echo -e "${PURPLE}Sistema rodando em background${NC}"
+    echo -e "${PURPLE}Logs disponíveis em backend.log e frontend.log${NC}"
     echo ""
     
     pause

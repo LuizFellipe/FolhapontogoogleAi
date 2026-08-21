@@ -1,77 +1,76 @@
 #!/usr/bin/env python3
 """
-Verifica e executa migrations pendentes no banco de dados MySQL/MariaDB.
+Verifica e executa migrations pendentes no banco de dados MySQL/MariaDB
+usando mysql.connector diretamente para compatibilidade total.
 """
 import sys
-import re
-import subprocess
 from pathlib import Path
 
 # Adiciona o diretório do script ao path de imports para resolver add_entry_type
 sys.path.append(str(Path(__file__).parent))
 
-from add_entry_type import load_env, find_docker_container
+from add_entry_type import load_env
 
 ROOT = Path(__file__).parent.parent
 MIGRATIONS_DIR = ROOT / "database" / "migrations"
 
-def run_query(sql: str, env: dict) -> tuple[int, str, str]:
-    """Executa uma query no banco de dados e retorna o returncode, stdout e stderr."""
-    container = find_docker_container()
-    if container:
-        cmd = [
-            "docker", "exec", "-i", container,
-            "mysql", "--default-character-set=utf8mb4", "--batch", "--skip-column-names",
-            "-u", env["DB_USER"], f"-p{env['DB_PASSWORD']}", env["DB_NAME"],
-            "-e", sql
-        ]
-    else:
-        cmd = [
-            "mysql", "--batch", "--skip-column-names",
-            "-u", env["DB_USER"], f"-p{env['DB_PASSWORD']}",
-            "-h", env["DB_HOST"], "-P", env.get("DB_PORT", "3306"), env["DB_NAME"],
-            "-e", sql
-        ]
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    return result.returncode, result.stdout, result.stderr
+
+def get_db_connection(env: dict):
+    """Cria e retorna uma conexão mysql.connector."""
+    import mysql.connector
+    return mysql.connector.connect(
+        host=env.get("DB_HOST", "127.0.0.1"),
+        port=int(env.get("DB_PORT", 3307)),
+        user=env.get("DB_USER", "root"),
+        password=env.get("DB_PASSWORD", "123456"),
+        database=env.get("DB_NAME", "folhaponto_db"),
+        charset="utf8mb4",
+        collation="utf8mb4_unicode_ci",
+        autocommit=True
+    )
+
+
+def run_query(sql: str, env: dict) -> tuple[int, list[tuple], str]:
+    """Executa uma query no banco de dados e retorna (returncode, rows, error_msg)."""
+    try:
+        conn = get_db_connection(env)
+        cursor = conn.cursor()
+        cursor.execute(sql)
+        rows = cursor.fetchall() if cursor.description else []
+        cursor.close()
+        conn.close()
+        return 0, rows, ""
+    except Exception as e:
+        return 1, [], str(e)
+
 
 def apply_migration_file(filepath: Path, env: dict) -> bool:
-    """Aplica o arquivo SQL de migration no banco de dados."""
-    container = find_docker_container()
-    if container:
-        cmd = [
-            "docker", "exec", "-i", container,
-            "mysql", "--default-character-set=utf8mb4",
-            "-u", env["DB_USER"], f"-p{env['DB_PASSWORD']}", env["DB_NAME"]
-        ]
-        with open(filepath, "r", encoding="utf-8") as f:
-            result = subprocess.run(cmd, stdin=f, capture_output=True, text=True)
-    else:
-        cmd = [
-            "mysql", "--default-character-set=utf8mb4",
-            "-u", env["DB_USER"], f"-p{env['DB_PASSWORD']}",
-            "-h", env["DB_HOST"], "-P", env.get("DB_PORT", "3306"), env["DB_NAME"]
-        ]
-        with open(filepath, "r", encoding="utf-8") as f:
-            result = subprocess.run(cmd, stdin=f, capture_output=True, text=True)
-            
-    if result.returncode == 0:
+    """Aplica o arquivo SQL de migration no banco de dados via mysql.connector."""
+    try:
+        sql_content = filepath.read_text(encoding="utf-8")
+        conn = get_db_connection(env)
+        cursor = conn.cursor()
+        
+        # Executar comandos do arquivo SQL (suporta múltiplos statements)
+        for result in cursor.execute(sql_content, multi=True):
+            if result.with_rows:
+                result.fetchall()
+                
+        cursor.close()
+        conn.close()
         return True
-    else:
-        print(f"Erro ao aplicar {filepath.name}: {result.stderr}")
+    except Exception as e:
+        print(f"Erro ao aplicar {filepath.name}: {e}")
         return False
+
 
 def main():
     print("Checking for pending database migrations...")
     env = load_env()
     
     # Diagnóstico de conexão (senha mascarada)
-    container = find_docker_container()
     pw_masked = env["DB_PASSWORD"][:2] + "****" if len(env["DB_PASSWORD"]) > 2 else "****"
-    if container:
-        print(f"  Conexão via Docker: container={container}, user={env['DB_USER']}, password={pw_masked}, db={env['DB_NAME']}")
-    else:
-        print(f"  Conexão direta: host={env['DB_HOST']}:{env.get('DB_PORT','3306')}, user={env['DB_USER']}, password={pw_masked}, db={env['DB_NAME']}")
+    print(f"  Conexão: host={env.get('DB_HOST','127.0.0.1')}:{env.get('DB_PORT','3307')}, user={env['DB_USER']}, password={pw_masked}, db={env['DB_NAME']}")
     
     # 1. Obter todas as migrations locais
     migration_files = sorted(list(MIGRATIONS_DIR.glob("[0-9][0-9][0-9]_*.sql")))
@@ -80,24 +79,24 @@ def main():
         sys.exit(0)
         
     # 2. Verificar se a tabela schema_migrations existe
-    code, stdout, stderr = run_query("SELECT version FROM schema_migrations;", env)
+    code, rows, err = run_query("SELECT version FROM schema_migrations;", env)
     
     applied_versions = set()
     if code == 0:
-        applied_versions = set(line.strip() for line in stdout.splitlines() if line.strip())
+        applied_versions = set(str(r[0]).strip() for r in rows if r and r[0])
     else:
         # A tabela provavelmente não existe. Vamos rodar a migration 018 para criá-la se estiver na lista.
-        print("Table 'schema_migrations' not found. Initializing migration table...")
+        print(f"Table 'schema_migrations' not found ({err}). Initializing migration table...")
         m18 = MIGRATIONS_DIR / "018_create_schema_migrations.sql"
         if m18.exists():
             print("Applying 018_create_schema_migrations.sql retroactive setup...")
             if apply_migration_file(m18, env):
                 # Consultar novamente as versões
-                code, stdout, stderr = run_query("SELECT version FROM schema_migrations;", env)
+                code, rows, err = run_query("SELECT version FROM schema_migrations;", env)
                 if code == 0:
-                    applied_versions = set(line.strip() for line in stdout.splitlines() if line.strip())
+                    applied_versions = set(str(r[0]).strip() for r in rows if r and r[0])
                 else:
-                    print("Failed to query schema_migrations even after running 018 setup.")
+                    print(f"Failed to query schema_migrations even after running 018 setup: {err}")
                     sys.exit(1)
             else:
                 print("Failed to initialize schema_migrations table.")
@@ -130,5 +129,7 @@ def main():
             
     print("Database migrations applied successfully!")
 
+
 if __name__ == "__main__":
     main()
+

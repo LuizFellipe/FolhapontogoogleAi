@@ -46,17 +46,27 @@ def print_progress(message, duration=1.0):
     print(f"\r{message} ✓")
 
 
+def get_db_connection():
+    """Cria e retorna conexão direta."""
+    import mysql.connector
+    return mysql.connector.connect(
+        host=os.getenv('DB_HOST', '127.0.0.1'),
+        port=int(os.getenv('DB_PORT', 3307)),
+        user=os.getenv('DB_USER', 'root'),
+        password=os.getenv('DB_PASSWORD', '123456'),
+        database=os.getenv('DB_NAME', 'folhaponto_db'),
+        charset="utf8mb4",
+        collation="utf8mb4_unicode_ci"
+    )
+
 def create_backup():
-    """Realiza o backup do banco de dados MySQL."""
+    """Realiza o backup do banco de dados MySQL/MariaDB."""
     # Obter informações do banco de dados do ambiente
-    db_host = os.getenv('DB_HOST', 'localhost')
-    db_port = os.getenv('DB_PORT', '3306')
+    db_host = os.getenv('DB_HOST', '127.0.0.1')
+    db_port = os.getenv('DB_PORT', '3307')
     db_user = os.getenv('DB_USER', 'root')
     db_password = os.getenv('DB_PASSWORD', '123456')
     db_name = os.getenv('DB_NAME', 'folhaponto_db')
-    
-    # Obter nome do container Docker
-    container_name = get_docker_container_info()
     
     # Obter data e hora atual para nome do arquivo
     today = datetime.datetime.now()
@@ -67,69 +77,73 @@ def create_backup():
     info_filename = f"backup.{db_name}.{date_str}.txt"
     temp_tar_name = f"backup.{db_name}.{date_str}.tar.gz"
 
-    print(f"Iniciando backup do banco de dados '{db_name}'...")
-    print(f"Container Docker: {container_name}")
+    print(f"Iniciando backup do banco de dados '{db_name}' ({db_host}:{db_port})...")
     print(f"Arquivo de backup: {backup_filename}")
     
     try:
-        # Verificar se o Docker está instalado
-        result = subprocess.run(["docker", "--version"], capture_output=True, text=True)
-        if result.returncode != 0:
-            print("ERRO: Docker não está instalado ou não está acessível.")
-            return False
-        
-        # Verificar se o container Docker está rodando
-        result = subprocess.run(["docker", "ps"], capture_output=True, text=True)
-        if container_name not in result.stdout:
-            print(f"ERRO: Container '{container_name}' não está em execução.")
-            return False
-        
-        # Obter contagem de registros das tabelas
+        # Obter contagem de registros das tabelas diretamente via Python
         print_progress("Obtendo contagem de registros")
         
         tabelas = ['folhas_ponto', 'lancamentos_diarios', 'profissionais', 'resumo_folha','feriados','tipos_lancamento','vw_adicional_noturno','vw_folhas_lancamento','vw_relatorio_atestados_bimestrais','vw_relatorio_atestados_comparecimento']
         contagem_registros = {}
         
-        for tabela in tabelas:
-            count_cmd = [
-                "docker", "exec", container_name,
-                "mysql", "-N", "-s",
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            for tabela in tabelas:
+                try:
+                    cursor.execute(f"SELECT COUNT(*) FROM `{tabela}`;")
+                    row = cursor.fetchone()
+                    contagem_registros[tabela] = int(row[0]) if row else 0
+                except Exception:
+                    contagem_registros[tabela] = 0
+            cursor.close()
+            conn.close()
+        except Exception as e:
+            print(f"\n[AVISO] Não foi possível obter contagem de registros: {e}")
+            for tabela in tabelas:
+                contagem_registros[tabela] = 0
+        
+        print_progress("Executando dump do banco")
+        
+        # Identificar utilitário de dump disponível
+        dump_tool = None
+        for tool in ["mariadb-dump", "mysqldump"]:
+            if subprocess.run(["which", tool], capture_output=True).returncode == 0:
+                dump_tool = tool
+                break
+                
+        if dump_tool:
+            dump_cmd = [
+                dump_tool,
                 f"--host={db_host}",
                 f"--port={db_port}",
                 f"--user={db_user}",
                 f"--password={db_password}",
-                "-e", f"SELECT COUNT(*) FROM {tabela};",
+                "--single-transaction",
+                "--routines",
+                "--triggers",
                 db_name
             ]
-            try:
-                result = subprocess.run(count_cmd, capture_output=True, text=True, timeout=30)
-                if result.returncode == 0:
-                    contagem_registros[tabela] = int(result.stdout.strip())
-                else:
-                    contagem_registros[tabela] = 0
-            except:
-                contagem_registros[tabela] = 0
-        
-        print_progress("Executando mysqldump")
-        
-        # Executar o mysqldump via Docker
-        dump_cmd = [
-            "docker", "exec", container_name,
-            "mysqldump",
-            f"--host={db_host}",
-            f"--port={db_port}",
-            f"--user={db_user}",
-            f"--password={db_password}",
-            "--single-transaction",
-            "--routines",
-            "--triggers",
-            "--set-gtid-purged=OFF",
-            db_name
-        ]
-        
-        # Executar o comando e salvar o output no arquivo
-        with open(backup_filename, 'w', encoding='utf-8') as f:
-            result = subprocess.run(dump_cmd, stdout=f, stderr=subprocess.PIPE, text=True)
+            with open(backup_filename, 'w', encoding='utf-8') as f:
+                result = subprocess.run(dump_cmd, stdout=f, stderr=subprocess.PIPE, text=True)
+        else:
+            # Fallback para Docker se instalado
+            container_name = get_docker_container_info()
+            dump_cmd = [
+                "docker", "exec", container_name,
+                "mysqldump",
+                f"--host={db_host}",
+                f"--port={db_port}",
+                f"--user={db_user}",
+                f"--password={db_password}",
+                "--single-transaction",
+                "--routines",
+                "--triggers",
+                db_name
+            ]
+            with open(backup_filename, 'w', encoding='utf-8') as f:
+                result = subprocess.run(dump_cmd, stdout=f, stderr=subprocess.PIPE, text=True)
             
         if result.returncode != 0:
             print(f"Erro ao fazer backup: {result.stderr}")

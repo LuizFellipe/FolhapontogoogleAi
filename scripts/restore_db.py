@@ -89,28 +89,13 @@ def restore_backup():
         return False
 
     # Obter informações do banco de dados do ambiente
-    db_host = os.getenv('DB_HOST', 'localhost')
-    db_port = os.getenv('DB_PORT', '3306')
+    db_host = os.getenv('DB_HOST', '127.0.0.1')
+    db_port = os.getenv('DB_PORT', '3307')
     db_user = os.getenv('DB_USER', 'root')
     db_password = os.getenv('DB_PASSWORD', '123456')
     db_name = os.getenv('DB_NAME', 'folhaponto_db')
     
-    # Obter nome do container Docker
-    container_name = get_docker_container_info()
-    
     try:
-        # Verificar se o Docker está instalado
-        result = subprocess.run(["docker", "--version"], capture_output=True, text=True)
-        if result.returncode != 0:
-            print("ERRO: Docker não está instalado ou não está acessível.")
-            return False
-        
-        # Verificar se o container Docker está rodando
-        result = subprocess.run(["docker", "ps"], capture_output=True, text=True)
-        if container_name not in result.stdout:
-            print(f"ERRO: Container '{container_name}' não está em execução.")
-            return False
-            
         print_progress("Descompactando arquivo de backup")
         
         # Extrair o SQL do tar.gz
@@ -126,27 +111,63 @@ def restore_backup():
             print("ERRO: Arquivo SQL correspondente não encontrado dentro do pacote de backup.")
             return False
             
-        print_progress(f"Importando SQL ({sql_filename}) no banco de dados '{db_name}'")
+        print_progress(f"Importando SQL ({sql_filename}) no banco de dados '{db_name}' ({db_host}:{db_port})")
         
-        # Executar comando de importação mysql no container passando o SQL por stdin
-        with open(sql_filename, 'r', encoding='utf-8') as f:
-            restore_cmd = [
-                "docker", "exec", "-i", container_name,
-                "mysql",
-                f"--host={db_host}",
-                f"--port={db_port}",
-                f"--user={db_user}",
-                f"--password={db_password}",
-                db_name
-            ]
-            result = subprocess.run(restore_cmd, stdin=f, capture_output=True, text=True)
-            
+        # Tentar utilitário mariadb / mysql CLI
+        sql_tool = None
+        for tool in ["mariadb", "mysql"]:
+            if subprocess.run(["which", tool], capture_output=True).returncode == 0:
+                sql_tool = tool
+                break
+                
+        restored = False
+        if sql_tool:
+            with open(sql_filename, 'r', encoding='utf-8') as f:
+                restore_cmd = [
+                    sql_tool,
+                    f"--host={db_host}",
+                    f"--port={db_port}",
+                    f"--user={db_user}",
+                    f"--password={db_password}",
+                    db_name
+                ]
+                result = subprocess.run(restore_cmd, stdin=f, capture_output=True, text=True)
+                if result.returncode == 0:
+                    restored = True
+                else:
+                    print(f"Aviso CLI: {result.stderr}")
+                    
+        if not restored:
+            # Fallback para execução via mysql.connector
+            try:
+                import mysql.connector
+                conn = mysql.connector.connect(
+                    host=db_host,
+                    port=int(db_port),
+                    user=db_user,
+                    password=db_password,
+                    database=db_name,
+                    charset="utf8mb4",
+                    collation="utf8mb4_unicode_ci"
+                )
+                cursor = conn.cursor()
+                sql_content = Path(sql_filename).read_text(encoding='utf-8')
+                for res in cursor.execute(sql_content, multi=True):
+                    if res.with_rows:
+                        res.fetchall()
+                conn.commit()
+                cursor.close()
+                conn.close()
+                restored = True
+            except Exception as e:
+                print(f"Erro ao importar via Python: {e}")
+                
         # Remover arquivo SQL extraído temporariamente
         if os.path.exists(sql_filename):
             os.remove(sql_filename)
             
-        if result.returncode != 0:
-            print(f"Erro ao restaurar backup: {result.stderr}")
+        if not restored:
+            print("Erro ao restaurar backup.")
             return False
             
         print("\nRestauração concluída com sucesso!")
@@ -158,9 +179,11 @@ def restore_backup():
 
 
 if __name__ == "__main__":
+    from pathlib import Path
     print("=== Sistema de Restauração de Banco de Dados ===")
     success = restore_backup()
     if not success:
         sys.exit(1)
     else:
         sys.exit(0)
+
