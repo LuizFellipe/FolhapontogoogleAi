@@ -28,8 +28,31 @@ if command -v docker >/dev/null 2>&1; then
             echo "Contêiner $CONTAINER_NAME já está em execução."
         fi
     else
-        echo "⚠️ Aviso: Contêiner '$CONTAINER_NAME' não encontrado no Docker."
-        echo "Certifique-se de que o container foi criado com o nome correto."
+        echo "Contêiner '$CONTAINER_NAME' não encontrado. Criando via docker compose..."
+        docker compose up -d db
+        if [ $? -ne 0 ]; then
+            echo "❌ Falha ao criar contêiner $CONTAINER_NAME!"
+            exit 1
+        fi
+        echo "✅ Contêiner $CONTAINER_NAME criado com sucesso."
+    fi
+
+    # Aguardar o container ficar healthy antes de prosseguir
+    echo "Aguardando banco de dados ficar pronto (healthy)..."
+    WAIT_SECONDS=0
+    MAX_WAIT=120
+    while [ $WAIT_SECONDS -lt $MAX_WAIT ]; do
+        HEALTH=$(docker inspect --format='{{.State.Health.Status}}' $CONTAINER_NAME 2>/dev/null)
+        if [ "$HEALTH" = "healthy" ]; then
+            echo "✅ Banco de dados pronto!"
+            break
+        fi
+        sleep 3
+        WAIT_SECONDS=$((WAIT_SECONDS + 3))
+    done
+    if [ "$HEALTH" != "healthy" ]; then
+        echo "❌ Timeout aguardando banco de dados ficar healthy (${MAX_WAIT}s)."
+        exit 1
     fi
 else
     echo "⚠️ Aviso: Docker não encontrado. Certifique-se de que o MySQL está rodando manualmente."

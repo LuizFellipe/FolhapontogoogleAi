@@ -152,13 +152,37 @@ start_backend() {
             if [ ! "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
                 warning "Contêiner $CONTAINER_NAME encontrado mas parado. Iniciando..."
                 docker start $CONTAINER_NAME
-                sleep 2
             else
                 success "Contêiner $CONTAINER_NAME já está em execução."
             fi
         else
-            warning "Contêiner '$CONTAINER_NAME' não encontrado no Docker."
-            warning "Certifique-se de que o container foi criado com o nome correto."
+            info "Contêiner '$CONTAINER_NAME' não encontrado. Criando via docker compose..."
+            docker compose up -d db
+            if [ $? -ne 0 ]; then
+                error "Falha ao criar contêiner $CONTAINER_NAME!"
+                pause
+                return 1
+            fi
+            success "Contêiner $CONTAINER_NAME criado com sucesso."
+        fi
+
+        # Aguardar o container ficar healthy antes de prosseguir
+        info "Aguardando banco de dados ficar pronto (healthy)..."
+        WAIT_SECONDS=0
+        MAX_WAIT=120
+        while [ $WAIT_SECONDS -lt $MAX_WAIT ]; do
+            HEALTH=$(docker inspect --format='{{.State.Health.Status}}' $CONTAINER_NAME 2>/dev/null)
+            if [ "$HEALTH" = "healthy" ]; then
+                success "Banco de dados pronto!"
+                break
+            fi
+            sleep 3
+            WAIT_SECONDS=$((WAIT_SECONDS + 3))
+        done
+        if [ "$HEALTH" != "healthy" ]; then
+            error "Timeout aguardando banco de dados ficar healthy (${MAX_WAIT}s)."
+            pause
+            return 1
         fi
     else
         warning "Docker não encontrado. Certifique-se de que o MySQL está rodando manualmente."
