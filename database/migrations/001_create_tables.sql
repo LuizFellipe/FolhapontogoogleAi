@@ -15,12 +15,14 @@ CREATE TABLE IF NOT EXISTS profissionais (
     carga_horaria VARCHAR(10) NOT NULL,
     funcao VARCHAR(255),
     unidade_lotacao VARCHAR(255) NOT NULL,
+    status ENUM('ATIVO','INATIVO') NOT NULL DEFAULT 'ATIVO',
     turno1 VARCHAR(50),
     turno2 VARCHAR(50),
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_matricula (matricula),
-    INDEX idx_nome (nome)
+    INDEX idx_nome (nome),
+    INDEX idx_status (status)
 );
 
 -- Tabela de Folhas de Ponto (folhas_ponto)

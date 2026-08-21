@@ -5,6 +5,7 @@ interface Profissional {
   id: number;
   nome: string;
   matricula: string;
+  status?: string;
 }
 
 interface Props {
@@ -145,6 +146,7 @@ export const EmployeeNavigator: React.FC<Props> = ({
           {profissionais.map((profissional) => (
             <option key={profissional.id} value={profissional.id}>
               {profissional.nome} ({profissional.matricula || 'Sem matrícula'})
+              {profissional.status === 'INATIVO' ? ' — Inativo' : ''}
             </option>
           ))}
         </select>

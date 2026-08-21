@@ -24,4 +24,5 @@
     ├── 018_create_schema_migrations.sql
     ├── 019_recessos_unique_constraint.sql
     ├── 020_create_vw_atestados_comparecimento.sql
+    ├── 021_add_status_profissionais.sql
     └── README.md

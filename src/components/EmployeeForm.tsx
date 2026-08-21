@@ -27,7 +27,7 @@ export const EmployeeForm: React.FC<Props> = ({ data, onChange }) => {
             <div className="w-1.5 h-3.5 bg-stone-400 rounded-full"></div>
             Identificação
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="flex flex-col gap-1.5 md:col-span-2">
               <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Nome Completo</label>
               <input
@@ -49,6 +49,18 @@ export const EmployeeForm: React.FC<Props> = ({ data, onChange }) => {
                 className="px-3 py-2 bg-white border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-stone-400 transition-all text-sm shadow-sm"
                 placeholder="Ex: 0000000-0"
               />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Status</label>
+              <select
+                name="status"
+                value={data.status}
+                onChange={(e) => onChange({ ...data, status: e.target.value as 'ATIVO' | 'INATIVO' })}
+                className="px-3 py-2 bg-white border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-stone-400 transition-all text-sm shadow-sm"
+              >
+                <option value="ATIVO">Ativo</option>
+                <option value="INATIVO">Inativo</option>
+              </select>
             </div>
           </div>
         </div>

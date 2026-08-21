@@ -80,6 +80,7 @@ const initialEmployee: EmployeeData = {
   ch: '20',
   funcao: '',
   unidade: 'CENTRO DE EDUC PROF ESCOLA TEC DO GUARA PROF TERESA ONDINA M',
+  status: 'ATIVO',
   shift1: 'Noturno',
   shift2: ''
 };
@@ -776,6 +777,7 @@ export default function App() {
       ch: '',
       funcao: '',
       unidade: 'CENTRO DE EDUC PROF ESCOLA TEC DO GUARA PROF TERESA ONDINA M',
+      status: 'ATIVO',
       shift1: '',
       shift2: ''
     });
@@ -875,15 +877,18 @@ export default function App() {
         return;
       }
       
+      const currentProfissional = currentProfissionalIndex >= 0 ? profissionais[currentProfissionalIndex] : null;
+
       const timesheetData: TimesheetData = {
         month,
         year,
         employee,
         entries,
         summaryEntries,
-        observations
+        observations,
+        profissionalId: currentProfissional?.id
       };
-      
+
       const result = await apiService.saveCompleteTimesheet(timesheetData);
       
       if (result.success) {

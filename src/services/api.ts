@@ -216,6 +216,7 @@ class ApiService {
       carga_horaria: employeeData.ch,
       funcao: employeeData.funcao,
       unidade_lotacao: employeeData.unidade,
+      status: employeeData.status || 'ATIVO',
       turno1: employeeData.shift1,
       turno2: employeeData.shift2,
     };
@@ -232,6 +233,7 @@ class ApiService {
       ch: profissionalData.carga_horaria,
       funcao: profissionalData.funcao || '',
       unidade: profissionalData.unidade_lotacao,
+      status: profissionalData.status || 'ATIVO',
       shift1: profissionalData.turno1 || '',
       shift2: profissionalData.turno2 || '',
     };
@@ -244,12 +246,21 @@ class ApiService {
       let profissionalId;
       let isNewProfissional = false;
       
-      // Buscar profissional existente pela matrícula (apenas se matrícula foi fornecida)
+      // Identificar o profissional sendo editado primeiro pelo ID (fonte confiável,
+      // já que muitos profissionais não têm matrícula preenchida). Sem isso, um
+      // profissional "Sem matrícula" nunca era encontrado e cada salvamento criava
+      // um registro novo em vez de atualizar o existente.
       const profissionais = await this.getProfissionais();
       let existingProfissional = null;
-      
-      if (timesheetData.employee.registration) {
-        existingProfissional = profissionais.find((p: any) => 
+
+      if (timesheetData.profissionalId) {
+        existingProfissional = profissionais.find((p: any) =>
+          p.id === timesheetData.profissionalId
+        ) || null;
+      }
+
+      if (!existingProfissional && timesheetData.employee.registration) {
+        existingProfissional = profissionais.find((p: any) =>
           p.matricula === timesheetData.employee.registration
         );
       }

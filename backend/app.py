@@ -93,8 +93,8 @@ def create_profissional():
         return jsonify({'error': 'Campo nome é obrigatório'}), 400
     
     query = """
-    INSERT INTO profissionais (nome, matricula, cargo, ua, exercicio, carga_horaria, funcao, unidade_lotacao, turno1, turno2)
-    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    INSERT INTO profissionais (nome, matricula, cargo, ua, exercicio, carga_horaria, funcao, unidade_lotacao, status, turno1, turno2)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
 
     params = (
@@ -106,6 +106,7 @@ def create_profissional():
         data.get('carga_horaria'),
         data.get('funcao'),
         data.get('unidade_lotacao'),
+        data.get('status') or 'ATIVO',
         data.get('turno1'),
         data.get('turno2')
     )
@@ -140,12 +141,12 @@ def update_profissional(id):
         return jsonify({'error': 'Campo nome é obrigatório'}), 400
     
     query = """
-    UPDATE profissionais 
-    SET nome = %s, matricula = %s, cargo = %s, ua = %s, exercicio = %s, 
-        carga_horaria = %s, funcao = %s, unidade_lotacao = %s, turno1 = %s, turno2 = %s
+    UPDATE profissionais
+    SET nome = %s, matricula = %s, cargo = %s, ua = %s, exercicio = %s,
+        carga_horaria = %s, funcao = %s, unidade_lotacao = %s, status = %s, turno1 = %s, turno2 = %s
     WHERE id = %s
     """
-    
+
     params = (
         data.get('nome'),
         data.get('matricula') or None,  # Permitir NULL
@@ -155,6 +156,7 @@ def update_profissional(id):
         data.get('carga_horaria'),
         data.get('funcao'),
         data.get('unidade_lotacao'),
+        data.get('status') or 'ATIVO',
         data.get('turno1'),
         data.get('turno2'),
         id
@@ -238,8 +240,8 @@ def get_folha_ponto(id):
     """Busca uma folha de ponto completa com lançamentos e resumo"""
     # Buscar folha de ponto
     folha_query = """
-    SELECT f.*, p.nome as profissional_nome, p.nome, p.matricula, p.cargo, p.ua, 
-           p.exercicio, p.carga_horaria, p.funcao, p.unidade_lotacao, p.turno1, p.turno2
+    SELECT f.*, p.nome as profissional_nome, p.nome, p.matricula, p.cargo, p.ua,
+           p.exercicio, p.carga_horaria, p.funcao, p.unidade_lotacao, p.status, p.turno1, p.turno2
     FROM folhas_ponto f
     JOIN profissionais p ON f.profissional_id = p.id
     WHERE f.id = %s

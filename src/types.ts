@@ -19,6 +19,7 @@ export interface EmployeeData {
   ch: string;
   funcao: string;
   unidade: string;
+  status: 'ATIVO' | 'INATIVO';
   shift1: string;
   shift2: string;
 }
@@ -40,6 +41,7 @@ export interface TimesheetData {
   entries: DailyEntry[];
   summaryEntries: SummaryEntry[];
   observations: string;
+  profissionalId?: number;
 }
 
 export const MONTHS = [

@@ -85,6 +85,10 @@ Cada dia conta como 1 ocorrência (sem colapso de sequências, diferente da view
 Utilizada pelo endpoint `/api/atestados-comparecimento` para enforçar o limite de **12 comparecimentos/ano**.
 > Corrigido em 2026-07-31: o arquivo original não fazia `INSERT INTO schema_migrations`, diferente do padrão das migrations 018/019. Agora finaliza com `INSERT IGNORE INTO schema_migrations (version) VALUES ('020');`.
 
+### `021_add_status_profissionais.sql`
+Adiciona a coluna `status ENUM('ATIVO','INATIVO') NOT NULL DEFAULT 'ATIVO'` e o índice `idx_status` na tabela `profissionais`. Permite marcar o vínculo de profissionais como ativo ou inativo sem apagar o histórico de folhas de ponto.
+> Finaliza registrando `021` na tabela `schema_migrations`.
+
 ## Como Adicionar Novos Tipos de Lançamento
 
 Use o script interativo na raiz do projeto — ele atualiza automaticamente `types.ts`, os SQLs e aplica a migration no banco:
