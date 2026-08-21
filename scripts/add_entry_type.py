@@ -24,17 +24,33 @@ FULL_SETUP_SQL = ROOT / "database" / "full_setup.sql"
 CREATE_TABLES_SQL = ROOT / "database" / "migrations" / "001_create_tables.sql"
 MIGRATIONS_DIR = ROOT / "database" / "migrations"
 
-# Configuração do banco (lida do .env se existir)
+# Configuração do banco (lida do .env, com fallback para variáveis de ambiente)
 def load_env():
-    env = {"DB_HOST": "localhost", "DB_USER": "root", "DB_PASSWORD": "", "DB_NAME": "folhaponto_db"}
+    import os
+    env = {
+        "DB_HOST": "localhost",
+        "DB_PORT": "3307",
+        "DB_USER": "root",
+        "DB_PASSWORD": "123456",
+        "DB_NAME": "folhaponto_db",
+    }
     env_file = ROOT / ".env"
     if env_file.exists():
         for line in env_file.read_text().splitlines():
             line = line.strip()
             if line and not line.startswith("#") and "=" in line:
                 key, _, value = line.partition("=")
-                if key.strip() in env:
-                    env[key.strip()] = value.strip()
+                key = key.strip()
+                if key in env:
+                    value = value.strip()
+                    # Remover aspas ao redor do valor (simples ou duplas)
+                    if len(value) >= 2 and value[0] == value[-1] and value[0] in ('"', "'"):
+                        value = value[1:-1]
+                    env[key] = value
+    # Variáveis de ambiente do SO sobrescrevem o .env (útil em Docker/produção)
+    for key in list(env.keys()):
+        if key in os.environ and os.environ[key]:
+            env[key] = os.environ[key]
     return env
 
 # --- Leitura do types.ts ---

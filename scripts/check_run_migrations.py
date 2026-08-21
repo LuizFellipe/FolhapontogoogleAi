@@ -65,6 +65,14 @@ def main():
     print("Checking for pending database migrations...")
     env = load_env()
     
+    # Diagnóstico de conexão (senha mascarada)
+    container = find_docker_container()
+    pw_masked = env["DB_PASSWORD"][:2] + "****" if len(env["DB_PASSWORD"]) > 2 else "****"
+    if container:
+        print(f"  Conexão via Docker: container={container}, user={env['DB_USER']}, password={pw_masked}, db={env['DB_NAME']}")
+    else:
+        print(f"  Conexão direta: host={env['DB_HOST']}:{env.get('DB_PORT','3306')}, user={env['DB_USER']}, password={pw_masked}, db={env['DB_NAME']}")
+    
     # 1. Obter todas as migrations locais
     migration_files = sorted(list(MIGRATIONS_DIR.glob("[0-9][0-9][0-9]_*.sql")))
     if not migration_files:

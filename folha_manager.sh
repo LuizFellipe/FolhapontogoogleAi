@@ -300,6 +300,12 @@ start_backend() {
 
     # Verificar e executar migrações pendentes
     info "Verificando migrações pendentes do banco de dados..."
+    # Exportar variáveis do .env para que o script Python as receba via os.environ
+    if [ -f ".env" ]; then
+        set -a
+        source .env
+        set +a
+    fi
     python3 scripts/check_run_migrations.py
     if [ $? -ne 0 ]; then
         error "Falha ao aplicar migrações pendentes. Inicialização abortada."
