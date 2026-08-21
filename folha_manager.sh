@@ -29,6 +29,24 @@ NEON_CYAN='\033[38;5;51m'
 NEON_BLUE='\033[38;5;45m'
 NC='\033[0m' # No Color
 
+# Carregar variáveis do .env logo no início se disponível
+if [ -f ".env" ]; then
+    set -a
+    source .env
+    set +a
+fi
+
+# Função para obter interpretador Python (prioriza o venv)
+get_python() {
+    if [ -f "venv/bin/python3" ]; then
+        echo "venv/bin/python3"
+    elif [ -f "venv/bin/python" ]; then
+        echo "venv/bin/python"
+    else
+        echo "python3"
+    fi
+}
+
 # Função para limpar tela e mostrar cabeçalho
 show_header() {
     clear
@@ -582,7 +600,7 @@ add_entry_type() {
     echo ""
     
     # Executar o script Python
-    python3 scripts/add_entry_type.py
+    $(get_python) scripts/add_entry_type.py
     
     if [ $? -eq 0 ]; then
         success "Tipo de lançamento adicionado com sucesso!"
@@ -619,7 +637,7 @@ backup_db() {
     echo ""
     
     # Executar o script Python
-    python3 scripts/backup_db.py
+    $(get_python) scripts/backup_db.py
     
     if [ $? -eq 0 ]; then
         success "Backup realizado com sucesso!"
@@ -656,7 +674,7 @@ restore_db() {
     echo ""
     
     # Executar o script Python
-    python3 scripts/restore_db.py
+    $(get_python) scripts/restore_db.py
     
     if [ $? -eq 0 ]; then
         success "Backup restaurado com sucesso!"
@@ -694,7 +712,7 @@ update_tree() {
     echo ""
     
     # Executar o script Python
-    python3 scripts/update_tree.py
+    $(get_python) scripts/update_tree.py
     
     if [ $? -eq 0 ]; then
         success "Árvore de diretórios atualizada com sucesso!"
@@ -908,7 +926,7 @@ sync_entry_types() {
     info "Executando sincronização de tipos de lançamento..."
     echo ""
 
-    python3 scripts/sync_tipos_lancamento.py
+    $(get_python) scripts/sync_tipos_lancamento.py
 
     if [ $? -eq 0 ]; then
         success "Sincronização concluída!"

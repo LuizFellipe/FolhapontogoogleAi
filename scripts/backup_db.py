@@ -8,6 +8,12 @@ import datetime
 import tarfile
 import sys
 import time
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except Exception:
+    pass
 def get_docker_container_info():
     """Obtém informações do container Docker do MySQL a partir do docker-compose.yml."""
     container_name = "folhaponto-mysql"  # Nome padrão do container MySQL no docker-compose.yml
@@ -113,6 +119,8 @@ def create_backup():
                 dump_tool = tool
                 break
                 
+        container_name = get_docker_container_info()
+
         if dump_tool:
             dump_cmd = [
                 dump_tool,
@@ -129,7 +137,6 @@ def create_backup():
                 result = subprocess.run(dump_cmd, stdout=f, stderr=subprocess.PIPE, text=True)
         else:
             # Fallback para Docker se instalado
-            container_name = get_docker_container_info()
             dump_cmd = [
                 "docker", "exec", container_name,
                 "mysqldump",
@@ -156,6 +163,7 @@ def create_backup():
         
         file_size = os.path.getsize(backup_filename)
         file_size_mb = file_size / (1024 * 1024)
+        execution_mode = f"CLI Local ({dump_tool})" if dump_tool else f"Container Docker ({container_name})"
         
         with open(info_filename, 'w', encoding='utf-8') as f:
             f.write(f"Backup do Banco de Dados\n")
@@ -164,6 +172,7 @@ def create_backup():
             f.write(f"Data/Hora: {today.strftime('%d/%m/%Y %H:%M:%S')}\n")
             f.write(f"Host: {db_host}:{db_port}\n")
             f.write(f"Usuário: {db_user}\n")
+            f.write(f"Modo de Execução: {execution_mode}\n")
             f.write(f"Container Docker: {container_name}\n\n")
             f.write(f"RESUMO DE REGISTROS POR TABELA:\n")
             f.write(f"================================\n")

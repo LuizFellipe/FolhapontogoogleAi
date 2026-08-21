@@ -8,6 +8,13 @@ import tarfile
 import sys
 import glob
 import time
+from pathlib import Path
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except Exception:
+    pass
 
 def get_docker_container_info():
     """Obtém informações do container Docker do MySQL a partir do docker-compose.yml."""
@@ -179,7 +186,6 @@ def restore_backup():
 
 
 if __name__ == "__main__":
-    from pathlib import Path
     print("=== Sistema de Restauração de Banco de Dados ===")
     success = restore_backup()
     if not success:
