@@ -6,6 +6,8 @@ import { apiService } from '../services/api';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+type SortBy = 'nome' | 'matricula';
+
 interface Lancamento {
   dia: number;
   tipo: string;
@@ -64,6 +66,31 @@ function formatDate(day: number, month: number, year: number): string {
 function isWeekday(year: number, month: number, day: number): boolean {
   const dow = new Date(year, month, day).getDay();
   return dow !== 0 && dow !== 6;
+}
+
+function normalizeMatricula(m?: string): string {
+  return (m || '').replace(/\D/g, '');
+}
+
+function compareProf(
+  a: { matricula?: string; nome: string },
+  b: { matricula?: string; nome: string },
+  sortBy: SortBy
+): number {
+  if (sortBy === 'matricula') {
+    const matA = (a.matricula || '').trim();
+    const matB = (b.matricula || '').trim();
+    if (matA && matB) {
+      const cmp = matA.localeCompare(matB, 'pt-BR', { numeric: true });
+      if (cmp !== 0) return cmp;
+    } else if (matA && !matB) {
+      return -1;
+    } else if (!matA && matB) {
+      return 1;
+    }
+    return (a.nome || '').localeCompare(b.nome || '', 'pt-BR');
+  }
+  return (a.nome || '').localeCompare(b.nome || '', 'pt-BR');
 }
 
 // ─── Report: Lançamentos ──────────────────────────────────────────────────────
@@ -151,7 +178,8 @@ const ReportLancamentos: React.FC<{
   allProfData: ProfData[];
   filterMonth: number;
   filterYear: number;
-}> = ({ allProfData, filterMonth, filterYear }) => {
+  sortBy: SortBy;
+}> = ({ allProfData, filterMonth, filterYear, sortBy }) => {
   if (allProfData.length === 0) {
     return (
       <p className="text-center text-sm text-stone-400 py-8 border border-dashed border-stone-200 rounded-lg">
@@ -160,8 +188,9 @@ const ReportLancamentos: React.FC<{
     );
   }
 
-  // Só exibe profissionais com ao menos 1 ocorrência especial (espelha WHERE do SQL)
-  const profsComOcorrencia = allProfData
+  // Ordena os profissionais pelo critério selecionado e filtra os que têm ocorrência
+  const sortedProfData = [...allProfData].sort((a, b) => compareProf(a, b, sortBy));
+  const profsComOcorrencia = sortedProfData
     .map(prof => ({ prof, ranges: buildRangesLancamentos(prof.lancamentos, prof.turno1, prof.turno2) }))
     .filter(({ ranges }) => ranges.length > 0);
 
@@ -229,7 +258,8 @@ const ReportAdicionaNoturno: React.FC<{
   isLoading: boolean;
   filterMonth: number;
   filterYear: number;
-}> = ({ adicionaData, isLoading, filterMonth, filterYear }) => {
+  sortBy: SortBy;
+}> = ({ adicionaData, isLoading, filterMonth, filterYear, sortBy }) => {
   if (isLoading) return null; // spinner já exibido pelo pai
 
   if (adicionaData.length === 0) {
@@ -242,6 +272,7 @@ const ReportAdicionaNoturno: React.FC<{
   }
 
   let totalGeral = 0;
+  const sortedData = [...adicionaData].sort((a, b) => compareProf(a, b, sortBy));
 
   return (
     <div className="overflow-x-auto border border-stone-200 rounded-xl bg-white shadow-sm">
@@ -256,7 +287,7 @@ const ReportAdicionaNoturno: React.FC<{
           </tr>
         </thead>
         <tbody className="divide-y divide-stone-100">
-          {adicionaData.map(prof => {
+          {sortedData.map(prof => {
             totalGeral += prof.horas;
             const turnos = [prof.turno1, prof.turno2]
               .filter(t => (t || '').toUpperCase().includes('NOTURNO'))
@@ -304,7 +335,8 @@ const ReportResumo: React.FC<{
   resumoData: ResumoRow[];
   isLoading: boolean;
   filterYear: number;
-}> = ({ resumoData, isLoading, filterYear }) => {
+  sortBy: SortBy;
+}> = ({ resumoData, isLoading, filterYear, sortBy }) => {
   if (isLoading) return null;
 
   if (resumoData.length === 0) {
@@ -316,11 +348,11 @@ const ReportResumo: React.FC<{
     );
   }
 
-  // Agrupar por matricula — um profissional tem N folhas_ponto (uma por mês)
+  // Agrupar por matricula ou nome — um profissional tem N folhas_ponto (uma por mês)
   const byProf = new Map<string, { nome: string; matricula: string; tipos: { tipo: string; label: string; total: number }[] }>();
   let totalGeral = 0;
   for (const r of resumoData) {
-    const key = r.matricula || r.nome;
+    const key = r.matricula ? `mat_${r.matricula}` : `nome_${r.nome}`;
     if (!byProf.has(key)) {
       byProf.set(key, { nome: r.nome, matricula: r.matricula, tipos: [] });
     }
@@ -328,6 +360,8 @@ const ReportResumo: React.FC<{
     byProf.get(key)!.tipos.push({ tipo: r.tipo, label, total: r.total });
     totalGeral += r.total;
   }
+
+  const profsList = Array.from(byProf.values()).sort((a, b) => compareProf(a, b, sortBy));
 
   return (
     <div className="overflow-x-auto border border-stone-200 rounded-xl bg-white shadow-sm">
@@ -340,7 +374,7 @@ const ReportResumo: React.FC<{
           </tr>
         </thead>
         <tbody className="divide-y divide-stone-100">
-          {Array.from(byProf.values()).map((prof, pi) => (
+          {profsList.map((prof, pi) => (
             <React.Fragment key={pi}>
               <tr className="bg-stone-50/50">
                 <td className="py-2.5 px-4 font-mono text-xs text-stone-500">{prof.matricula || '—'}</td>
@@ -384,6 +418,7 @@ export const ReportsModal: React.FC<Props> = ({
   initialYear,
 }) => {
   const [reportType, setReportType] = useState<'lancamentos' | 'adicional_noturno' | 'resumo'>('lancamentos');
+  const [sortBy, setSortBy] = useState<SortBy>('nome');
   const [filterMonth, setFilterMonth] = useState(initialMonth);
   const [filterYear, setFilterYear] = useState(initialYear);
 
@@ -408,6 +443,28 @@ export const ReportsModal: React.FC<Props> = ({
     }
   }, [isOpen, initialMonth, initialYear]);
 
+  // Função auxiliar para verificar se o profissional está ativo
+  const isProfissionalAtivo = (matricula?: string, nome?: string): boolean => {
+    if (!profissionais || profissionais.length === 0) return true;
+
+    // Busca por matrícula normalizada
+    const normMat = normalizeMatricula(matricula);
+    if (normMat) {
+      const prof = profissionais.find(p => normalizeMatricula(p.matricula) === normMat);
+      if (prof) return prof.status !== 'INATIVO';
+    }
+
+    // Busca por nome
+    if (nome && nome.trim()) {
+      const prof = profissionais.find(
+        p => p.nome && p.nome.trim().toUpperCase() === nome.trim().toUpperCase()
+      );
+      if (prof) return prof.status !== 'INATIVO';
+    }
+
+    return true;
+  };
+
   // ── fetch: Lançamentos ───────────────────────────────────────────────────────
   useEffect(() => {
     if (!isOpen || reportType !== 'lancamentos') return;
@@ -424,9 +481,11 @@ export const ReportsModal: React.FC<Props> = ({
           return;
         }
 
-        // Agrupa por fp.id (folha_ponto id)
+        // Agrupa por fp.id (folha_ponto id) filtrando inativos
         const map = new Map<number, ProfData>();
         for (const r of rows) {
+          if (!isProfissionalAtivo(r.matricula, r.nome)) continue;
+
           const fid: number = r.id;
           if (!map.has(fid)) {
             map.set(fid, {
@@ -448,8 +507,11 @@ export const ReportsModal: React.FC<Props> = ({
         }
 
         const valid = Array.from(map.values());
-        valid.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
-        setAllProfData(valid);
+        if (valid.length === 0) {
+          setNenhuma(true);
+        } else {
+          setAllProfData(valid);
+        }
       } catch {
         setNenhuma(true);
       } finally {
@@ -457,7 +519,7 @@ export const ReportsModal: React.FC<Props> = ({
       }
     };
     load();
-  }, [isOpen, reportType, filterMonth, filterYear]);
+  }, [isOpen, reportType, filterMonth, filterYear, profissionais]);
 
   // ── fetch: Adicional Noturno ─────────────────────────────────────────────────
   useEffect(() => {
@@ -476,9 +538,11 @@ export const ReportsModal: React.FC<Props> = ({
           return;
         }
 
-        // Agrupa por fp.id, conta linhas (horas)
+        // Agrupa por fp.id, conta linhas (horas) filtrando inativos
         const map = new Map<number, AdicionalNoturnoProf>();
         for (const r of rows) {
+          if (!isProfissionalAtivo(r.matricula, r.nome)) continue;
+
           const fid = r.id;
           if (!map.has(fid)) {
             map.set(fid, {
@@ -497,8 +561,11 @@ export const ReportsModal: React.FC<Props> = ({
         }
 
         const valid = Array.from(map.values());
-        valid.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
-        setAdicionaData(valid);
+        if (valid.length === 0) {
+          setNenhumaAdiciona(true);
+        } else {
+          setAdicionaData(valid);
+        }
       } catch {
         setNenhumaAdiciona(true);
       } finally {
@@ -506,7 +573,7 @@ export const ReportsModal: React.FC<Props> = ({
       }
     };
     load();
-  }, [isOpen, reportType, filterMonth, filterYear]);
+  }, [isOpen, reportType, filterMonth, filterYear, profissionais]);
 
   // ── fetch: Resumo ────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -516,7 +583,8 @@ export const ReportsModal: React.FC<Props> = ({
       setResumoData([]);
       try {
         const rows: ResumoRow[] = await apiService.getResumoRelatorio(filterYear);
-        setResumoData(rows || []);
+        const filtered = (rows || []).filter(r => isProfissionalAtivo(r.matricula, r.nome));
+        setResumoData(filtered);
       } catch {
         setResumoData([]);
       } finally {
@@ -524,14 +592,13 @@ export const ReportsModal: React.FC<Props> = ({
       }
     };
     load();
-  }, [isOpen, reportType, filterYear]);
+  }, [isOpen, reportType, filterYear, profissionais]);
 
   if (!isOpen) return null;
 
   const periodoInicio = formatDate(1, filterMonth, filterYear);
   const ultimoDia = new Date(filterYear, filterMonth + 1, 0).getDate();
   const periodoFim = formatDate(ultimoDia, filterMonth, filterYear);
-  const unidade = profissionais[0]?.unidade_lotacao ?? '';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 print:bg-transparent print:relative print:inset-auto">
@@ -577,6 +644,18 @@ export const ReportsModal: React.FC<Props> = ({
                 Resumo
               </button>
             </div>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-stone-500 uppercase tracking-wider">Ordenação</label>
+            <select
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value as SortBy)}
+              className="px-3 py-2 bg-white border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-stone-200 font-medium text-stone-700"
+            >
+              <option value="nome">Ordem Alfabética</option>
+              <option value="matricula">Ordem de Matrícula</option>
+            </select>
           </div>
 
           <div className="flex flex-col gap-1">
@@ -647,6 +726,7 @@ export const ReportsModal: React.FC<Props> = ({
                 allProfData={allProfData}
                 filterMonth={filterMonth}
                 filterYear={filterYear}
+                sortBy={sortBy}
               />
             )
           ) : reportType === 'adicional_noturno' ? (
@@ -660,6 +740,7 @@ export const ReportsModal: React.FC<Props> = ({
                 isLoading={isLoadingAdiciona}
                 filterMonth={filterMonth}
                 filterYear={filterYear}
+                sortBy={sortBy}
               />
             )
           ) : (
@@ -667,6 +748,7 @@ export const ReportsModal: React.FC<Props> = ({
               resumoData={resumoData}
               isLoading={isLoadingResumo}
               filterYear={filterYear}
+              sortBy={sortBy}
             />
           )}
         </div>

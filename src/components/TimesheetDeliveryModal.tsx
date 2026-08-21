@@ -11,6 +11,7 @@ interface Profissional {
   matricula: string;
   cargo: string;
   carga_horaria?: string | number;
+  status?: string;
 }
 
 interface Props {
@@ -22,6 +23,7 @@ interface Props {
 }
 
 type Vinculo = 'EFETIVOS' | 'TEMPORARIOS';
+type SortBy = 'nome' | 'matricula';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -52,6 +54,27 @@ function abbreviateCargo(cargo: string): string {
 function todayLabel(): string {
   const d = new Date();
   return `${String(d.getDate()).padStart(2, '0')} de ${MONTH_NAMES_PT[d.getMonth()]} de ${d.getFullYear()}`;
+}
+
+function compareProf(
+  a: { matricula?: string; nome: string },
+  b: { matricula?: string; nome: string },
+  sortBy: SortBy
+): number {
+  if (sortBy === 'matricula') {
+    const matA = (a.matricula || '').trim();
+    const matB = (b.matricula || '').trim();
+    if (matA && matB) {
+      const cmp = matA.localeCompare(matB, 'pt-BR', { numeric: true });
+      if (cmp !== 0) return cmp;
+    } else if (matA && !matB) {
+      return -1;
+    } else if (!matA && matB) {
+      return 1;
+    }
+    return (a.nome || '').localeCompare(b.nome || '', 'pt-BR');
+  }
+  return (a.nome || '').localeCompare(b.nome || '', 'pt-BR');
 }
 
 // ─── Print Document ───────────────────────────────────────────────────────────
@@ -214,6 +237,7 @@ export const TimesheetDeliveryModal: React.FC<Props> = ({
   initialYear,
 }) => {
   const [vinculo, setVinculo] = useState<Vinculo>('EFETIVOS');
+  const [sortBy, setSortBy] = useState<SortBy>('nome');
   const [filterMonth, setFilterMonth] = useState(initialMonth);
   const [filterYear, setFilterYear] = useState(initialYear);
   const [memoNum, setMemoNum] = useState('01');
@@ -229,12 +253,14 @@ export const TimesheetDeliveryModal: React.FC<Props> = ({
       setSelectedIds(new Set());
       setSelectedCargoFilters(new Set());
       setVinculo('EFETIVOS');
+      setSortBy('nome');
     }
   }, [isOpen, initialMonth, initialYear]);
 
-  // Filter by vínculo
+  // Filter by vínculo (apenas profissionais ativos)
   const profsByVinculo = useMemo(() => {
     return profissionais.filter((p) => {
+      if (p.status === 'INATIVO') return false;
       const isTemp = (p.cargo || '').toUpperCase().includes('TEMP');
       return vinculo === 'TEMPORARIOS' ? isTemp : !isTemp;
     });
@@ -249,10 +275,10 @@ export const TimesheetDeliveryModal: React.FC<Props> = ({
     });
   }, [profsByVinculo, selectedCargoFilters]);
 
-  // Sorted alphabetically
+  // Sorted by selected sort order
   const sortedFiltered = useMemo(() => {
-    return [...filtered].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
-  }, [filtered]);
+    return [...filtered].sort((a, b) => compareProf(a, b, sortBy));
+  }, [filtered, sortBy]);
 
   // Only selected, sorted
   const selectedProfs = useMemo(() => {
@@ -355,6 +381,19 @@ export const TimesheetDeliveryModal: React.FC<Props> = ({
                   Temporários
                 </button>
               </div>
+            </div>
+
+            {/* Ordenação */}
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-stone-500 uppercase tracking-wider">Ordenação</label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortBy)}
+                className="px-3 py-2 bg-white border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-stone-200 font-medium text-stone-700"
+              >
+                <option value="nome">Ordem Alfabética</option>
+                <option value="matricula">Ordem de Matrícula</option>
+              </select>
             </div>
 
             {/* Mês */}
