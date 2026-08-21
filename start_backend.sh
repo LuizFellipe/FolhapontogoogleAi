@@ -5,6 +5,82 @@
 
 echo "Iniciando sistema Folha de Ponto..."
 
+# Carregar nvm se disponível
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+# ──────────────────────────────────────────────────────────────
+# Verificação de pré-requisitos
+# ──────────────────────────────────────────────────────────────
+MIN_NODE_MAJOR=20
+
+echo "Verificando pré-requisitos do sistema..."
+
+# Python 3
+if ! command -v python3 >/dev/null 2>&1; then
+    echo "❌ Python3 não encontrado! Instale o Python 3.11+ antes de continuar."
+    exit 1
+fi
+
+# Docker
+if ! command -v docker >/dev/null 2>&1; then
+    echo "⚠️ Docker não encontrado. O banco de dados precisará ser gerenciado manualmente."
+fi
+
+# Node.js — verificar existência e versão mínima
+NEED_NODE_INSTALL=false
+if command -v node >/dev/null 2>&1; then
+    NODE_CURRENT=$(node --version 2>/dev/null | sed 's/^v//')
+    NODE_MAJOR=$(echo "$NODE_CURRENT" | cut -d. -f1)
+    if [ "$NODE_MAJOR" -lt "$MIN_NODE_MAJOR" ] 2>/dev/null; then
+        echo "⚠️ Node.js v${NODE_CURRENT} detectado, mas o sistema requer v${MIN_NODE_MAJOR}+."
+        NEED_NODE_INSTALL=true
+    else
+        echo "✅ Node.js v${NODE_CURRENT}"
+    fi
+else
+    echo "⚠️ Node.js não encontrado."
+    NEED_NODE_INSTALL=true
+fi
+
+# Auto-instalar Node via nvm se necessário
+if [ "$NEED_NODE_INSTALL" = true ]; then
+    echo "Instalando Node.js v${MIN_NODE_MAJOR} via nvm..."
+
+    # Instalar nvm se não existe
+    if [ ! -s "$NVM_DIR/nvm.sh" ]; then
+        echo "Instalando nvm..."
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash 2>&1
+        [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+    fi
+
+    if [ -s "$NVM_DIR/nvm.sh" ]; then
+        nvm install "$MIN_NODE_MAJOR" && nvm use "$MIN_NODE_MAJOR" && nvm alias default "$MIN_NODE_MAJOR"
+        if [ $? -eq 0 ]; then
+            echo "✅ Node.js $(node --version) instalado via nvm!"
+            # Forçar reinstalação dos node_modules com o novo Node
+            if [ -d "node_modules" ]; then
+                echo "Reinstalando node_modules com Node $(node --version)..."
+                rm -rf node_modules package-lock.json
+            fi
+        else
+            echo "❌ Falha ao instalar Node.js v${MIN_NODE_MAJOR} via nvm!"
+            exit 1
+        fi
+    else
+        echo "❌ Falha ao instalar nvm. Instale Node.js v${MIN_NODE_MAJOR}+ manualmente."
+        exit 1
+    fi
+fi
+
+# npm
+if ! command -v npm >/dev/null 2>&1; then
+    echo "❌ npm não encontrado! Instale o Node.js v${MIN_NODE_MAJOR}+ com npm."
+    exit 1
+fi
+
+echo "✅ Todos os pré-requisitos verificados!"
+
 # Verificar se o ambiente virtual existe
 if [ ! -d "venv" ]; then
     echo "Criando ambiente virtual..."
