@@ -113,21 +113,38 @@ if command -v docker >/dev/null 2>&1; then
         echo "✅ Contêiner $CONTAINER_NAME criado com sucesso."
     fi
 
-    # Aguardar o container ficar healthy antes de prosseguir
-    echo "Aguardando banco de dados ficar pronto (healthy)..."
+    # Aguardar o container ficar pronto antes de prosseguir
+    echo "Aguardando banco de dados ficar pronto..."
     WAIT_SECONDS=0
     MAX_WAIT=120
+    DB_READY=false
+
+    # Verificar se o container possui healthcheck configurado
+    HAS_HEALTHCHECK=$(docker inspect --format='{{if .State.Health}}yes{{else}}no{{end}}' $CONTAINER_NAME 2>/dev/null)
+
     while [ $WAIT_SECONDS -lt $MAX_WAIT ]; do
-        HEALTH=$(docker inspect --format='{{.State.Health.Status}}' $CONTAINER_NAME 2>/dev/null)
-        if [ "$HEALTH" = "healthy" ]; then
-            echo "✅ Banco de dados pronto!"
-            break
+        if [ "$HAS_HEALTHCHECK" = "yes" ]; then
+            # Container com healthcheck — usar status nativo
+            HEALTH=$(docker inspect --format='{{.State.Health.Status}}' $CONTAINER_NAME 2>/dev/null)
+            if [ "$HEALTH" = "healthy" ]; then
+                DB_READY=true
+                break
+            fi
+        else
+            # Container sem healthcheck — testar conectividade diretamente
+            if docker exec $CONTAINER_NAME mysqladmin ping -u root -p"${DB_PASSWORD:-123456}" --silent 2>/dev/null; then
+                DB_READY=true
+                break
+            fi
         fi
         sleep 3
         WAIT_SECONDS=$((WAIT_SECONDS + 3))
     done
-    if [ "$HEALTH" != "healthy" ]; then
-        echo "❌ Timeout aguardando banco de dados ficar healthy (${MAX_WAIT}s)."
+
+    if [ "$DB_READY" = true ]; then
+        echo "✅ Banco de dados pronto!"
+    else
+        echo "❌ Timeout aguardando banco de dados ficar pronto (${MAX_WAIT}s)."
         exit 1
     fi
 else
