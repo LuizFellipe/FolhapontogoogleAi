@@ -24,7 +24,8 @@ def get_docker_container_info():
                     import yaml
                     data = yaml.safe_load(content)
                     for service_name, service_config in data.get('services', {}).items():
-                        if 'mysql' in service_config.get('image', '').lower():
+                        image = service_config.get('image', '').lower()
+                        if 'mysql' in image or 'mysql' in service_name.lower() or service_name == 'db' or 'db' in service_name.lower():
                             container_name = service_config.get('container_name', service_name)
                             break
             except:

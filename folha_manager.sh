@@ -73,7 +73,8 @@ show_main_menu() {
     echo -e "${BRIGHT_WHITE}  [ 7 ]  Informações do Sistema${NC}"
     echo -e "${BRIGHT_WHITE}  [ 8 ]  Limpar e Otimizar${NC}"
     echo -e "${BRIGHT_WHITE}  [ 9 ]  Sincronizar Tipos de Lançamento${NC}"
-    echo -e "${BRIGHT_WHITE}  [ 10 ] Sair do Sistema${NC}"
+    echo -e "${BRIGHT_WHITE}  [ 10 ] Restaurar Backup (Importar)${NC}"
+    echo -e "${BRIGHT_WHITE}  [ 11 ] Sair do Sistema${NC}"
     echo -e "${BRIGHT_CYAN}=================================================${NC}"
     echo ""
 }
@@ -144,7 +145,7 @@ start_backend() {
 
     # Verificar e iniciar container MySQL se necessário
     info "Verificando banco de dados MySQL..."
-    CONTAINER_NAME="folhaponto-mysql"
+    CONTAINER_NAME="meu-mysql"
 
     if command -v docker >/dev/null 2>&1; then
         if [ "$(docker ps -aq -f name=$CONTAINER_NAME)" ]; then
@@ -175,6 +176,15 @@ start_backend() {
             pause
             return 1
         fi
+    fi
+
+    # Verificar e executar migrações pendentes
+    info "Verificando migrações pendentes do banco de dados..."
+    python3 scripts/check_run_migrations.py
+    if [ $? -ne 0 ]; then
+        error "Falha ao aplicar migrações pendentes. Inicialização abortada."
+        pause
+        return 1
     fi
 
     # Verificar se as dependências do frontend estão instaladas
@@ -478,6 +488,44 @@ backup_db() {
 }
 
 # ==============================================================================
+# FUNÇÃO 5.1: Restaurar Backup do Banco de Dados
+# ==============================================================================
+restore_db() {
+    show_header
+    echo -e "${MAGENTA}💾 Restaurar Backup do Banco de Dados${NC}"
+    echo -e "${PURPLE}═══════════════════════════════════════════════════════════════${NC}"
+    
+    # Verificar se o script Python existe
+    if [ ! -f "scripts/restore_db.py" ]; then
+        error "Script scripts/restore_db.py não encontrado!"
+        pause
+        return 1
+    fi
+
+    # Verificar se Python3 está disponível
+    if ! command -v python3 >/dev/null 2>&1; then
+        error "Python3 não está instalado ou não está no PATH!"
+        pause
+        return 1
+    fi
+
+    info "Executando script de restauração do banco de dados..."
+    echo ""
+    
+    # Executar o script Python
+    python3 scripts/restore_db.py
+    
+    if [ $? -eq 0 ]; then
+        success "Backup restaurado com sucesso!"
+    else
+        error "Falha ao restaurar backup!"
+    fi
+    
+    pause
+}
+
+
+# ==============================================================================
 # FUNÇÃO 6: Atualizar Árvore de Diretórios
 # ==============================================================================
 update_tree() {
@@ -752,7 +800,7 @@ main() {
         
         show_main_menu
         
-        read -p "${NEON_CYAN}[SELECT OPTION 1-10]: ${NC}" choice
+        read -p "${NEON_CYAN}[SELECT OPTION 1-11]: ${NC}" choice
         
         case $choice in
             1)
@@ -783,6 +831,9 @@ main() {
                 sync_entry_types
                 ;;
             10)
+                restore_db
+                ;;
+            11)
                 show_header
                 echo -e "${BRIGHT_CYAN}[SYSTEM SHUTDOWN] Thank you for using Gestor Folha Ponto!${NC}"
                 echo -e "${NEON_GREEN}[DISCONNECTED] Connection terminated${NC}"
@@ -795,7 +846,7 @@ main() {
                 exit 0
                 ;;
             *)
-                error "Invalid option! Please choose an option from 1 to 10."
+                error "Invalid option! Please choose an option from 1 to 11."
                 pause
                 ;;
         esac

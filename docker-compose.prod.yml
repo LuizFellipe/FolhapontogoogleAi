@@ -12,7 +12,7 @@ version: '3.8'
 services:
   db:
     image: ghcr.io/luizfellipe/folhaponto-db:latest
-    container_name: folhaponto-mysql
+    container_name: meu-mysql
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-123456}
@@ -26,7 +26,7 @@ services:
     networks:
       - folhaponto-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-123456}"]
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 10s
       timeout: 5s
       retries: 5

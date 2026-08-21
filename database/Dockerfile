@@ -1,4 +1,4 @@
-FROM mysql:8.0
+FROM mariadb:10.11
 
 # Copia o dump completo para o diretório de inicialização do MySQL.
 # O entrypoint oficial do MySQL executa automaticamente todos os arquivos
