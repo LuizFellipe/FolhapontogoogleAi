@@ -17,7 +17,7 @@ python3 scripts/add_entry_type.py
 ```
 
 ### `backup_db.py` — Backup do banco de dados
-Realiza dump do banco `folhaponto_db` via Docker e salva em diretório configurável.
+Realiza dump do banco `folhaponto_db` via CLI local (`mariadb-dump`/`mysqldump`) ou container Docker (`meu-mysql` ou `DB_CONTAINER`). Gera arquivo compactado `.tar.gz` contendo o dump SQL e sumário TXT. Expõe a função `build_backup()` utilizada por rotinas automatizadas (ex.: `backup_cron.py`).
 
 ### `sync_tipos_lancamento.py` — Sincronizar tipos
 Sincroniza a tabela `tipos_lancamento` do banco com os valores definidos em `src/types.ts`.
