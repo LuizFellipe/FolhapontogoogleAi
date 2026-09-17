@@ -193,7 +193,7 @@ def get_folhas_ponto():
     ano = request.args.get('ano')
     
     query = """
-    SELECT f.*, p.nome as profissional_nome, p.nome, p.matricula
+    SELECT f.*, p.nome as profissional_nome, p.nome, p.matricula, p.disciplina
     FROM folhas_ponto f
     JOIN profissionais p ON f.profissional_id = p.id
     WHERE 1=1
@@ -220,6 +220,10 @@ def create_folha_ponto():
     """Cria uma nova folha de ponto"""
     data = request.get_json()
     
+    # Validar campos obrigatórios
+    if not data.get('profissional_id') or data.get('mes') is None or data.get('ano') is None:
+        return jsonify({'error': 'Campos profissional_id, mes e ano são obrigatórios'}), 400
+    
     query = """
     INSERT INTO folhas_ponto (profissional_id, mes, ano, observacoes)
     VALUES (%s, %s, %s, %s)
@@ -242,7 +246,7 @@ def get_folha_ponto(id):
     """Busca uma folha de ponto completa com lançamentos e resumo"""
     # Buscar folha de ponto
     folha_query = """
-    SELECT f.*, p.nome as profissional_nome, p.nome, p.matricula, p.cargo, p.ua,
+    SELECT f.*, p.nome as profissional_nome, p.nome, p.matricula, p.cargo, p.disciplina, p.ua,
            p.exercicio, p.carga_horaria, p.funcao, p.unidade_lotacao, p.status, p.turno1, p.turno2
     FROM folhas_ponto f
     JOIN profissionais p ON f.profissional_id = p.id

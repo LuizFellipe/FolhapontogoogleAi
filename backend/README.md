@@ -23,8 +23,8 @@ O backend atua como intermediário entre o frontend React e o banco de dados MyS
 |---------|--------|-----------|
 | `/api/profissionais` | GET, POST | Listagem e criação de servidores. |
 | `/api/profissionais/<id>` | GET, PUT, DELETE | Detalhes, atualização e exclusão de um servidor específico. |
-| `/api/folhas-ponto` | GET, POST | Filtros de folhas por mês/ano e criação de novas folhas. |
-| `/api/folhas-ponto/<id>` | GET, PUT, DELETE | Busca completa (folha + lançamentos + resumo), atualização e exclusão. |
+| `/api/folhas-ponto` | GET, POST | Filtros de folhas por mês/ano e criação de novas folhas (inclui matrícula e disciplina no retorno da listagem). |
+| `/api/folhas-ponto/<id>` | GET, PUT, DELETE | Busca completa (folha + lançamentos + resumo + dados cadastrais do servidor incluindo disciplina), atualização e exclusão. |
 | `/api/folhas-ponto/<id>/lancamentos` | POST | Salva múltiplos lançamentos diários em lote (campos: `dia`, `tipo`, `tipo_turno2`). |
 | `/api/folhas-ponto/<id>/resumo` | POST | Salva as entradas da tabela de resumo em lote. |
 | `/api/feriados` | GET, POST | Consulta e inserção de feriados (dia, mês, ano e label). |

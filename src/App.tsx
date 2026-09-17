@@ -161,9 +161,10 @@ export default function App() {
       
       setProfissionais(sortedProfissionais);
       
-      // Encontrar o índice do profissional atual baseado na matrícula
+      // Encontrar o índice do profissional atual baseado na matrícula ou nome
       const currentIndex = sortedProfissionais.findIndex((p: any) => 
-        p.matricula === employee.registration
+        (employee.registration && p.matricula === employee.registration) ||
+        (!employee.registration && employee.name && p.nome === employee.name)
       );
       
       if (currentIndex !== -1) {

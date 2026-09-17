@@ -77,9 +77,9 @@ export const TimesheetPreview: React.FC<Props> = ({ data }) => {
             <span className="font-normal">Cargo/Especialidade:</span>
             <span className="uppercase">{data.employee.cargo}</span>
           </div>
-          <div className="flex-1 flex flex-col min-w-0 px-2">
-            <span className="font-normal">Disciplina:</span>
-            <span className="uppercase line-clamp-2 break-words leading-tight">
+          <div className="flex-1 min-w-0 px-2 leading-tight line-clamp-2">
+            <span className="font-normal mr-1">Disciplina:</span>
+            <span className="uppercase break-words">
               {data.employee.disciplina || ''}
             </span>
           </div>
