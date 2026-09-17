@@ -4,10 +4,11 @@ Backend API para Folha de Ponto
 Sistema de gerenciamento de folhas de ponto com persistência MySQL
 """
 
+import json
 import os
 import sys
 from datetime import datetime
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from dotenv import load_dotenv
 import mysql.connector
@@ -648,6 +649,34 @@ def get_atestados_comparecimento():
 
     # Profissional sem nenhum comparecimento no ano → retorna zeros
     return jsonify({f'mes{i}': 0 for i in range(12)})
+
+# Rota para leitura dos dados extraídos do EducaSync
+@app.route('/api/educasync/dados', methods=['GET'])
+def get_educasync_dados():
+    """Retorna os dados cadastrais extraídos pelo EducaSync a partir do JSON."""
+    candidatos = [
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), 'educasync', 'dados_folha_ponto.json'),
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), 'docs', 'dados_folha_ponto.json')
+    ]
+    for caminho in candidatos:
+        if os.path.exists(caminho):
+            try:
+                with open(caminho, 'r', encoding='utf-8') as f:
+                    dados = json.load(f)
+                return jsonify({'origem': os.path.basename(caminho), 'total': len(dados), 'dados': dados})
+            except Exception as e:
+                return jsonify({'error': f'Erro ao ler arquivo JSON: {e}'}), 500
+                
+    return jsonify({'error': 'Arquivo dados_folha_ponto.json não encontrado'}), 404
+
+# Rota para interface standalone de sincronização EducaSync
+@app.route('/sync', methods=['GET'])
+def serve_sync_page():
+    """Serve a interface de sincronização HTML/JS do EducaSync"""
+    sync_html_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'sync.html')
+    if os.path.exists(sync_html_path):
+        return send_file(sync_html_path)
+    return "sync.html não encontrado na raiz do projeto", 404
 
 # Rota de saúde
 @app.route('/api/health', methods=['GET'])

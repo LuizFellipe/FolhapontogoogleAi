@@ -205,6 +205,11 @@ class ApiService {
     return this.request<{ status: string; database: string }>('/health');
   }
 
+  // Dados extraídos pelo EducaSync
+  async getEducaSyncDados() {
+    return this.request<{ origem: string; total: number; dados: any[] }>('/educasync/dados');
+  }
+
   // Método utilitário para converter dados do frontend para o backend
   convertEmployeeToProfissional(employeeData: any) {
     return {

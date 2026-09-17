@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, ChevronRight, User, Trash2, ClipboardList, X, Printer, Calendar, FileText, Send, CornerUpLeft } from 'lucide-react';
+import { ChevronLeft, ChevronRight, User, Trash2, ClipboardList, X, Printer, Calendar, FileText, Send, CornerUpLeft, RefreshCw } from 'lucide-react';
 
 interface Profissional {
   id: number;
@@ -22,6 +22,7 @@ interface Props {
   onOpenReportsModal?: () => void;
   onOpenDeliveryModal?: () => void;
   onOpenReturnMemoModal?: () => void;
+  onOpenSyncModal?: () => void;
   isPreFilling?: boolean;
 }
 
@@ -39,6 +40,7 @@ export const EmployeeNavigator: React.FC<Props> = ({
   onOpenReportsModal,
   onOpenDeliveryModal,
   onOpenReturnMemoModal,
+  onOpenSyncModal,
   isPreFilling = false,
 }) => {
   const canGoPrevious = currentIndex > 0;
@@ -266,6 +268,16 @@ export const EmployeeNavigator: React.FC<Props> = ({
                   >
                     <Printer className="w-3.5 h-3.5" />
                     Gerar em Lote
+                  </button>
+                )}
+                {onOpenSyncModal && (
+                  <button
+                    onClick={onOpenSyncModal}
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-cyan-50 border border-cyan-300 text-cyan-800 hover:bg-cyan-100 hover:border-cyan-400 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
+                    title="Sincronizar com dados extraídos do EducaSync (JSON)"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5 text-cyan-600" />
+                    Sincronizar Educa
                   </button>
                 )}
               </div>

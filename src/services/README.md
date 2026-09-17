@@ -55,6 +55,7 @@ O `apiService` encapsula toda a lógica de persistência de dados:
     -   `convertProfissionalToEmployee()`: Converte do banco para o estado do React.
     -   `saveCompleteTimesheet()`: Orquestrador que agrupa a criação/atualização de profissional, folha, lançamentos e resumo em uma única chamada lógica para o usuário.
     -   `loadCompleteTimesheet()`: Carrega folha completa com todos os dados associados.
+    -   `getEducaSyncDados()`: Obtém a listagem consolidada de profissionais extraídos via script EducaSync a partir do arquivo `dados_folha_ponto.json` (`GET /educasync/dados`).
 
 8.  **Saúde da API**
     -   `healthCheck()`: Verifica status da API e conexão com banco de dados

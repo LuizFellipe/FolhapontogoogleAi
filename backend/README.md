@@ -38,6 +38,8 @@ O backend atua como intermediário entre o frontend React e o banco de dados MyS
 | `/api/tipos-lancamento` | GET | Lista os tipos de lançamento cadastrados (valor, label, código). |
 | `/api/atestados-bimestrais` | GET | Retorna contagem de atestados por bimestre civil para um servidor. |
 | `/api/atestados-comparecimento` | GET | Retorna contagem mensal (`mes0..mes11`) de atestados de comparecimento. Params: `matricula`, `ano`. |
+| `/api/educasync/dados` | GET | Retorna os dados cadastrais extraídos pelo módulo EducaSync a partir do `dados_folha_ponto.json`. |
+| `/sync` | GET | Serve a interface web standalone (`sync.html`) para sincronização e conciliação de dados cadastrais. |
 | `/api/health` | GET | Verifica se a API e o banco de dados estão operacionais. |
 
 ## Tecnologias Utilizadas
