@@ -93,14 +93,15 @@ def create_profissional():
         return jsonify({'error': 'Campo nome é obrigatório'}), 400
     
     query = """
-    INSERT INTO profissionais (nome, matricula, cargo, ua, exercicio, carga_horaria, funcao, unidade_lotacao, status, turno1, turno2)
-    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    INSERT INTO profissionais (nome, matricula, cargo, disciplina, ua, exercicio, carga_horaria, funcao, unidade_lotacao, status, turno1, turno2)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
 
     params = (
         data.get('nome'),
         data.get('matricula') or None,  # Permitir NULL
         data.get('cargo'),
+        data.get('disciplina'),
         data.get('ua'),
         data.get('exercicio'),
         data.get('carga_horaria'),
@@ -142,7 +143,7 @@ def update_profissional(id):
     
     query = """
     UPDATE profissionais
-    SET nome = %s, matricula = %s, cargo = %s, ua = %s, exercicio = %s,
+    SET nome = %s, matricula = %s, cargo = %s, disciplina = %s, ua = %s, exercicio = %s,
         carga_horaria = %s, funcao = %s, unidade_lotacao = %s, status = %s, turno1 = %s, turno2 = %s
     WHERE id = %s
     """
@@ -151,6 +152,7 @@ def update_profissional(id):
         data.get('nome'),
         data.get('matricula') or None,  # Permitir NULL
         data.get('cargo'),
+        data.get('disciplina'),
         data.get('ua'),
         data.get('exercicio'),
         data.get('carga_horaria'),

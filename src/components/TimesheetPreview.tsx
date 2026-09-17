@@ -72,12 +72,18 @@ export const TimesheetPreview: React.FC<Props> = ({ data }) => {
             <span className="uppercase">{data.employee.name}</span>
           </div>
         </div>
-        <div className="flex justify-between">
-          <div className="flex gap-2">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex gap-2 shrink-0">
             <span className="font-normal">Cargo/Especialidade:</span>
             <span className="uppercase">{data.employee.cargo}</span>
           </div>
-          <div className="flex gap-2 mr-12">
+          <div className="flex-1 flex flex-col min-w-0 px-2">
+            <span className="font-normal">Disciplina:</span>
+            <span className="uppercase line-clamp-2 break-words leading-tight">
+              {data.employee.disciplina || ''}
+            </span>
+          </div>
+          <div className="flex gap-2 shrink-0 mr-12">
             <span className="font-normal">C.H.</span>
             <span>{data.employee.ch}</span>
           </div>

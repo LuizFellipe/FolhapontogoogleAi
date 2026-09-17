@@ -83,6 +83,18 @@ export const EmployeeForm: React.FC<Props> = ({ data, onChange }) => {
               />
             </div>
             <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Disciplina</label>
+              <input
+                type="text"
+                name="disciplina"
+                maxLength={255}
+                value={data.disciplina || ''}
+                onChange={handleChange}
+                placeholder="Ex: INFORMÁTICA, MATEMÁTICA..."
+                className="px-3 py-2 bg-white border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-stone-400 transition-all text-sm shadow-sm"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5 md:col-span-2">
               <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Função</label>
               <input
                 type="text"

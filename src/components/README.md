@@ -6,7 +6,7 @@ Esta pasta contém todos os componentes React modulares utilizados para construi
 
 ### 📝 Formulários de Preenchimento (Edição)
 
--   **`EmployeeForm.tsx`**: Gerencia o formulário de dados cadastrais do servidor (Nome, Matrícula, UA, Carga Horária, Lotação e Turnos). Valida campos obrigatórios.
+-   **`EmployeeForm.tsx`**: Gerencia o formulário de dados cadastrais do servidor (Nome, Matrícula, Cargo, Disciplina, UA, Carga Horária, Lotação e Turnos). Valida campos obrigatórios e limita o campo Disciplina a 255 caracteres.
 -   **`EmployeeNavigator.tsx`**: Componente de navegação e busca que permite selecionar profissionais cadastrados, alternar visualizações e criar novas folhas. Expõe as ações: **Novo**, **Excluir**, **Pré Preenchimento**, **Limpar Lançamentos**, **Feriados**, **Gerar em Lote**, **Relatórios**, **Entrega de Folhas** e **Memo Devolução**.
 -   **`BatchTimesheetModal.tsx`**: Modal de geração em lote de folhas de ponto. Permite filtrar profissionais por cargo e carga horária (CH), selecionar o mês/ano de referência e marcar múltiplos profissionais via checkboxes. Exibe uma seção de recessos para aplicar no pré-preenchimento: recessos de **1 dia** aparecem para qualquer cargo; recessos **multi-dia** só aparecem quando o filtro for PROFESSOR DE EDUC. BASICA (identificados com badge). Oferece opções para Limpar Seleção, Gerar com Pré-preenchimento (com barra de progresso e impressão automática) e Imprimir apenas (sem preenchimento ou persistência). Quando recessos são selecionados e a folha já existe, os dias com tipo TRABALHO, CPIP ou CURSO são sobrescritos pelo recesso; demais tipos (Férias, Atestados, Feriados etc.) não são alterados.
 -   **`ReportsModal.tsx`**: Modal de relatórios gerenciais para o período selecionado (mês/ano). Considera exclusivamente profissionais com **status Ativo** (profissionais com status `INATIVO` são completamente desconsiderados e não aparecem em nenhum dos relatórios nem nos totais). Oferece seletor de **Ordenação** entre **Ordem Alfabética** (Nome) e **Ordem de Matrícula** (ordenação natural numérica). Contém três relatórios:
@@ -29,6 +29,7 @@ Esta pasta contém todos os componentes React modulares utilizados para construi
 ### 📄 Visualizações para Impressão (Preview)
 
 -   **`TimesheetPreview.tsx`**: Renderiza a **Página 1** da folha de ponto seguindo o layout oficial da Secretaria de Educação.
+    -   **Cabeçalho Oficial**: Exibe dados cadastrais do servidor, incluindo Cargo/Especialidade e o campo Disciplina (limitado com quebra de linha harmoniosa) ao lado da Carga Horária (C.H.).
     -   **Preenchimento A4 Completo**: Em modo de impressão, ocupa toda a página A4 via classes CSS `print-page` + `print-page-table-section`, distribuindo as 31 linhas da tabela uniformemente com o trick `tbody tr { height: 1% }`. Usa `page-break-after: always` (compatível com Chrome) para forçar a Página 2 em nova folha.
     -   **Preenchimento**: Invalida automaticamente campos de entrada/saída com travessões (`---`) em dias de lançamentos especiais.
     -   **CH=20 — 2º Turno bloqueado**: Quando `data.employee.ch === '20'`, as colunas do Turno 2 (Assinatura, Entrada, Saída) são preenchidas com traços (`-- -- -- ...` e `------`) em todas as linhas, indicando que o 2º turno não se aplica ao profissional.

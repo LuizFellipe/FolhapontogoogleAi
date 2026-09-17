@@ -14,6 +14,7 @@ export interface EmployeeData {
   name: string;
   registration: string;
   cargo: string;
+  disciplina: string;
   ua: string;
   exercicio: string;
   ch: string;
