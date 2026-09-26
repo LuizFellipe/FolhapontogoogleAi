@@ -1082,7 +1082,11 @@ export default function App() {
                 </button>
               </div>
 
-              <EmployeeForm data={employee} onChange={setEmployee} />
+              <EmployeeForm
+                data={employee}
+                onChange={setEmployee}
+                profissionalId={profissionais[currentProfissionalIndex]?.id}
+              />
               
               <TimesheetGrid
                 entries={entries}

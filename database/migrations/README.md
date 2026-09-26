@@ -89,6 +89,27 @@ Utilizada pelo endpoint `/api/atestados-comparecimento` para enforçar o limite 
 Adiciona a coluna `status ENUM('ATIVO','INATIVO') NOT NULL DEFAULT 'ATIVO'` e o índice `idx_status` na tabela `profissionais`. Permite marcar o vínculo de profissionais como ativo ou inativo sem apagar o histórico de folhas de ponto.
 > Finaliza registrando `021` na tabela `schema_migrations`.
 
+### `022_add_disciplina_profissionais.sql`
+Adiciona o campo `disciplina VARCHAR(255) NULL` na tabela `profissionais`.
+> Finaliza registrando `022` na tabela `schema_migrations`.
+
+### `023_create_dados_complementares_sigep.sql`
+Cria a arquitetura relacional para dados complementares do SIGEP (Ficha Cadastral) sem duplicação dos dados já existentes em `profissionais`:
+- `profissionais_complementar` (relação 1:1 com `profissionais`, dados pessoais e documentais como CPF, CI/RG, PIS, Nascimento, Filiação, Endereço, Telefones, etc.)
+- `profissional_cargas_horarias` (relação 1:N com histórico de cargas horárias principal/secundária, unidades, CRE, turnos e atuação)
+- `profissional_cursos` (relação 1:N com cursos de formação, progressões, leis e cargas horárias)
+- `profissional_habilitacoes` (relação 1:N com habilitações funcionais)
+- `profissional_componentes` (relação 1:N com componentes curriculares autorizados)
+> Finaliza registrando `023` na tabela `schema_migrations`.
+
+### `024_drop_colunas_redundantes_sigep.sql`
+Remove `matricula` e `criado_em` das 4 tabelas 1:N do SIGEP (matrícula derivável via `profissional_id`; linhas são recriadas a cada sync). Usa `DROP COLUMN IF EXISTS` (MariaDB), idempotente para bancos criados já com a 023 enxuta.
+> Finaliza registrando `024` na tabela `schema_migrations`.
+
+### `025_amplia_pcd_readaptado_sigep.sql`
+Amplia `profissionais_complementar.pcd` para `VARCHAR(100)` (valores como `SIM - DEFICIENCIA FISICA`) e `readaptado` para `TEXT` (texto do laudo passa de 255). Corrige erro 1406 no sync SIGEP.
+> Finaliza registrando `025` na tabela `schema_migrations`.
+
 ## Como Adicionar Novos Tipos de Lançamento
 
 Use o script interativo na raiz do projeto — ele atualiza automaticamente `types.ts`, os SQLs e aplica a migration no banco:

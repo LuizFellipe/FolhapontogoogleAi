@@ -1,12 +1,14 @@
 import React from 'react';
 import { EmployeeData } from '../types';
+import { ComplementaryDataWidget } from './ComplementaryDataWidget';
 
 interface Props {
   data: EmployeeData;
   onChange: (data: EmployeeData) => void;
+  profissionalId?: number;
 }
 
-export const EmployeeForm: React.FC<Props> = ({ data, onChange }) => {
+export const EmployeeForm: React.FC<Props> = ({ data, onChange, profissionalId }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     onChange({ ...data, [name]: value });
@@ -186,6 +188,13 @@ export const EmployeeForm: React.FC<Props> = ({ data, onChange }) => {
         </div>
 
       </div>
+
+      {/* Widget Flutuante de Dados Complementares SIGEP (Minimizado por padrão) */}
+      <ComplementaryDataWidget
+        profissionalId={profissionalId}
+        matricula={data.registration}
+        nome={data.name}
+      />
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { X, RefreshCw, CheckSquare, Square, UserPlus, AlertTriangle, CheckCircle, Database, Search, ArrowRight } from 'lucide-react';
-import { apiService } from '../services/api';
+import { X, RefreshCw, CheckSquare, Square, UserPlus, AlertTriangle, CheckCircle, Database, Search, ArrowRight, FileText } from 'lucide-react';
+import { apiService, normMat } from '../services/api';
+import { SyncSigepTab } from './SyncSigepTab';
 
 interface Props {
   isOpen: boolean;
@@ -34,6 +35,7 @@ interface ComparedItem {
 }
 
 export const SyncEducaModal: React.FC<Props> = ({ isOpen, onClose, onSynced }) => {
+  const [sourceMode, setSourceMode] = useState<'educasync' | 'sigep'>('educasync');
   const [loading, setLoading] = useState(false);
   const [jsonRecords, setJsonRecords] = useState<JsonRecord[]>([]);
   const [dbProfissionais, setDbProfissionais] = useState<any[]>([]);
@@ -51,12 +53,7 @@ export const SyncEducaModal: React.FC<Props> = ({ isOpen, onClose, onSynced }) =
     ch: true,
   });
 
-  // Funções de normalização
-  const normMat = (m: any) => {
-    if (!m) return '';
-    return String(m).replace(/[^0-9A-Za-z]/g, '').toUpperCase().replace(/^0+/, '');
-  };
-
+  // Normalização de nome (matrícula: normMat de services/api)
   const normName = (n: any) => {
     if (!n) return '';
     return String(n).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/\s+/g, ' ').trim();
@@ -327,8 +324,48 @@ export const SyncEducaModal: React.FC<Props> = ({ isOpen, onClose, onSynced }) =
           </div>
         </div>
 
-        {/* Barra de Configuração e Checkboxes */}
-        <div className="p-4 bg-stone-950/60 border-b border-stone-800 flex flex-wrap items-center justify-between gap-4">
+        {/* Seletor de Módulos (Abas Principais) */}
+        <div className="bg-stone-950 px-5 pt-2 border-b border-stone-800 flex items-center gap-4">
+          <button
+            onClick={() => setSourceMode('educasync')}
+            className={`pb-2.5 px-3 text-xs font-bold flex items-center gap-2 border-b-2 transition-all ${
+              sourceMode === 'educasync'
+                ? 'border-cyan-400 text-cyan-300'
+                : 'border-transparent text-stone-400 hover:text-stone-200'
+            }`}
+          >
+            <Database className="w-4 h-4" />
+            EducaSync (Dados Básicos da Folha)
+          </button>
+
+          <button
+            onClick={() => setSourceMode('sigep')}
+            className={`pb-2.5 px-3 text-xs font-bold flex items-center gap-2 border-b-2 transition-all ${
+              sourceMode === 'sigep'
+                ? 'border-indigo-400 text-indigo-300'
+                : 'border-transparent text-stone-400 hover:text-stone-200'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            SIGEP (Fichas Cadastrais Complementares)
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+              Novo
+            </span>
+          </button>
+        </div>
+
+        {sourceMode === 'sigep' ? (
+          <SyncSigepTab
+            dbProfissionais={dbProfissionais}
+            onSynced={() => {
+              loadData();
+              onSynced();
+            }}
+          />
+        ) : (
+          <>
+            {/* Barra de Configuração e Checkboxes */}
+            <div className="p-4 bg-stone-950/60 border-b border-stone-800 flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-xs font-semibold uppercase tracking-wider text-cyan-400">
               Campos para Sincronizar:
@@ -573,48 +610,50 @@ export const SyncEducaModal: React.FC<Props> = ({ isOpen, onClose, onSynced }) =
           )}
         </div>
 
-        {/* Rodapé com Ações */}
-        <div className="p-4 border-t border-stone-800 bg-stone-900/90 flex flex-wrap items-center justify-between gap-3">
-          <div className="text-xs text-stone-400">
-            {isProcessing && progress ? (
-              <span className="text-cyan-400 flex items-center gap-2">
-                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                Processando ({progress.current}/{progress.total}): {progress.label}
-              </span>
-            ) : (
-              <span>Selecione os registros para sincronizar dados ou criar cadastros locais.</span>
-            )}
-          </div>
+            {/* Rodapé com Ações */}
+            <div className="p-4 border-t border-stone-800 bg-stone-900/90 flex flex-wrap items-center justify-between gap-3">
+              <div className="text-xs text-stone-400">
+                {isProcessing && progress ? (
+                  <span className="text-cyan-400 flex items-center gap-2">
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    Processando ({progress.current}/{progress.total}): {progress.label}
+                  </span>
+                ) : (
+                  <span>Selecione os registros para sincronizar dados ou criar cadastros locais.</span>
+                )}
+              </div>
 
-          <div className="flex items-center gap-3">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold text-stone-400 hover:text-white transition-colors"
-            >
-              Fechar
-            </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={onClose}
+                  className="px-4 py-2 text-xs font-semibold text-stone-400 hover:text-white transition-colors"
+                >
+                  Fechar
+                </button>
 
-            {currentTab === 'new' ? (
-              <button
-                onClick={handleCreateSelected}
-                disabled={isProcessing || selectedIds.size === 0}
-                className="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white flex items-center gap-2 shadow-lg shadow-emerald-900/20"
-              >
-                <UserPlus className="w-4 h-4" />
-                Criar {selectedIds.size} Servidores na Base
-              </button>
-            ) : (
-              <button
-                onClick={handleSyncSelected}
-                disabled={isProcessing || selectedIds.size === 0}
-                className="px-4 py-2 rounded-xl text-xs font-semibold bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white flex items-center gap-2 shadow-lg shadow-cyan-900/20"
-              >
-                <RefreshCw className={`w-4 h-4 ${isProcessing ? 'animate-spin' : ''}`} />
-                Sincronizar {selectedIds.size} Selecionados
-              </button>
-            )}
-          </div>
-        </div>
+                {currentTab === 'new' ? (
+                  <button
+                    onClick={handleCreateSelected}
+                    disabled={isProcessing || selectedIds.size === 0}
+                    className="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white flex items-center gap-2 shadow-lg shadow-emerald-900/20"
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    Criar {selectedIds.size} Servidores na Base
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleSyncSelected}
+                    disabled={isProcessing || selectedIds.size === 0}
+                    className="px-4 py-2 rounded-xl text-xs font-semibold bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white flex items-center gap-2 shadow-lg shadow-cyan-900/20"
+                  >
+                    <RefreshCw className={`w-4 h-4 ${isProcessing ? 'animate-spin' : ''}`} />
+                    Sincronizar {selectedIds.size} Selecionados
+                  </button>
+                )}
+              </div>
+            </div>
+          </>
+        )}
 
       </div>
     </div>

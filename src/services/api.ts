@@ -210,6 +210,56 @@ class ApiService {
     return this.request<{ origem: string; total: number; dados: any[] }>('/educasync/dados');
   }
 
+  // Dados complementares SIGEP (Ficha Cadastral)
+  async getSigepFichasCadastrais() {
+    return this.request<{
+      origem: string;
+      metadados: {
+        data_extracao: string;
+        total_servidores: number;
+        total_cargas: number;
+        total_cursos: number;
+        total_habilitacoes: number;
+        total_componentes: number;
+      };
+      tabelas: {
+        servidores: any[];
+        cargas_horarias: any[];
+        cursos_progressoes: any[];
+        habilitacoes: any[];
+        componentes_curriculares: any[];
+      };
+    }>('/sigep/fichas-cadastrais');
+  }
+
+  async sincronizarSigep(matriculas?: string[]) {
+    return this.request<{
+      mensagem: string;
+      sincronizados: number;
+      nao_encontrados: { matricula: string; nome: string }[];
+    }>('/sigep/sincronizar', {
+      method: 'POST',
+      body: JSON.stringify({ matriculas }),
+    });
+  }
+
+  async getProfissionalComplementar(profissionalId: number) {
+    return this.request<{
+      complementar: any | null;
+      cargas: any[];
+      cursos: any[];
+      habilitacoes: any[];
+      componentes: any[];
+    }>(`/profissionais/${profissionalId}/complementar`);
+  }
+
+  async updateProfissionalComplementar(profissionalId: number, data: any) {
+    return this.request<{ message: string }>(`/profissionais/${profissionalId}/complementar`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
   // Método utilitário para converter dados do frontend para o backend
   convertEmployeeToProfissional(employeeData: any) {
     return {
@@ -425,5 +475,9 @@ class ApiService {
 }
 
 // Exportar uma instância única do serviço
+// Normaliza matrícula (0123.456-7 == 01234567 == 1234567); espelha _norm_mat do backend
+export const normMat = (m: any) =>
+  m ? String(m).replace(/[^0-9A-Za-z]/g, '').toUpperCase().replace(/^0+/, '') : '';
+
 export const apiService = new ApiService();
 export default apiService;

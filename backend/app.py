@@ -7,6 +7,7 @@ Sistema de gerenciamento de folhas de ponto com persistência MySQL
 import json
 import os
 import sys
+import re
 from datetime import datetime
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
@@ -669,14 +670,227 @@ def get_educasync_dados():
                 
     return jsonify({'error': 'Arquivo dados_folha_ponto.json não encontrado'}), 404
 
-# Rota para interface standalone de sincronização EducaSync
-@app.route('/sync', methods=['GET'])
-def serve_sync_page():
-    """Serve a interface de sincronização HTML/JS do EducaSync"""
-    sync_html_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'sync.html')
-    if os.path.exists(sync_html_path):
-        return send_file(sync_html_path)
-    return "sync.html não encontrado na raiz do projeto", 404
+# Helpers para dados complementares do SIGEP
+def _norm_mat(mat):
+    if not mat:
+        return ''
+    return re.sub(r'[^0-9A-Za-z]', '', str(mat)).upper().lstrip('0')
+
+def _find_latest_sigep_json():
+    sigep_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'sigep')
+    if not os.path.exists(sigep_dir):
+        return None
+    files = [f for f in os.listdir(sigep_dir) if f.startswith('ficha.cadastral.') and f.endswith('.json')]
+    if not files:
+        return None
+    # Nome é DD.MM.YYYY: ordenar como YYYYMMDD (string pura erra na virada de mês)
+    return os.path.join(sigep_dir, max(files, key=lambda f: ''.join(reversed(f.split('.')[2:5]))))
+
+def _group_by_mat(rows):
+    grupos = {}
+    for r in rows:
+        m = _norm_mat(r.get('matricula'))
+        if m:
+            grupos.setdefault(m, []).append(r)
+    return grupos
+
+# Colunas de profissionais_complementar (exceto profissional_id), fonte única p/ sync e PUT
+COMP_COLS = [
+    'matricula', 'admissao', 'ref_sal', 'pcd', 'reducao_ch', 'readaptado', 'identidade_funcional',
+    'nascimento', 'sexo', 'cor_raca', 'naturalidade', 'nacionalidade', 'uf_naturalidade',
+    'ci_numero', 'ci_orgao', 'ci_uf', 'ci_data_emissao', 'cpf', 'pis_pasep', 'pis_emissao',
+    'titulo_eleitoral', 'titulo_zona', 'titulo_secao', 'estado_civil', 'conjuge', 'pai', 'mae',
+    'endereco', 'bairro', 'cidade', 'uf_endereco', 'cep', 'telefones', 'email',
+    'especialidade_concurso', 'escolaridade_salario', 'arquivo_origem',
+]
+
+def _upsert_complementar(prof_id, src, cols=COMP_COLS):
+    """Retorna (sql, params) do upsert em profissionais_complementar (profissional_id é UNIQUE)."""
+    telefones = src.get('telefones')
+    vals = {**src, 'telefones': json.dumps(telefones if isinstance(telefones, list) else [], ensure_ascii=False)}
+    sql = (
+        f"INSERT INTO profissionais_complementar (profissional_id, {', '.join(cols)}) "
+        f"VALUES (%s{', %s' * len(cols)}) "
+        f"ON DUPLICATE KEY UPDATE {', '.join(f'{c} = VALUES({c})' for c in cols)}"
+    )
+    return sql, (prof_id, *(vals.get(c) for c in cols))
+
+# Rotas SIGEP e Dados Complementares
+@app.route('/api/sigep/fichas-cadastrais', methods=['GET'])
+def get_sigep_fichas_cadastrais():
+    """Retorna os dados cadastrais complementares do SIGEP a partir do JSON mais recente."""
+    caminho = _find_latest_sigep_json()
+    if not caminho or not os.path.exists(caminho):
+        return jsonify({'error': 'Nenhum arquivo ficha.cadastral.*.json encontrado na pasta sigep'}), 404
+
+    try:
+        with open(caminho, 'r', encoding='utf-8') as f:
+            dados = json.load(f)
+        return jsonify({
+            'origem': os.path.basename(caminho),
+            'metadados': dados.get('metadados', {}),
+            'tabelas': dados.get('tabelas', {})
+        })
+    except Exception as e:
+        return jsonify({'error': f'Erro ao ler arquivo JSON do SIGEP: {e}'}), 500
+
+@app.route('/api/sigep/sincronizar', methods=['POST'])
+def sincronizar_sigep():
+    """
+    Sincroniza os dados complementares do SIGEP para o banco MySQL com upsert inteligente.
+    Pode receber lista de matrículas selecionadas via body {"matriculas": ["..."]}.
+    """
+    body = request.get_json(silent=True) or {}
+    filtro_matriculas = body.get('matriculas')
+    if filtro_matriculas:
+        filtro_set = {_norm_mat(m) for m in filtro_matriculas if m}
+    else:
+        filtro_set = None
+
+    caminho = _find_latest_sigep_json()
+    if not caminho:
+        return jsonify({'error': 'Nenhum arquivo ficha.cadastral.*.json encontrado para sincronizar'}), 404
+
+    try:
+        with open(caminho, 'r', encoding='utf-8') as f:
+            dados_sigep = json.load(f)
+    except Exception as e:
+        return jsonify({'error': f'Erro ao ler JSON: {e}'}), 500
+
+    tabelas = dados_sigep.get('tabelas', {})
+    servidores_json = tabelas.get('servidores', [])
+    cargas_por_mat = _group_by_mat(tabelas.get('cargas_horarias', []))
+    cursos_por_mat = _group_by_mat(tabelas.get('cursos_progressoes', []))
+    habs_por_mat = _group_by_mat(tabelas.get('habilitacoes', []))
+    comps_por_mat = _group_by_mat(tabelas.get('componentes_curriculares', []))
+
+    # Obter profissionais do banco para relacionar por matrícula
+    profissionais_db = execute_query("SELECT id, matricula, nome FROM profissionais") or []
+    db_por_mat = {}
+    for p in profissionais_db:
+        m_db = _norm_mat(p.get('matricula'))
+        if m_db:
+            db_por_mat[m_db] = p
+
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'error': 'Falha na conexão com banco de dados'}), 500
+
+    cursor = conn.cursor()
+    sincronizados = 0
+    nao_encontrados = []
+
+    try:
+        for s in servidores_json:
+            raw_mat = s.get('matricula')
+            mat_norm = _norm_mat(raw_mat)
+            if not mat_norm:
+                continue
+
+            if filtro_set is not None and mat_norm not in filtro_set:
+                continue
+
+            prof = db_por_mat.get(mat_norm)
+            if not prof:
+                nao_encontrados.append({
+                    'matricula': raw_mat,
+                    'nome': s.get('nome')
+                })
+                continue
+
+            prof_id = prof['id']
+            # 1. Upsert na tabela profissionais_complementar
+            cursor.execute(*_upsert_complementar(prof_id, {**s, 'matricula': raw_mat}))
+
+            # 2. Atualizar tabelas 1:N (apagar registros anteriores do profissional e reinserir)
+            cursor.execute("DELETE FROM profissional_cargas_horarias WHERE profissional_id = %s", (prof_id,))
+            for cg in cargas_por_mat.get(mat_norm, []):
+                cursor.execute("""
+                    INSERT INTO profissional_cargas_horarias
+                    (profissional_id, tipo_carga, unidade, cre, coord_externa, lotacao, turno, atuacao)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """, (
+                    prof_id, cg.get('tipo_carga') or 'PRINCIPAL', cg.get('unidade'),
+                    cg.get('cre'), cg.get('coord_externa'), cg.get('lotacao'), cg.get('turno'), cg.get('atuacao')
+                ))
+
+            cursor.execute("DELETE FROM profissional_cursos WHERE profissional_id = %s", (prof_id,))
+            for cr in cursos_por_mat.get(mat_norm, []):
+                try:
+                    ch_val = int(cr['carga_horaria'])
+                except (KeyError, TypeError, ValueError):
+                    ch_val = None
+                cursor.execute("""
+                    INSERT INTO profissional_cursos
+                    (profissional_id, curso, instituicao, emissao, utilizacao, data_utilizacao, carga_horaria)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """, (
+                    prof_id, cr.get('curso') or '', cr.get('instituicao'),
+                    cr.get('emissao'), cr.get('utilizacao'), cr.get('data_utilizacao'), ch_val
+                ))
+
+            cursor.execute("DELETE FROM profissional_habilitacoes WHERE profissional_id = %s", (prof_id,))
+            cursor.executemany(
+                "INSERT INTO profissional_habilitacoes (profissional_id, habilitacao) VALUES (%s, %s)",
+                [(prof_id, hb.get('habilitacao') or '') for hb in habs_por_mat.get(mat_norm, [])])
+
+            cursor.execute("DELETE FROM profissional_componentes WHERE profissional_id = %s", (prof_id,))
+            cursor.executemany(
+                "INSERT INTO profissional_componentes (profissional_id, componente) VALUES (%s, %s)",
+                [(prof_id, cp.get('componente') or '') for cp in comps_por_mat.get(mat_norm, [])])
+
+            sincronizados += 1
+
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': f'Erro durante sincronização: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+    return jsonify({
+        'mensagem': 'Sincronização concluída com sucesso',
+        'sincronizados': sincronizados,
+        'nao_encontrados': nao_encontrados
+    })
+
+@app.route('/api/profissionais/<int:prof_id>/complementar', methods=['GET'])
+def get_profissional_complementar(prof_id):
+    """Retorna dados complementares e coleções 1:N de um profissional específico."""
+    comp_rows = execute_query("SELECT * FROM profissionais_complementar WHERE profissional_id = %s", (prof_id,))
+    if not comp_rows:
+        return jsonify({'complementar': None, 'cargas': [], 'cursos': [], 'habilitacoes': [], 'componentes': []})
+
+    comp = comp_rows[0]
+    if comp.get('telefones') and isinstance(comp['telefones'], str):
+        try:
+            comp['telefones'] = json.loads(comp['telefones'])
+        except:
+            pass
+
+    cargas = execute_query("SELECT * FROM profissional_cargas_horarias WHERE profissional_id = %s", (prof_id,)) or []
+    cursos = execute_query("SELECT * FROM profissional_cursos WHERE profissional_id = %s", (prof_id,)) or []
+    habs = execute_query("SELECT * FROM profissional_habilitacoes WHERE profissional_id = %s", (prof_id,)) or []
+    comps = execute_query("SELECT * FROM profissional_componentes WHERE profissional_id = %s", (prof_id,)) or []
+
+    return jsonify({
+        'complementar': comp,
+        'cargas': cargas,
+        'cursos': cursos,
+        'habilitacoes': habs,
+        'componentes': comps
+    })
+
+@app.route('/api/profissionais/<int:prof_id>/complementar', methods=['PUT'])
+def update_profissional_complementar(prof_id):
+    """Cria/atualiza dados cadastrais/contato complementares de um profissional."""
+    data = request.get_json() or {}
+    # arquivo_origem só é gravado pelo sync SIGEP
+    cols = [c for c in COMP_COLS if c != 'arquivo_origem']
+    if not execute_query(*_upsert_complementar(prof_id, data, cols), fetch=False):
+        return jsonify({'error': 'Erro ao salvar dados complementares'}), 500
+    return jsonify({'message': 'Dados complementares salvos com sucesso'})
 
 # Rota de saúde
 @app.route('/api/health', methods=['GET'])

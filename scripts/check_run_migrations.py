@@ -51,11 +51,13 @@ def apply_migration_file(filepath: Path, env: dict) -> bool:
         conn = get_db_connection(env)
         cursor = conn.cursor()
         
-        # Executar comandos do arquivo SQL (suporta múltiplos statements)
-        for result in cursor.execute(sql_content, multi=True):
-            if result.with_rows:
-                result.fetchall()
-                
+        # Executar comandos do arquivo SQL separando por ';'
+        statements = [s.strip() for s in sql_content.split(';') if s.strip()]
+        for stmt in statements:
+            cursor.execute(stmt)
+            if cursor.description:
+                cursor.fetchall()
+        conn.commit()
         cursor.close()
         conn.close()
         return True

@@ -56,6 +56,10 @@ O `apiService` encapsula toda a lógica de persistência de dados:
     -   `saveCompleteTimesheet()`: Orquestrador que agrupa a criação/atualização de profissional, folha, lançamentos e resumo em uma única chamada lógica para o usuário.
     -   `loadCompleteTimesheet()`: Carrega folha completa com todos os dados associados.
     -   `getEducaSyncDados()`: Obtém a listagem consolidada de profissionais extraídos via script EducaSync a partir do arquivo `dados_folha_ponto.json` (`GET /educasync/dados`).
+    -   `getSigepFichasCadastrais()`: Lê o JSON mais recente das fichas cadastrais SIGEP (`GET /sigep/fichas-cadastrais`).
+    -   `sincronizarSigep(matriculas?)`: Importa/atualiza dados complementares SIGEP no MySQL (`POST /sigep/sincronizar`).
+    -   `getProfissionalComplementar(id)` / `updateProfissionalComplementar(id, data)`: Consulta e upsert dos dados complementares de um servidor (`GET/PUT /profissionais/:id/complementar`).
+    -   `normMat(m)` (export avulso): normaliza matrícula (remove pontuação e zeros à esquerda). Espelha `_norm_mat` do backend. Usado por `SyncEducaModal` e `SyncSigepTab`.
 
 8.  **Saúde da API**
     -   `healthCheck()`: Verifica status da API e conexão com banco de dados

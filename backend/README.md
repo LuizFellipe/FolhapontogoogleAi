@@ -39,6 +39,9 @@ O backend atua como intermediário entre o frontend React e o banco de dados MyS
 | `/api/atestados-bimestrais` | GET | Retorna contagem de atestados por bimestre civil para um servidor. |
 | `/api/atestados-comparecimento` | GET | Retorna contagem mensal (`mes0..mes11`) de atestados de comparecimento. Params: `matricula`, `ano`. |
 | `/api/educasync/dados` | GET | Retorna os dados cadastrais extraídos pelo módulo EducaSync a partir do `dados_folha_ponto.json`. |
+| `/api/sigep/fichas-cadastrais` | GET | Retorna metadados e tabelas do `sigep/ficha.cadastral.DD.MM.YYYY.json` mais recente (pela data do nome). |
+| `/api/sigep/sincronizar` | POST | Upsert transacional dos dados SIGEP em `profissionais_complementar` + recria as tabelas 1:N (cargas, cursos, habilitações, componentes). Body opcional: `{"matriculas": [...]}`. Casa por matrícula normalizada (`_norm_mat`). |
+| `/api/profissionais/<id>/complementar` | GET, PUT | Dados complementares SIGEP + coleções 1:N do servidor. PUT faz upsert (não sobrescreve `arquivo_origem`). |
 | `/sync` | GET | Serve a interface web standalone (`sync.html`) para sincronização e conciliação de dados cadastrais. |
 | `/api/health` | GET | Verifica se a API e o banco de dados estão operacionais. |
 
