@@ -56,3 +56,6 @@ sigep/.claude/settings.local.json
 educasync/educa_folha/*.pdf
 educasync/dados_folha_ponto.json
 docs/dados_folha_ponto.json
+
+# Playwright MCP: capturas/snapshots de sessão (podem conter dados pessoais)
+.playwright-mcp/
