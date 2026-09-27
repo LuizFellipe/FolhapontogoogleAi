@@ -180,3 +180,12 @@ Ver arquivo original para lista completa. Observações:
       sub-colunas: x 210-370 = um item por linha (nome de unidade `CENTRO DE ...` quebra em 2
       linhas e é unido); x >= 370 = lista por vírgula que quebra entre linhas (unida antes de
       dividir). Itens repetidos por matrícula são removidos. Saída: 175 componentes, 0 fragmentos.
+
+## Listagem do Cadastro Geral (verificar_novos.py)
+- Menu 07.Relatórios > Listagem do Cadastro Geral = `rltListaGeral.jsp`, form `frmRlt`
+  POST `EmitirRelatorioGeral` target=_blank. Campos: `tipo=1` (Todas),
+  `selCodigoRegional=005` (CRE Guará), `codigoUnidade=990210000029` (CEP ETG).
+- Não precisa clicar na tela: `fetch` POST na sessão logada devolve `application/pdf`
+  direto (mesma técnica do /FichaFuncional). Confirmado: todas as linhas "GUARA / CEP ETG".
+- Layout atual (09/2026): matrícula sem pontuação ("02430444"); script aceita os dois formatos
+  e grava no CSV pontuado. Nome longo encosta no cargo com 1 espaço ("... CONTEMP") -> removido.

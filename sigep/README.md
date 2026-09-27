@@ -6,7 +6,7 @@ em PDF.
 
 ## O que o script faz
 
-Para cada servidor listado em `servidores.csv`, o `extrair_fichas.py`:
+Para cada servidor listado em `servidores.csv`, o `raspar_fichas.py`:
 
 1. Acessa o menu **02.Cadastro** do SIGEP
 2. Digita o nome do servidor no campo de busca e clica em **Buscar**
@@ -60,10 +60,15 @@ Faz a busca e a desambiguação:
   própria página), espera o botão "Imprimir Ficha Cadastral" aparecer (até
   `FICHA_TIMEOUT_MS`, 15 s), faz mais uma pausa de 1 s e retorna a tupla
   `(idServidor, codigoUnidade)`. Se a ficha não carregar, é um erro.
-- Se nenhum resultado bater com a matrícula esperada, retorna `None` — o
-  servidor é registrado como falha e o script segue para o próximo.
+- **Busca vazia → `SemCadastro`**: sem resultado, o SIGEP mostra só um link
+  modelo (`AbreDados(98);`, sem unidade), que já existe antes da busca. Se
+  por `SEM_RESULTADO_MS` (5 s) só esse link aparecer, levanta `SemCadastro`:
+  servidor ainda não cadastrado no SIGEP ou não está mais lotado na unidade.
+  Não é falha — fica no CSV e é tentado de novo na próxima execução.
+- Se houver resultados mas nenhum bater com a matrícula esperada, lança
+  `RuntimeError` — o servidor é registrado como falha e o script segue.
 
-### 3. `baixar_ficha_pdf(page, id_servidor, codigo_unidade)`
+### 3. `baixar_ficha_pdf(page, id_servidor, codigo_unidade)` / `post_pdf(page, endpoint, body)`
 Gera o PDF de fato. Isso existe porque **clicar no botão "Imprimir Ficha
 Cadastral" pela UI não é suficiente**: ele abre uma nova aba onde o Chrome
 renderiza o PDF no seu visualizador nativo, e esse visualizador não expõe os
@@ -88,6 +93,9 @@ Esse caminho (bytes → base64 → string → bytes) é necessário porque a pon
 entre o JavaScript do navegador e o Python do Playwright só transporta dados
 serializáveis como JSON (texto), não bytes binários brutos.
 
+A mecânica genérica (fetch POST → base64 → validação `%PDF`) fica em
+`post_pdf()`, reaproveitada pelo `verificar_novos.py` para a listagem.
+
 ### 4. `main()` — orquestração
 Para cada servidor do CSV:
 - Calcula o nome de arquivo esperado (`nome_arquivo`): primeiro nome sem
@@ -97,7 +105,7 @@ Para cada servidor do CSV:
   distintos.
 - Se o arquivo já existe, pula (permite retomar execuções interrompidas sem
   refazer trabalho).
-- Caso contrário, chama `buscar_e_extrair` e, se encontrou o servidor certo,
+- Caso contrário, chama `buscar_e_abrir` e, se encontrou o servidor certo,
   chama `baixar_ficha_pdf` e grava o resultado em disco (primeiro num
   `.pdf.tmp`, depois renomeado — assim uma interrupção nunca deixa um PDF
   truncado que seria pulado nas próximas execuções).
@@ -105,7 +113,8 @@ Para cada servidor do CSV:
   rede etc.) é capturado e registrado numa lista de falhas, sem interromper
   o processamento dos demais servidores.
 - Ao final (também após Ctrl+C), imprime um resumo: quantos foram gerados,
-  quantos já existiam e a lista de quem precisa de revisão manual.
+  quantos já existiam, quem está **sem cadastro** no SIGEP (listado à parte)
+  e a lista de falhas que precisam de revisão manual.
 
 O uso de `launch_persistent_context` (em vez de abrir uma sessão anônima) faz
 o Chromium guardar cookies/local storage em `.browser_profile/`, para que o
@@ -117,10 +126,12 @@ seguintes, enquanto a sessão do SIGEP continuar válida.
 | Arquivo | Descrição |
 |---|---|
 | `ListagemGeral.pdf` | Listagem original da unidade (fonte dos nomes/matrículas) |
-| `servidores.csv` | Matrícula + nome extraídos e deduplicados do PDF acima — é o **input** do script |
-| `extrair_fichas.py` | O script de automação |
+| `servidores.csv` | Matrícula + nome extraídos e deduplicados do PDF acima — é o **input** do raspador (fora do git, dados pessoais) |
+| `verificar_novos.py` | Baixa `listagem.geral.DD.MM.YYYY.pdf` (POST `/EmitirRelatorioGeral`), anexa matrículas novas ao `servidores.csv` e avisa quem saiu. Rodar antes do raspador |
+| `raspar_fichas.py` | Raspador (Playwright): baixa as fichas do SIGEP |
+| `extrair_fichas.py` | Parser: lê as fichas PDF e gera `ficha.cadastral.DD.MM.YYYY.xlsx` e `.json` |
 | `workflow_notes.md` | Anotações detalhadas de como o fluxo do SIGEP funciona (útil se o site mudar e o script precisar de ajustes) |
-| `<primeironome>.<matricula>.pdf` | Saída: uma ficha por matrícula (ex: `fulano.01234567.pdf`) |
+| `<primeironome>.<matricula>.pdf` | Saída do raspador e input do parser: uma ficha por matrícula (ex: `fulano.01234567.pdf`) |
 
 ## Pré-requisitos
 
@@ -137,15 +148,16 @@ playwright install chromium
 ## Como usar
 
 ```bash
-python3 extrair_fichas.py        # todos os pendentes
-python3 extrair_fichas.py 3      # só os 3 próximos pendentes (bom para testar)
+python3 raspar_fichas.py        # todos os pendentes
+python3 raspar_fichas.py 3      # só os 3 próximos pendentes (bom para testar)
 ```
 
 1. Uma janela do Chromium abrirá em `https://sigep.se.df.gov.br/`.
 2. **Faça login manualmente** com suas credenciais (o script não sabe login/senha).
 3. Volte ao terminal e pressione **ENTER** quando o login estiver concluído.
 4. O script processa a lista inteira automaticamente, imprimindo o progresso
-   linha a linha (`[12/134] NOME (matrícula)... OK` ou `NAO ENCONTRADO`).
+   linha a linha (`[12/134] NOME (matrícula)... OK`, `SEM CADASTRO NO SIGEP`
+   ou `NAO ENCONTRADO`).
 
 A sessão do navegador fica salva em `.browser_profile/` (perfil persistente).
 Na prática, o cookie de sessão do SIGEP não sobrevive ao fechamento do
@@ -164,10 +176,22 @@ pasta. Isso significa que:
 
 ## Atualizando a lista de servidores
 
-Se a unidade mudar ou o `ListagemGeral.pdf` for atualizado, é preciso
-regenerar o `servidores.csv` (colunas `matricula,nome`, uma linha por
-servidor, sem duplicatas). O processo usado para gerar o CSV atual está
-documentado em `workflow_notes.md`.
+```bash
+python3 verificar_novos.py                              # baixa listagem de hoje (login manual)
+python3 verificar_novos.py listagem.geral.27.09.2026.pdf # só compara PDF já baixado
+python3 raspar_fichas.py                                # baixa fichas dos novos
+```
+
+`verificar_novos.py` gera a Listagem do Cadastro Geral (CRE Guará / CEP ETG)
+via POST `/EmitirRelatorioGeral`, salva `listagem.geral.DD.MM.YYYY.pdf`, lê as
+matrículas com `pdftotext -layout` e compara **por matrícula** com o CSV:
+- **Novos**: anexados ao `servidores.csv` (matrícula pontuada, cargo grudado
+  ao nome removido).
+- **Não estão mais na listagem**: só avisa, nunca remove (ex: licença médica —
+  a pessoa pode voltar).
+
+Aceita matrícula com pontuação (`0243.044-4`, layout antigo) ou sem
+(`02430444`, layout atual). Detalhes da descoberta em `workflow_notes.md`.
 
 ## Limitações conhecidas
 
@@ -190,3 +214,16 @@ documentado em `workflow_notes.md`.
   endpoint interno `/FichaFuncional` do SIGEP. Se o sistema for atualizado,
   os seletores/parâmetros podem precisar de ajuste — ver `workflow_notes.md`
   para o detalhamento técnico de como cada etapa foi descoberta.
+
+## Parser de fichas (`extrair_fichas.py`)
+
+Lê os PDFs `<primeironome>.<matricula>.pdf` da pasta (ignorando `Emitir*` e
+`Listagem*`) com `pdftotext -bbox-layout` e gera, na mesma pasta,
+`ficha.cadastral.DD.MM.YYYY.xlsx` (uma aba por entidade: servidores, cargas,
+habilitações, componentes curriculares e cursos) e o `.json` equivalente.
+
+```bash
+sudo apt install poppler-utils
+pip install beautifulsoup4 openpyxl
+python3 extrair_fichas.py [pasta]   # padrão: pasta atual
+```
