@@ -110,6 +110,10 @@ Remove `matricula` e `criado_em` das 4 tabelas 1:N do SIGEP (matrícula deriváv
 Amplia `profissionais_complementar.pcd` para `VARCHAR(100)` (valores como `SIM - DEFICIENCIA FISICA`) e `readaptado` para `TEXT` (texto do laudo passa de 255). Corrige erro 1406 no sync SIGEP.
 > Finaliza registrando `025` na tabela `schema_migrations`.
 
+### `026_create_sigep_eventos_sync.sql`
+Cria `sigep_eventos_sync`: uma linha por range do Relatório de Eventos (`folha_ponto_id`, `tipo`, `dia_inicio`, `dia_fim`) já sincronizado no SIGEP, com `status` (`JA_EXISTIA`/`LANCADO`) e `sincronizado_em`. Gravada por `sigep/lancar_eventos.py` via `POST /api/sigep/eventos/sync`.
+> Finaliza registrando `026` na tabela `schema_migrations`.
+
 ## Como Adicionar Novos Tipos de Lançamento
 
 Use o script interativo na raiz do projeto — ele atualiza automaticamente `types.ts`, os SQLs e aplica a migration no banco:

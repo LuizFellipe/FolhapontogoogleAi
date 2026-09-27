@@ -171,9 +171,9 @@ class ApiService {
     });
   }
 
-  // Relatórios — view vw_folhas_lancamento
-  async getLancamentosRelatorio(mes: number, ano: number) {
-    return this.request<any[]>(`/relatorio/lancamentos?mes=${mes}&ano=${ano}`);
+  // Relatório de Eventos — ranges montados no backend + flag de sincronização SIGEP
+  async getSigepEventos(mes: number, ano: number) {
+    return this.request<any[]>(`/sigep/eventos?mes=${mes}&ano=${ano}`);
   }
 
   // Relatórios — view vw_adicional_noturno

@@ -33,7 +33,8 @@ O backend atua como intermediário entre o frontend React e o banco de dados MyS
 | `/api/recessos` | POST | Cria novo recesso (dia/mes/ano início + dia/mes/ano fim + label). |
 | `/api/recessos/<id>` | DELETE | Remoção de um recesso. |
 | `/api/relatorio/adicional-noturno` | GET | Retorna dados de adicional noturno (apenas dias de TRABALHO). |
-| `/api/relatorio/lancamentos` | GET | Retorna todos os lançamentos do período via `vw_folhas_lancamento`. |
+| `/api/sigep/eventos` | GET | Ranges do Relatório de Eventos (`mes` 0-indexed, `ano`) montados de `vw_folhas_lancamento`, com `sync_status`/`sincronizado_em` do SIGEP. |
+| `/api/sigep/eventos/sync` | POST | Marca range como sincronizado no SIGEP (`folha_ponto_id, tipo, dia_inicio, dia_fim, turnos, status`). Usado por `sigep/lancar_eventos.py`. |
 | `/api/relatorio/resumo` | GET | Totalização anual (janeiro até hoje) de ocorrências por profissional. Param: `ano`. |
 | `/api/tipos-lancamento` | GET | Lista os tipos de lançamento cadastrados (valor, label, código). |
 | `/api/atestados-bimestrais` | GET | Retorna contagem de atestados por bimestre civil para um servidor. |

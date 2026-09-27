@@ -8,19 +8,24 @@ import { apiService } from '../services/api';
 
 type SortBy = 'nome' | 'matricula';
 
-interface Lancamento {
-  dia: number;
+/** Um range do Relatório de Eventos vindo de GET /api/sigep/eventos */
+interface EventoRange {
+  folha_ponto_id: number;
+  nome: string;
+  matricula: string;
   tipo: string;
-  tipo_turno2: string;
+  dia_inicio: number;
+  dia_fim: number;
+  turnos: string; // "MAT", "MAT, VESP"...
+  sync_status: 'JA_EXISTIA' | 'LANCADO' | null;
+  sincronizado_em: string | null; // 'YYYY-MM-DD HH:MM:SS'
 }
 
 interface ProfData {
   profissionalId: number;
   nome: string;
   matricula: string;
-  turno1: string;
-  turno2: string;
-  lancamentos: Lancamento[];
+  ranges: EventoRange[];
 }
 
 /** Uma linha retornada pela vw_adicional_noturno */
@@ -52,10 +57,6 @@ interface Props {
   initialMonth: number;
   initialYear: number;
 }
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const EXCLUDED_FROM_REPORT = new Set(['TRABALHO', 'CPIP', 'CURSO']);
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -95,85 +96,6 @@ function compareProf(
 
 // ─── Report: Lançamentos ──────────────────────────────────────────────────────
 
-interface EntryRange {
-  tipo: string;
-  label: string;
-  diaInicio: number;
-  diaFim: number;
-  turnoLabel: string; // MAT | VESP | NOT
-}
-
-/** Abrevia o nome do turno para MAT / VESP / NOT */
-function abbreviateTurno(turno: string): string {
-  const u = (turno || '').toUpperCase();
-  if (u.includes('NOT')) return 'NOT';
-  if (u.includes('VESP')) return 'VESP';
-  return 'MAT';
-}
-
-/** Ordena e une turno labels em ordem canônica: MAT → VESP → NOT */
-function ordenarTurnos(turnos: Set<string>): string {
-  return ['MAT', 'VESP', 'NOT'].filter(t => turnos.has(t)).join(', ');
-}
-
-/**
- * Agrupa entradas por tipo, acumula turno labels por dia num Set e constrói
- * ranges de dias consecutivos. Mesmo evento nos dois turnos → 1 linha "MAT, VESP".
- */
-function buildRangesLancamentos(
-  lancamentos: Lancamento[],
-  turno1: string,
-  turno2: string,
-): EntryRange[] {
-  const t1 = abbreviateTurno(turno1);
-  const t2 = abbreviateTurno(turno2);
-
-  // tipo → dia → Set<turnoLabel>
-  const byTipo = new Map<string, Map<number, Set<string>>>();
-
-  const addEntry = (dia: number, tipo: string, turnoLabel: string) => {
-    if (!tipo) return;
-    if (EXCLUDED_FROM_REPORT.has(tipo)) return;
-    if (!byTipo.has(tipo)) byTipo.set(tipo, new Map());
-    const diaMap = byTipo.get(tipo)!;
-    if (!diaMap.has(dia)) diaMap.set(dia, new Set());
-    diaMap.get(dia)!.add(turnoLabel);
-  };
-
-  for (const l of lancamentos) {
-    addEntry(l.dia, l.tipo, t1);
-    if (l.tipo_turno2) addEntry(l.dia, l.tipo_turno2, t2);
-  }
-
-  const ranges: EntryRange[] = [];
-
-  for (const [tipo, diaMap] of byTipo.entries()) {
-    const label = ENTRY_TYPES.find(t => t.value === tipo)?.label ?? tipo;
-    const dias = Array.from(diaMap.keys()).sort((a, b) => a - b);
-
-    let start = dias[0];
-    let end = dias[0];
-    const turnosRange = new Set<string>(diaMap.get(dias[0])!);
-
-    for (let i = 1; i < dias.length; i++) {
-      if (dias[i] === end + 1) {
-        end = dias[i];
-        diaMap.get(dias[i])!.forEach(t => turnosRange.add(t));
-      } else {
-        ranges.push({ tipo, label, diaInicio: start, diaFim: end, turnoLabel: ordenarTurnos(turnosRange) });
-        start = dias[i];
-        end = dias[i];
-        turnosRange.clear();
-        diaMap.get(dias[i])!.forEach(t => turnosRange.add(t));
-      }
-    }
-    ranges.push({ tipo, label, diaInicio: start, diaFim: end, turnoLabel: ordenarTurnos(turnosRange) });
-  }
-
-  ranges.sort((a, b) => a.diaInicio - b.diaInicio || a.label.localeCompare(b.label, 'pt-BR'));
-  return ranges;
-}
-
 const ReportLancamentos: React.FC<{
   allProfData: ProfData[];
   filterMonth: number;
@@ -190,17 +112,7 @@ const ReportLancamentos: React.FC<{
 
   // Ordena os profissionais pelo critério selecionado e filtra os que têm ocorrência
   const sortedProfData = [...allProfData].sort((a, b) => compareProf(a, b, sortBy));
-  const profsComOcorrencia = sortedProfData
-    .map(prof => ({ prof, ranges: buildRangesLancamentos(prof.lancamentos, prof.turno1, prof.turno2) }))
-    .filter(({ ranges }) => ranges.length > 0);
-
-  if (profsComOcorrencia.length === 0) {
-    return (
-      <p className="text-center text-sm text-stone-400 py-8 border border-dashed border-stone-200 rounded-lg">
-        Nenhuma ocorrência especial registrada em {MONTHS[filterMonth]} de {filterYear}.
-      </p>
-    );
-  }
+  const profsComOcorrencia = sortedProfData.map(prof => ({ prof, ranges: prof.ranges }));
 
   return (
     <div className="overflow-x-auto border border-stone-200 rounded-xl bg-white shadow-sm">
@@ -212,6 +124,7 @@ const ReportLancamentos: React.FC<{
             <th className="py-3 px-4 w-16">Turno</th>
             <th className="py-3 px-4 w-28">Início</th>
             <th className="py-3 px-4 w-28">Fim</th>
+            <th className="py-3 px-4 w-28">SIGEP</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-stone-100">
@@ -219,7 +132,7 @@ const ReportLancamentos: React.FC<{
             <React.Fragment key={prof.profissionalId}>
               <tr className="bg-stone-50/50">
                 <td className="py-2.5 px-4 font-mono text-xs text-stone-500">{prof.matricula || '—'}</td>
-                <td className="py-2.5 px-4 font-semibold text-stone-900 uppercase" colSpan={4}>{prof.nome}</td>
+                <td className="py-2.5 px-4 font-semibold text-stone-900 uppercase" colSpan={5}>{prof.nome}</td>
               </tr>
               {ranges.map((r, i) => (
                 <tr key={i} className="hover:bg-stone-50 transition-colors group">
@@ -227,16 +140,28 @@ const ReportLancamentos: React.FC<{
                   <td className="py-2 px-4 text-stone-700 font-medium uppercase">
                     <div className="flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-stone-300 group-hover:bg-stone-500 transition-colors shrink-0" />
-                      {r.label}
+                      {ENTRY_TYPES.find(t => t.value === r.tipo)?.label ?? r.tipo}
                     </div>
                   </td>
                   <td className="py-2 px-4">
                     <span className="text-[10px] font-semibold text-stone-600 bg-stone-100 rounded px-2 py-0.5 tracking-wide">
-                      {r.turnoLabel}
+                      {r.turnos}
                     </span>
                   </td>
-                  <td className="py-2 px-4 text-stone-600">{formatDate(r.diaInicio, filterMonth, filterYear)}</td>
-                  <td className="py-2 px-4 text-stone-600">{formatDate(r.diaFim, filterMonth, filterYear)}</td>
+                  <td className="py-2 px-4 text-stone-600">{formatDate(r.dia_inicio, filterMonth, filterYear)}</td>
+                  <td className="py-2 px-4 text-stone-600">{formatDate(r.dia_fim, filterMonth, filterYear)}</td>
+                  <td className="py-2 px-4 text-xs">
+                    {r.sincronizado_em ? (
+                      <span
+                        className="text-emerald-700 font-semibold"
+                        title={r.sync_status === 'LANCADO' ? 'Lançado pelo robô' : 'Já constava no SIGEP'}
+                      >
+                        ✓ {r.sincronizado_em.slice(0, 10).split('-').reverse().join('/')}
+                      </span>
+                    ) : (
+                      <span className="text-stone-400">—</span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </React.Fragment>
@@ -473,37 +398,21 @@ export const ReportsModal: React.FC<Props> = ({
       setNenhuma(false);
       setAllProfData([]);
       try {
-        // Uma única query via view vw_folhas_lancamento — sem N+1
-        const rows: any[] = await apiService.getLancamentosRelatorio(filterMonth, filterYear);
+        // Ranges montados no backend (fonte única com o robô sigep/lancar_eventos.py)
+        const rows: EventoRange[] = await apiService.getSigepEventos(filterMonth, filterYear);
 
-        if (!rows || rows.length === 0) {
-          setNenhuma(true);
-          return;
-        }
-
-        // Agrupa por fp.id (folha_ponto id) filtrando inativos
+        // Agrupa por folha (backend já descarta inativos)
         const map = new Map<number, ProfData>();
-        for (const r of rows) {
-          if (!isProfissionalAtivo(r.matricula, r.nome)) continue;
-
-          const fid: number = r.id;
-          if (!map.has(fid)) {
-            map.set(fid, {
-              profissionalId: fid,
+        for (const r of rows || []) {
+          if (!map.has(r.folha_ponto_id)) {
+            map.set(r.folha_ponto_id, {
+              profissionalId: r.folha_ponto_id,
               nome: r.nome ?? '—',
               matricula: r.matricula ?? '',
-              turno1: r.turno1 ?? '',
-              turno2: r.turno2 ?? '',
-              lancamentos: [],
+              ranges: [],
             });
           }
-          if (r.dia != null) {
-            map.get(fid)!.lancamentos.push({
-              dia: r.dia,
-              tipo: r.tipo || '',
-              tipo_turno2: r.tipo_turno2 || '',
-            });
-          }
+          map.get(r.folha_ponto_id)!.ranges.push(r);
         }
 
         const valid = Array.from(map.values());

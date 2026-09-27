@@ -193,6 +193,31 @@ matrículas com `pdftotext -layout` e compara **por matrícula** com o CSV:
 Aceita matrícula com pontuação (`0243.044-4`, layout antigo) ou sem
 (`02430444`, layout atual). Detalhes da descoberta em `workflow_notes.md`.
 
+## Lançar eventos da Folha de Ponto (03.Lançamento)
+
+`lancar_eventos.py` lê o **Relatório de Eventos** do sistema (`GET /api/sigep/eventos`, mesmos ranges do
+ReportsModal) e, por matrícula, confere os "Registros Localizados" no SIGEP:
+
+- mesmo evento + mesma data inicial e final → só marca a flag `JA_EXISTIA`
+- ausente → Novo → Incluir → Tipo de Evento (casado por **nome**) → Observações = turno (`MAT VESP`) → Gravar →
+  rebusca e, se apareceu, flag `LANCADO`
+- sobreposição parcial → `CONFLITO` (não lança, revisar à mão). Ignorados: férias (SIGEP exige PAF) e abono aniversário (não existe no SIGEP).
+
+A flag (`POST /api/sigep/eventos/sync`) aparece na coluna **SIGEP** do relatório com a data.
+Roda na máquina local (Chromium com janela; login manual) contra a API de dev ou produção.
+
+```bash
+python3 lancar_eventos.py --selftest                    # testes das regras
+python3 lancar_eventos.py                               # menu (API local :5000)
+python3 lancar_eventos.py --api http://servidor:5000/api
+```
+
+Menu: pede mês/ano (ENTER = mês atual), abre o Chromium pro login (uma vez só) e lista os servidores
+com eventos no mês (`·` pendente, `✓` sincronizado, `-` ignorado). Comandos: `4`, `1,4,7` ou `2-5` rodam
+esses servidores, `t` roda todos os pendentes, `v 4` mostra os eventos, `l` recarrega, `m` troca o mês,
+`c` liga/desliga o ENTER antes de cada Gravar. Cada execução pergunta o modo: **[s]imular** (dry-run: só
+compara e marca os que já existem, padrão) ou **[l]ançar** no SIGEP.
+
 ## Limitações conhecidas
 
 - **Nomes truncados**: o PDF de listagem corta nomes muito longos (ex:

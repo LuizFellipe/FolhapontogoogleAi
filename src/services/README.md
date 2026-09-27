@@ -43,7 +43,7 @@ O `apiService` encapsula toda a lógica de persistência de dados:
     -   `deleteRecesso(id)`: Remove recesso
 
 6.  **Relatórios**
-    -   `getLancamentosRelatorio()`: Relatório de lançamentos por período
+    -   `getSigepEventos()`: Relatório de Eventos (ranges + flag SIGEP) por período
     -   `getAdicionaNoturnoRelatorio()`: Relatório de adicional noturno
     -   `getResumoRelatorio(ano)`: Totalização anual de ocorrências por profissional (`GET /relatorio/resumo?ano=`). Não recebe mês — o período é sempre janeiro até hoje. Retorna `{ nome, matricula, tipo, total }[]`, já sem os tipos TRABALHO/FERIADO/FERIAS/RECESSO e com turno1+turno2 do mesmo dia contados uma única vez.
     -   `getAtestadosBimestrais(matricula, ano)`: Consulta contagem de atestados médicos por bimestre civil.

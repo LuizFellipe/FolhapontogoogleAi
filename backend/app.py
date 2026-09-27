@@ -529,25 +529,84 @@ def get_relatorio_adicional_noturno():
     rows = execute_query(query, (mes, ano))
     return jsonify(rows or [])
 
-# Rota de Relatório — consulta view vw_folhas_lancamento
-@app.route('/api/relatorio/lancamentos', methods=['GET'])
-def get_relatorio_lancamentos():
-    """Retorna todos os lançamentos do período consultando a view vw_folhas_lancamento"""
-    mes = request.args.get('mes')
-    ano = request.args.get('ano')
+# ── SIGEP 03.Lançamento: ranges do Relatório de Eventos + flag de sincronização ──
 
+def _abrev_turno(turno):
+    u = (turno or '').upper()
+    return 'NOT' if 'NOT' in u else 'VESP' if 'VESP' in u else 'MAT'
+
+
+def _ranges_eventos(mes, ano):
+    """Ranges de dias consecutivos por (folha, tipo). Mesmo evento nos dois turnos → 1 range 'MAT, VESP'.
+    Fonte única do Relatório de Eventos (ReportsModal) e do robô sigep/lancar_eventos.py."""
+    rows = execute_query("""
+        SELECT v.id, v.nome, v.matricula, v.turno1, v.turno2, v.dia, v.tipo, v.tipo_turno2
+        FROM vw_folhas_lancamento v
+        JOIN folhas_ponto fp ON fp.id = v.id
+        JOIN profissionais p ON p.id = fp.profissional_id
+        WHERE v.mes = %s AND v.ano = %s AND p.status <> 'INATIVO' AND v.dia IS NOT NULL
+    """, (mes, ano)) or []
+    tipos = {t['valor']: t for t in execute_query("SELECT valor, label, codigo FROM tipos_lancamento") or []}
+    sync = {(s['folha_ponto_id'], s['tipo'], s['dia_inicio'], s['dia_fim']): s for s in execute_query("""
+        SELECT s.folha_ponto_id, s.tipo, s.dia_inicio, s.dia_fim, s.status, s.sincronizado_em
+        FROM sigep_eventos_sync s JOIN folhas_ponto fp ON fp.id = s.folha_ponto_id
+        WHERE fp.mes = %s AND fp.ano = %s
+    """, (mes, ano)) or []}
+
+    # (folha, tipo) -> dia -> set(turnos); profs guarda cabeçalho da folha
+    dias, profs = {}, {}
+    for r in rows:
+        profs[r['id']] = r
+        for tipo, turno in ((r['tipo'], r['turno1']), (r['tipo_turno2'], r['turno2'])):
+            if tipo:
+                dias.setdefault((r['id'], tipo), {}).setdefault(r['dia'], set()).add(_abrev_turno(turno))
+
+    out = []
+    for (fid, tipo), por_dia in dias.items():
+        ds = sorted(por_dia)
+        grupos = [[ds[0]]]
+        for d in ds[1:]:
+            if d == grupos[-1][-1] + 1:
+                grupos[-1].append(d)
+            else:
+                grupos.append([d])
+        for g in grupos:
+            turnos = set().union(*(por_dia[d] for d in g))
+            s = sync.get((fid, tipo, g[0], g[-1]), {})
+            t = tipos.get(tipo, {})
+            out.append({
+                'folha_ponto_id': fid, 'nome': profs[fid]['nome'], 'matricula': profs[fid]['matricula'],
+                'tipo': tipo, 'label': t.get('label', tipo), 'codigo': t.get('codigo'),
+                'dia_inicio': g[0], 'dia_fim': g[-1],
+                'turnos': ', '.join(x for x in ('MAT', 'VESP', 'NOT') if x in turnos),
+                'sync_status': s.get('status'), 'sincronizado_em': s.get('sincronizado_em'),
+            })
+    out.sort(key=lambda e: (e['nome'] or '', e['folha_ponto_id'], e['dia_inicio'], e['label']))
+    return out
+
+
+@app.route('/api/sigep/eventos', methods=['GET'])
+def get_sigep_eventos():
+    """Ranges do Relatório de Eventos (mes 0-indexed) com status de sincronização no SIGEP."""
+    mes, ano = request.args.get('mes'), request.args.get('ano')
     if mes is None or ano is None:
         return jsonify({'error': 'Parâmetros mes e ano são obrigatórios'}), 400
+    return jsonify(_ranges_eventos(int(mes), int(ano)))
 
-    query = """
-    SELECT *
-    FROM vw_folhas_lancamento
-    WHERE mes = %s AND ano = %s
-    ORDER BY nome, dia
-    """
 
-    rows = execute_query(query, (mes, ano))
-    return jsonify(rows or [])
+@app.route('/api/sigep/eventos/sync', methods=['POST'])
+def post_sigep_evento_sync():
+    """Marca um range como sincronizado no SIGEP (upsert)."""
+    d = request.get_json() or {}
+    campos = ('folha_ponto_id', 'tipo', 'dia_inicio', 'dia_fim', 'turnos', 'status')
+    if any(d.get(c) in (None, '') for c in campos) or d['status'] not in ('JA_EXISTIA', 'LANCADO'):
+        return jsonify({'error': f'Campos obrigatórios: {", ".join(campos)}; status JA_EXISTIA|LANCADO'}), 400
+    ok = execute_query("""
+        INSERT INTO sigep_eventos_sync (folha_ponto_id, tipo, dia_inicio, dia_fim, turnos, status)
+        VALUES (%s, %s, %s, %s, %s, %s)
+        ON DUPLICATE KEY UPDATE turnos = VALUES(turnos), status = VALUES(status), sincronizado_em = NOW()
+    """, tuple(d[c] for c in campos), fetch=False)
+    return (jsonify({'ok': True}), 200) if ok else (jsonify({'error': 'Falha ao gravar'}), 500)
 
 # Rota de Relatório — Resumo anual de ocorrências por profissional
 @app.route('/api/relatorio/resumo', methods=['GET'])

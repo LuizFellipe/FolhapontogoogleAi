@@ -189,3 +189,33 @@ Ver arquivo original para lista completa. Observações:
   direto (mesma técnica do /FichaFuncional). Confirmado: todas as linhas "GUARA / CEP ETG".
 - Layout atual (09/2026): matrícula sem pontuação ("02430444"); script aceita os dois formatos
   e grava no CSV pontuado. Nome longo encosta no cargo com 1 espaço ("... CONTEMP") -> removido.
+
+## 03.Lançamento (`evento.jsp`) — usado por `lancar_eventos.py`
+
+Mapeado ao vivo em 27/09/2026.
+
+- **Busca**: `#argBusca` (matrícula só dígitos, sem `.`/`-`) + `#btnBusca` → POST ajax **síncrono** `procBuscaEvento.jsp`, troca `#divResultado`.
+- **Registros Localizados com o <matrícula>**: links `.paginasLanc a` (todas as páginas `#pag0..N` ficam no DOM, só ocultas).
+  Texto: `7064.821-2 ANA CAROLINA 16/09/2026 ATESTADO COMPARECIMENTO SERVIDOR` → mostra **só a data inicial** + nome do evento.
+  `href="javascript:AbreDados(idServidor,idEvento);"`.
+- **Abrir registro**: `AbreDados` só preenche e submete `frmAbreBusca` → navegação. Pode ser chamado direto de `evento.jsp`
+  sem buscar antes. Formulário `#divCad`: `#matricula #nome #dataInicial #dataFinal #horas #tipo #texto(Observações)`.
+  É assim que se lê a **data final** de um registro.
+- **Novo**: `#btnNovo` abre modal `#divNovo`: `#novoTipo` (I=Individual, padrão), `#novoMat`, `#novoDataI`, `#novoDataF`
+  (DD/MM/AAAA) + `#btnNovoModal` ("Incluir") → POST `procNovoEvento.jsp` → mostra `#divCad` preenchido.
+- **Gravar**: `#tipo` (select) + `#texto` (turno: `MAT`, `VESP`, `NOT`, `MAT VESP`) + `#btnGravar` → POST ajax
+  `procGravaEvento.jsp`, resposta em `#divMsg1`. Validações no JS: tipo `F` (férias) recusado ("deve ser feito através do PAF"),
+  vários tipos exigem turno em `#texto`.
+- **Tipo de Evento**: valores do SIGEP (`D`, `0C`, `F2`...) **não** são os códigos SIGRH do `tipos_lancamento.codigo`.
+  Casar por **nome**: nosso `label` igual (sem acento/maiúsculo) ou única opção que começa com ele
+  (`AFAST CASAMENTO ART 62 LEI` → `...LEI COMP 840/2011`). `ABONO ANIVERSÁRIO` não existe na lista.
+- **Excluir** (`#btnExcluir` → `procDelEvento.jsp`) existe no form — o robô nunca clica.
+- **Armadilha de foco no modal Novo**: `#divNovo` abre com `fade`; ao terminar, `shown.bs.modal` faz
+  `$('#novoMat').focus()`. O `fill` do Playwright insere o texto no elemento *focado* → se preencher durante a
+  animação, a data cai dentro da matrícula (`7064821202/09/2026`). Esperar `#divNovo.in` + foco em `#novoMat`
+  antes de preencher. Não mexer no `#novoTipo` (`onchange=TrataTipo()` limpa a matrícula e move o foco;
+  `frmNovo.reset()` já deixa `I`). Após Incluir: sucesso fecha o modal e foca `#tipo`; erro aparece em `#divMsgNovo`.
+- **Nome do evento na lista é cortado em 40 caracteres** (`ATESTADO COMPARECIMENTO PESSOA DA FAMILI`):
+  comparar com `startswith`, nunca igualdade — senão o registro existente parece ausente e é lançado em duplicata.
+- **Histórico longo**: a lista traz todos os anos. Abrir registro (para ler data final) = 1 navegação; o robô
+  só abre os do mês do evento e do anterior.
