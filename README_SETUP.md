@@ -25,7 +25,7 @@ O Docker Compose irá configurar automaticamente:
 - Banco de Dados MySQL na porta 3306.
 - Backend Flask na porta 5000.
 - Frontend React na porta 3000.
-- **Importante:** O banco de dados será inicializado automaticamente com o esquema completo e dados de exemplo através do arquivo `database/full_setup.sql`.
+- **Importante:** O banco de dados será inicializado automaticamente com o esquema completo e os dados de referência (feriados, recessos, tipos de lançamento) através do arquivo `database/full_setup.sql`. Profissionais e folhas de ponto não vêm no seed (dados pessoais) — cadastre-os pelo sistema ou restaure um backup local.
 
 ---
 
@@ -47,7 +47,7 @@ docker run --name meu-mysql \
 ### 2. Executar Script de Configuração Completa
 
 ```bash
-# Execute o script SQL para criar as tabelas e dados de exemplo
+# Execute o script SQL para criar as tabelas e os dados de referência
 docker exec -i meu-mysql mysql -u root -p123456 folhaponto_db < database/full_setup.sql
 ```
 

@@ -189,7 +189,7 @@ FolhapontogoogleAi/
 │   └── Dockerfile
 │
 ├── database/                      # MySQL + Migrations
-│   ├── full_setup.sql            # Setup com seed data
+│   ├── full_setup.sql            # Setup: schema + dados de referência (sem dados pessoais)
 │   ├── migrations/               # 20 migrations organizadas
 │   │   ├── 001_create_tables.sql
 │   │   ├── 003_add_second_turn_columns.sql
