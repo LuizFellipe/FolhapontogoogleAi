@@ -191,9 +191,7 @@ Sistema precisava associar códigos oficiais (ex: 00294, 99902) a cada tipo de l
 
 ### Alterações:
 - **Dados Removidos (Pessoais Reais)**:
-  - FULANO DE TAL SOUZA (matrícula: 0123456-7)
-  - JOÃO DA SILVA (matrícula: 123456-7)
-  - SERVIDORA EXEMPLO I (matrícula: 0666.666-6)
+  - (3 registros com nomes e matrículas reais — omitidos)
 
 - **Dados Adicionados (Fictícios)**:
   - JOÃO DA SILVA (matrícula: 123456-7)

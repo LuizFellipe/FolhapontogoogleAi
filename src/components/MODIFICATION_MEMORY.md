@@ -124,7 +124,7 @@ total += "1"  → total = "00000101"  (string!)
 A comparação `"00000101" >= 12` converte a string para número: `101 >= 12` → **true** → bloqueio disparado erroneamente.
 
 Diagnóstico confirmado via:
-- `curl /api/atestados-comparecimento?matricula=222.222-2&ano=2026` → `{"mes4":"1","mes5":"1",...}` (strings)
+- `curl /api/atestados-comparecimento?matricula=123.456-7&ano=2026` → `{"mes4":"1","mes5":"1",...}` (strings)
 - `python3`: `type(row['mes4'])` → `Decimal('1')`
 
 ### ✅ Correção Aplicada
@@ -142,7 +142,7 @@ Diagnóstico confirmado via:
 - `src/components/TimesheetGrid.tsx`
 
 ### 🧪 Verificação
-- `curl /api/atestados-comparecimento?matricula=222.222-2&ano=2026` → `{"mes4":1,"mes5":1,...}` (inteiros ✅)
+- `curl /api/atestados-comparecimento?matricula=123.456-7&ano=2026` → `{"mes4":1,"mes5":1,...}` (inteiros ✅)
 - `dosBanco = 0 + 0 + 0 + 0 + 1 + 1 + 0 = 2` (numérico, não string)
 - `daTela = 0` (sem comparecimentos em agosto na tela)
 - `2 + 0 = 2 < 12` → **não bloqueia** ✅

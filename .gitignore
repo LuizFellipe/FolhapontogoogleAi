@@ -59,3 +59,7 @@ docs/dados_folha_ponto.json
 
 # Playwright MCP: capturas/snapshots de sessão (podem conter dados pessoais)
 .playwright-mcp/
+
+# relatórios/extrações com nomes e matrículas reais de servidores
+docs/relatorio_comparacao_servidores_*.html
+docs/modulo_modulacao_dados_*.md
