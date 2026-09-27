@@ -63,3 +63,9 @@ docs/dados_folha_ponto.json
 # relatórios/extrações com nomes e matrículas reais de servidores
 docs/relatorio_comparacao_servidores_*.html
 docs/modulo_modulacao_dados_*.md
+
+# graphify: cache/grafo gerado localmente (pode conter trechos de dados pessoais)
+graphify-out/
+
+# PDFs na raiz (folhas de ponto reais)
+/*.pdf
