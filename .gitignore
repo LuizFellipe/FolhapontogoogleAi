@@ -51,3 +51,8 @@ sigep/servidores.csv
 sigep/.browser_profile/
 sigep/.playwright-mcp/
 sigep/.claude/settings.local.json
+
+# educasync: dados pessoais e artefatos gerados (versionar só script + docs)
+educasync/educa_folha/*.pdf
+educasync/dados_folha_ponto.json
+docs/dados_folha_ponto.json

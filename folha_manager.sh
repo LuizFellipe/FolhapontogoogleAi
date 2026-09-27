@@ -92,7 +92,8 @@ show_main_menu() {
     echo -e "${BRIGHT_WHITE}  [ 8 ]  Limpar e Otimizar${NC}"
     echo -e "${BRIGHT_WHITE}  [ 9 ]  Sincronizar Tipos de Lançamento${NC}"
     echo -e "${BRIGHT_WHITE}  [ 10 ] Restaurar Backup (Importar)${NC}"
-    echo -e "${BRIGHT_WHITE}  [ 11 ] Sair do Sistema${NC}"
+    echo -e "${BRIGHT_WHITE}  [ 11 ] Extrair Folhas de Ponto (EducaSync)${NC}"
+    echo -e "${BRIGHT_WHITE}  [ 12 ] Sair do Sistema${NC}"
     echo -e "${BRIGHT_CYAN}=================================================${NC}"
     echo ""
 }
@@ -938,6 +939,36 @@ sync_entry_types() {
 }
 
 # ==============================================================================
+# FUNÇÃO 11: Extrair Folhas de Ponto (EducaSync)
+# ==============================================================================
+extract_educasync() {
+    show_header
+    echo -e "${MAGENTA}📄 Extrair Folhas de Ponto (EducaSync)${NC}"
+    echo -e "${PURPLE}═══════════════════════════════════════════════════════════════${NC}"
+
+    PY=$(get_python)
+    if ! $PY -c "import pymupdf" 2>/dev/null; then
+        info "Instalando PyMuPDF..."
+        if ! $PY -m pip install -r educasync/requirements.txt; then
+            error "Falha ao instalar PyMuPDF!"
+            pause
+            return 1
+        fi
+    fi
+
+    info "Lendo PDFs de educasync/educa_folha..."
+    echo ""
+
+    if $PY educasync/extrair_folhas.py -i educasync/educa_folha -o docs/dados_folha_ponto.json -v; then
+        success "docs/dados_folha_ponto.json gerado! Recarregue a aba EducaSync no sistema."
+    else
+        error "Falha na extração!"
+    fi
+
+    pause
+}
+
+# ==============================================================================
 # FUNÇÃO PRINCIPAL - LOOP DO SISTEMA
 # ==============================================================================
 main() {
@@ -961,7 +992,7 @@ main() {
         
         show_main_menu
         
-        read -p "${NEON_CYAN}[SELECT OPTION 1-11]: ${NC}" choice
+        read -p "${NEON_CYAN}[SELECT OPTION 1-12]: ${NC}" choice
         
         case $choice in
             1)
@@ -995,6 +1026,9 @@ main() {
                 restore_db
                 ;;
             11)
+                extract_educasync
+                ;;
+            12)
                 show_header
                 echo -e "${BRIGHT_CYAN}[SYSTEM SHUTDOWN] Thank you for using Gestor Folha Ponto!${NC}"
                 echo -e "${NEON_GREEN}[DISCONNECTED] Connection terminated${NC}"
@@ -1007,7 +1041,7 @@ main() {
                 exit 0
                 ;;
             *)
-                error "Invalid option! Please choose an option from 1 to 11."
+                error "Invalid option! Please choose an option from 1 to 12."
                 pause
                 ;;
         esac

@@ -656,8 +656,8 @@ def get_atestados_comparecimento():
 def get_educasync_dados():
     """Retorna os dados cadastrais extraídos pelo EducaSync a partir do JSON."""
     candidatos = [
-        os.path.join(os.path.dirname(os.path.dirname(__file__)), 'educasync', 'dados_folha_ponto.json'),
-        os.path.join(os.path.dirname(os.path.dirname(__file__)), 'docs', 'dados_folha_ponto.json')
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), 'docs', 'dados_folha_ponto.json'),
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), 'educasync', 'dados_folha_ponto.json')
     ]
     for caminho in candidatos:
         if os.path.exists(caminho):
