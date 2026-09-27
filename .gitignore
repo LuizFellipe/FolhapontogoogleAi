@@ -69,3 +69,8 @@ graphify-out/
 
 # PDFs na raiz (folhas de ponto reais)
 /*.pdf
+
+# planilhas (exportações com dados de servidores)
+*.xls
+*.xlsx
+*.ods

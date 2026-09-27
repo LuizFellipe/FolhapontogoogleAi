@@ -339,6 +339,7 @@ docker-compose down -v  # com volumes
 - ✅ **API Key exposta**: NÃO EXISTEM no projeto
 - ✅ **CORS**: Configurado para `localhost`
 - ✅ **SQL**: Prepared statements via ORM/Connector
+- ✅ **Dados pessoais de servidores**: PDFs, planilhas (`.xls`/`.xlsx`/`.ods`), CSVs e JSONs de dados de `sigep/` e `educasync/` ficam fora do git (`.gitignore`) e do grafo do graphify (`.graphifyignore`); o histórico foi saneado com `git-filter-repo`
 - ⚠️ **Autenticação frontend**: Básica (para uso interno)
   - Para produção pública: implemente OAuth2/JWT no backend
 

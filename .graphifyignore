@@ -1,0 +1,22 @@
+# graphify: nunca indexar arquivos com dados pessoais de servidores.
+# Soma-se ao .gitignore (que o graphify também lê); aqui só pode excluir mais.
+
+# Documentos e planilhas (fichas, folhas de ponto, exportações)
+*.pdf
+*.xls
+*.xlsx
+*.ods
+*.csv
+
+# Dados extraídos do SIGEP e do EducaSync (fichas, folhas, perfil do navegador)
+sigep/**/*.json
+sigep/.browser_profile/
+sigep/.playwright-mcp/
+educasync/**/*.json
+educasync/educa_folha/
+
+# Cópias dos dados da folha e relatórios com nomes/matrículas reais
+docs/dados_folha_ponto.json
+docs/relatorio_comparacao_servidores_*.html
+docs/modulo_modulacao_dados_*.md
+.playwright-mcp/
