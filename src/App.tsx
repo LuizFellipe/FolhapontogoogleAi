@@ -951,13 +951,13 @@ export default function App() {
             <div className="bg-stone-900 p-2 rounded-lg">
               <FileText className="text-white w-5 h-5" />
             </div>
-            <h1 className="text-xl font-bold tracking-tight text-stone-900">Folha de Ponto</h1>
+            <h1 className="hidden sm:block text-xl font-bold tracking-tight text-stone-900">Folha de Ponto</h1>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <button
               onClick={() => setView('edit')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 view === 'edit' 
                 ? 'bg-stone-900 text-white shadow-md' 
                 : 'text-stone-600 hover:bg-stone-100'
@@ -967,7 +967,7 @@ export default function App() {
             </button>
             <button
               onClick={() => setView('preview')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 view === 'preview' 
                 ? 'bg-stone-900 text-white shadow-md' 
                 : 'text-stone-600 hover:bg-stone-100'
@@ -975,7 +975,7 @@ export default function App() {
             >
               Visualizar
             </button>
-            <div className="w-px h-6 bg-stone-200 mx-2" />
+            <div className="hidden sm:block w-px h-6 bg-stone-200 mx-2" />
             
             {/* Botão de Salvar */}
             <button
@@ -998,12 +998,12 @@ export default function App() {
             </button>
             
             {/* Indicador de status do banco */}
-            <div className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            <div className="hidden sm:flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
               <Database className="w-3 h-3" />
               MySQL
             </div>
             
-            <div className="w-px h-6 bg-stone-200 mx-2" />
+            <div className="hidden sm:block w-px h-6 bg-stone-200 mx-2" />
             
             <button
               onClick={handlePrint}
@@ -1027,7 +1027,8 @@ export default function App() {
               className="space-y-8 no-print"
             >
               {/* Controls */}
-              <div className="flex flex-wrap items-end gap-4 bg-white p-6 rounded-2xl shadow-sm border border-stone-200">
+              <div className="flex flex-col gap-5 bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-stone-200">
+               <div className="flex flex-wrap items-end gap-4">
                 <div className="flex flex-col gap-1">
                   <label className="text-xs font-medium text-stone-500 uppercase tracking-wider">Mês de Referência</label>
                   <select
@@ -1050,8 +1051,18 @@ export default function App() {
                   />
                 </div>
                 
+                <div className="flex-1" />
+                <button 
+                  onClick={() => setView('preview')}
+                  className="flex items-center gap-2 bg-stone-900 text-white px-6 py-2 rounded-xl font-medium hover:bg-stone-800 transition-all shadow-lg shadow-stone-200"
+                >
+                  <Download className="w-4 h-4" />
+                  Gerar Folha
+                </button>
+               </div>
+
                 {/* Navegação de Profissionais */}
-                <div className="flex flex-col gap-1 flex-1 min-w-[700px]">
+                <div className="flex flex-col gap-1 pt-5 border-t border-stone-100">
                   <label className="text-xs font-medium text-stone-500 uppercase tracking-wider">Servidor</label>
                   <EmployeeNavigator
                     profissionais={profissionais}
@@ -1071,15 +1082,6 @@ export default function App() {
                     isPreFilling={isPreFilling}
                   />
                 </div>
-                
-                <div className="flex-1" />
-                <button 
-                  onClick={() => setView('preview')}
-                  className="flex items-center gap-2 bg-stone-900 text-white px-6 py-2 rounded-xl font-medium hover:bg-stone-800 transition-all shadow-lg shadow-stone-200"
-                >
-                  <Download className="w-4 h-4" />
-                  Gerar Folha
-                </button>
               </div>
 
               <EmployeeForm

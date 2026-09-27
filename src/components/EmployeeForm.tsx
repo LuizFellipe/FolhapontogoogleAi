@@ -8,193 +8,122 @@ interface Props {
   profissionalId?: number;
 }
 
+const inputCls =
+  'w-full px-3 py-2 bg-white border border-stone-300 rounded-lg text-sm text-stone-800 placeholder:text-stone-400 transition-colors hover:border-stone-400 focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15';
+const labelCls = 'text-xs font-medium text-stone-500';
+const SHIFTS = ['Matutino', 'Vespertino', 'Noturno'];
+
+const initials = (name: string) =>
+  name.trim().split(/\s+/).filter(Boolean).map((w) => w[0]).filter((_, i, a) => i === 0 || i === a.length - 1).join('').toUpperCase() || '—';
+
+const Field: React.FC<{ label: string; span: string; children: React.ReactNode }> = ({ label, span, children }) => (
+  <label className={`flex flex-col gap-1.5 col-span-12 ${span}`}>
+    <span className={labelCls}>{label}</span>
+    {children}
+  </label>
+);
+
+const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
+  <section className="flex flex-col gap-3">
+    <div className="flex items-center gap-3">
+      <h3 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-400">{title}</h3>
+      <div className="h-px flex-1 bg-stone-200" />
+    </div>
+    <div className="grid grid-cols-12 gap-x-4 gap-y-3">{children}</div>
+  </section>
+);
+
 export const EmployeeForm: React.FC<Props> = ({ data, onChange, profissionalId }) => {
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     onChange({ ...data, [name]: value });
   };
 
-  return (
-    <div className="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-stone-200">
-      <div className="border-b border-stone-100 pb-4 mb-5">
-        <h2 className="text-lg font-semibold text-stone-800">Dados do Servidor</h2>
-        <p className="text-sm text-stone-500 mt-0.5">Preencha as informações funcionais para geração da folha.</p>
-      </div>
+  const isActive = data.status !== 'INATIVO';
 
-      <div className="flex flex-col gap-6">
-        
-        {/* Identificação */}
-        <div className="bg-stone-50/50 border border-stone-200 rounded-xl p-4">
-          <h3 className="text-sm font-semibold text-stone-700 mb-4 flex items-center gap-2">
-            <div className="w-1.5 h-3.5 bg-stone-400 rounded-full"></div>
-            Identificação
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="flex flex-col gap-1.5 md:col-span-2">
-              <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Nome Completo</label>
-              <input
-                type="text"
-                name="name"
-                value={data.name}
-                onChange={handleChange}
-                className="px-3 py-2 bg-white border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-stone-400 transition-all text-sm shadow-sm"
-                placeholder="Ex: Alexandre Vinhadelli..."
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Matrícula (opcional)</label>
-              <input
-                type="text"
-                name="registration"
-                value={data.registration}
-                onChange={handleChange}
-                className="px-3 py-2 bg-white border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-stone-400 transition-all text-sm shadow-sm"
-                placeholder="Ex: 0000000-0"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Status</label>
-              <select
-                name="status"
-                value={data.status}
-                onChange={(e) => onChange({ ...data, status: e.target.value as 'ATIVO' | 'INATIVO' })}
-                className="px-3 py-2 bg-white border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-stone-400 transition-all text-sm shadow-sm"
-              >
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+        {/* Faixa de identidade */}
+        <div className="flex items-center gap-4 px-5 md:px-6 py-4 border-b border-stone-200 bg-stone-50/60">
+          <div className="w-11 h-11 flex-shrink-0 rounded-lg bg-stone-800 text-white flex items-center justify-center text-sm font-semibold tracking-wide">
+            {initials(data.name || '')}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-stone-400">Dados do servidor</p>
+            <h2 className="text-lg font-semibold text-stone-900 truncate">{data.name || 'Novo servidor'}</h2>
+          </div>
+          <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
+            {data.registration && (
+              <span className="font-mono tabular-nums text-xs text-stone-600 bg-white border border-stone-200 rounded-md px-2 py-1">
+                {data.registration}
+              </span>
+            )}
+            <span
+              className={`inline-flex items-center gap-1.5 text-xs font-medium rounded-full px-2.5 py-1 ${
+                isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-stone-200 text-stone-600'
+              }`}
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-stone-400'}`} />
+              {isActive ? 'Ativo' : 'Inativo'}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-6 p-5 md:p-6">
+          <Section title="Identificação">
+            <Field label="Nome completo" span="md:col-span-8">
+              <input type="text" name="name" value={data.name} onChange={handleChange} className={inputCls} placeholder="Ex: Alexandre Vinhadelli..." />
+            </Field>
+            <Field label="Matrícula (opcional)" span="md:col-span-2">
+              <input type="text" name="registration" value={data.registration} onChange={handleChange} className={`${inputCls} font-mono tabular-nums`} placeholder="0000000-0" />
+            </Field>
+            <Field label="Status" span="md:col-span-2">
+              <select name="status" value={data.status} onChange={handleChange} className={inputCls}>
                 <option value="ATIVO">Ativo</option>
                 <option value="INATIVO">Inativo</option>
               </select>
-            </div>
-          </div>
-        </div>
+            </Field>
+          </Section>
 
-        {/* Atuação e Lotação */}
-        <div className="bg-stone-50/50 border border-stone-200 rounded-xl p-4">
-          <h3 className="text-sm font-semibold text-stone-700 mb-4 flex items-center gap-2">
-            <div className="w-1.5 h-3.5 bg-stone-400 rounded-full"></div>
-            Atuação e Lotação
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Cargo/Especialidade</label>
-              <input
-                type="text"
-                name="cargo"
-                value={data.cargo}
-                onChange={handleChange}
-                className="px-3 py-2 bg-white border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-stone-400 transition-all text-sm shadow-sm"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Disciplina</label>
-              <input
-                type="text"
-                name="disciplina"
-                maxLength={255}
-                value={data.disciplina || ''}
-                onChange={handleChange}
-                placeholder="Ex: INFORMÁTICA, MATEMÁTICA..."
-                className="px-3 py-2 bg-white border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-stone-400 transition-all text-sm shadow-sm"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5 md:col-span-2">
-              <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Função</label>
-              <input
-                type="text"
-                name="funcao"
-                value={data.funcao}
-                onChange={handleChange}
-                className="px-3 py-2 bg-white border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-stone-400 transition-all text-sm shadow-sm"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5 md:col-span-2">
-              <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Unidade de Lotação</label>
-              <input
-                type="text"
-                name="unidade"
-                value={data.unidade}
-                onChange={handleChange}
-                className="px-3 py-2 bg-white border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-stone-400 transition-all text-sm shadow-sm"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5 md:col-span-2">
-              <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">UA</label>
-              <input
-                type="text"
-                name="ua"
-                value={data.ua}
-                onChange={handleChange}
-                className="px-3 py-2 bg-white border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-stone-400 transition-all text-sm shadow-sm"
-              />
-            </div>
-          </div>
-        </div>
+          <Section title="Atuação e lotação">
+            <Field label="Cargo / especialidade" span="md:col-span-4">
+              <input type="text" name="cargo" value={data.cargo} onChange={handleChange} className={inputCls} />
+            </Field>
+            <Field label="Disciplina" span="md:col-span-4">
+              <input type="text" name="disciplina" maxLength={255} value={data.disciplina || ''} onChange={handleChange} placeholder="Ex: INFORMÁTICA, MATEMÁTICA..." className={inputCls} />
+            </Field>
+            <Field label="Função" span="md:col-span-4">
+              <input type="text" name="funcao" value={data.funcao} onChange={handleChange} className={inputCls} />
+            </Field>
+            <Field label="Unidade de lotação" span="md:col-span-8">
+              <input type="text" name="unidade" value={data.unidade} onChange={handleChange} className={inputCls} />
+            </Field>
+            <Field label="UA" span="md:col-span-4">
+              <input type="text" name="ua" value={data.ua} onChange={handleChange} className={inputCls} />
+            </Field>
+          </Section>
 
-        {/* Jornada e Turnos */}
-        <div className="bg-stone-50/50 border border-stone-200 rounded-xl p-4">
-          <h3 className="text-sm font-semibold text-stone-700 mb-4 flex items-center gap-2">
-            <div className="w-1.5 h-3.5 bg-stone-400 rounded-full"></div>
-            Jornada e Turnos
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Exercício</label>
-              <input
-                type="text"
-                name="exercicio"
-                value={data.exercicio}
-                onChange={handleChange}
-                className="px-3 py-2 bg-white border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-stone-400 transition-all text-sm shadow-sm"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">C.H.</label>
-              <input
-                type="text"
-                name="ch"
-                value={data.ch}
-                onChange={handleChange}
-                className="px-3 py-2 bg-white border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-stone-400 transition-all text-sm shadow-sm"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Turno 1</label>
-              <select
-                name="shift1"
-                value={data.shift1}
-                onChange={(e) => onChange({ ...data, shift1: e.target.value })}
-                className="px-3 py-2 bg-white border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-stone-400 transition-all text-sm shadow-sm"
-              >
-                <option value="">VAZIO</option>
-                <option value="Matutino">Matutino</option>
-                <option value="Vespertino">Vespertino</option>
-                <option value="Noturno">Noturno</option>
-              </select>
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Turno 2</label>
-              <select
-                name="shift2"
-                value={data.shift2}
-                onChange={(e) => onChange({ ...data, shift2: e.target.value })}
-                className="px-3 py-2 bg-white border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-stone-400 transition-all text-sm shadow-sm"
-              >
-                <option value="">VAZIO</option>
-                <option value="Matutino">Matutino</option>
-                <option value="Vespertino">Vespertino</option>
-                <option value="Noturno">Noturno</option>
-              </select>
-            </div>
-          </div>
+          <Section title="Jornada e turnos">
+            <Field label="Exercício" span="sm:col-span-6 md:col-span-3">
+              <input type="text" name="exercicio" value={data.exercicio} onChange={handleChange} className={inputCls} />
+            </Field>
+            <Field label="C.H." span="sm:col-span-6 md:col-span-3">
+              <input type="text" name="ch" value={data.ch} onChange={handleChange} className={`${inputCls} tabular-nums`} />
+            </Field>
+            {(['shift1', 'shift2'] as const).map((name, i) => (
+              <Field key={name} label={`Turno ${i + 1}`} span="sm:col-span-6 md:col-span-3">
+                <select name={name} value={data[name]} onChange={handleChange} className={inputCls}>
+                  <option value="">Vazio</option>
+                  {SHIFTS.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </Field>
+            ))}
+          </Section>
         </div>
-
       </div>
 
-      {/* Widget Flutuante de Dados Complementares SIGEP (Minimizado por padrão) */}
-      <ComplementaryDataWidget
-        profissionalId={profissionalId}
-        matricula={data.registration}
-        nome={data.name}
-      />
+      <ComplementaryDataWidget profissionalId={profissionalId} matricula={data.registration} nome={data.name} />
     </div>
   );
 };

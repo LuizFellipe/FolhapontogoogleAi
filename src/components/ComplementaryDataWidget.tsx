@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useId } from 'react';
 import {
   FileText,
-  Maximize2,
+  ChevronDown,
   X,
   Save,
   CheckCircle,
@@ -88,6 +88,7 @@ export const ComplementaryDataWidget: React.FC<Props> = ({ profissionalId, matri
   const [rel, setRel] = useState(EMPTY_REL);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const bodyId = useId();
 
   // Form editável
   const [formData, setFormData] = useState<any>({});
@@ -150,11 +151,11 @@ export const ComplementaryDataWidget: React.FC<Props> = ({ profissionalId, matri
       };
 
       await apiService.updateProfissionalComplementar(profissionalId, payload);
-      setFeedback({ type: 'success', message: 'Dados complementares atualizados com sucesso!' });
+      setFeedback({ type: 'success', message: 'Ficha salva.' });
       await loadData();
     } catch (err: any) {
       console.error('Erro ao salvar dados complementares:', err);
-      setFeedback({ type: 'error', message: 'Erro ao salvar alterações no banco.' });
+      setFeedback({ type: 'error', message: 'Não foi possível salvar a ficha. Verifique a conexão com o servidor e tente de novo.' });
     } finally {
       setSaving(false);
     }
@@ -175,131 +176,108 @@ export const ComplementaryDataWidget: React.FC<Props> = ({ profissionalId, matri
   const hasData = !!compData;
   const { cargas, cursos, habilitacoes, componentes } = rel;
 
+  const inputCls =
+    'w-full min-w-0 px-3 py-2 bg-white border border-stone-300 rounded-lg text-sm text-stone-800 placeholder:text-stone-400 transition-colors hover:border-stone-400 focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15';
+  const chip = 'inline-flex items-center gap-1 text-[11px] text-stone-600 bg-white border border-stone-200 rounded-md px-2 py-0.5';
+
   return (
-    <>
-      {/* 1. Modo Minimizado (Dock Flutuante Padrão) */}
-      {!isExpanded && (
-        <div className="fixed bottom-4 right-4 z-40 animate-in fade-in slide-in-from-bottom-4 duration-300">
-          <div className="bg-stone-900/95 backdrop-blur-md border border-stone-700/80 shadow-2xl rounded-2xl p-2.5 pl-4 flex items-center gap-3 text-stone-100 hover:border-indigo-500/60 transition-all">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
-                <FileText className="w-4 h-4" />
-              </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-white tracking-wide">
-                    Ficha Cadastral SIGEP
-                  </span>
-                  <span
-                    className={`inline-block w-2 h-2 rounded-full ${
-                      hasData ? 'bg-emerald-400 shadow-sm shadow-emerald-500/50' : 'bg-amber-400'
-                    }`}
-                    title={hasData ? 'Dados carregados' : 'Pendente de sincronização'}
-                  />
-                </div>
-                <span className="text-[11px] text-stone-400">
-                  {hasData ? (
-                    <>Matrícula: <strong className="text-stone-300 font-mono">{matricula || compData?.matricula}</strong> • {cargas.length} Carga(s)</>
-                  ) : (
-                    <>Pendente de importação no BD</>
-                  )}
-                </span>
-              </div>
-            </div>
-
-            <div className="h-6 w-px bg-stone-800 mx-1" />
-
-            <button
-              onClick={() => setIsExpanded(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-900/20 transition-all cursor-pointer"
+    <section className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+      {/* Cabeçalho (sempre visível) */}
+      <button
+        type="button"
+        onClick={() => setIsExpanded((v) => !v)}
+        aria-expanded={isExpanded}
+        aria-controls={bodyId}
+        className="w-full flex items-center gap-4 px-5 md:px-6 py-3.5 text-left bg-stone-50/60 hover:bg-stone-100/70 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600"
+      >
+        <div className="w-11 h-11 flex-shrink-0 rounded-lg border-2 border-dashed border-stone-300 bg-white text-stone-500 flex items-center justify-center">
+          <FileText className="w-5 h-5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h2 className="text-base font-semibold text-stone-900">Ficha cadastral SIGEP</h2>
+            <span
+              className={`inline-flex items-center gap-1.5 text-[11px] font-medium rounded-full px-2 py-0.5 ${
+                hasData ? 'bg-indigo-50 text-indigo-700' : 'bg-amber-50 text-amber-700'
+              }`}
             >
-              <Maximize2 className="w-3.5 h-3.5" />
-              Expandir
-            </button>
+              <span className={`w-1.5 h-1.5 rounded-full ${hasData ? 'bg-indigo-600' : 'bg-amber-500'}`} />
+              {loading ? 'Carregando…' : hasData ? 'Importada' : 'Pendente'}
+            </span>
+          </div>
+          <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+            {hasData ? (
+              <>
+                {formData.cpf && <span className={`${chip} font-mono tabular-nums`}>CPF {formData.cpf}</span>}
+                <span className={chip}>{cargas.length} carga(s)</span>
+                <span className={chip}>{cursos.length} curso(s)</span>
+              </>
+            ) : (
+              <span className="text-xs text-stone-500">Documentos, endereço, dados funcionais e cursos do servidor</span>
+            )}
           </div>
         </div>
-      )}
+        <span className="hidden sm:inline text-xs font-medium text-stone-500">{isExpanded ? 'Recolher' : 'Expandir'}</span>
+        <ChevronDown
+          className={`w-5 h-5 text-stone-400 flex-shrink-0 transition-transform motion-reduce:transition-none ${isExpanded ? 'rotate-180' : ''}`}
+        />
+      </button>
 
-      {/* 2. Modo Expandido (Modal Completo) */}
-      {isExpanded && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-stone-900 text-stone-100 border border-stone-800 w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
-            
-            {/* Header do Modal */}
-            <div className="p-4 md:p-5 border-b border-stone-800 flex items-center justify-between bg-stone-950/80">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
-                  <FileText className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-base font-bold text-white">
-                      Dados Complementares SIGEP
-                    </h3>
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                      Ficha Funcional
-                    </span>
-                  </div>
-                  <p className="text-xs text-stone-400 mt-0.5">
-                    Servidor: <strong className="text-stone-200">{nome || '-'}</strong> • Matrícula: <strong className="text-stone-200 font-mono">{matricula || '-'}</strong>
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={() => setIsExpanded(false)}
-                  className="p-1.5 rounded-lg text-stone-400 hover:text-white hover:bg-stone-800 transition-colors"
-                  title="Minimizar para dock inferior"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Aviso quando não há dados no BD */}
+      {/* Corpo colapsável */}
+      <div
+        id={bodyId}
+        className={`grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none ${
+          isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+        }`}
+      >
+        <div className="overflow-hidden" inert={!isExpanded}>
+          <div className="border-t border-stone-200">
             {!hasData && !loading && (
-              <div className="bg-amber-950/40 border-b border-amber-800/50 p-3 px-5 flex items-center gap-3 text-xs text-amber-300">
-                <AlertTriangle className="w-4 h-4 flex-shrink-0 text-amber-400" />
+              <div className="mx-5 md:mx-6 mt-4 p-3 rounded-lg bg-amber-50 border border-amber-200 flex items-start gap-2.5 text-xs text-amber-800">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0 text-amber-500 mt-px" />
                 <span>
-                  Este servidor ainda não possui dados complementares importados do SIGEP no banco de dados. Você pode preenchê-los abaixo e salvar, ou importá-los em lote pelo botão <strong>Sincronizar Educa</strong> (aba SIGEP).
+                  Ficha ainda não importada. Preencha abaixo e salve, ou importe em lote pelo botão <strong>Sincronizar Educa</strong>.
                 </span>
               </div>
             )}
 
-            {/* Abas Internas de Navegação */}
-            <div className="bg-stone-950 px-5 pt-2 border-b border-stone-800 flex items-center gap-2 overflow-x-auto">
+            {/* Abas */}
+            <div role="tablist" className="px-5 md:px-6 mt-3 border-b border-stone-200 flex items-center gap-1 overflow-x-auto overflow-y-hidden">
               {TABS.map(({ id, label, icon: Icon, count }) => (
                 <button
                   key={id}
+                  role="tab"
+                  aria-selected={activeTab === id}
                   onClick={() => setActiveTab(id)}
-                  className={`pb-2.5 px-3 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition-all whitespace-nowrap ${
+                  className={`pb-2.5 pt-1 px-3 text-xs font-medium flex items-center gap-1.5 border-b-2 whitespace-nowrap transition-colors focus:outline-none focus-visible:text-indigo-700 ${
                     activeTab === id
-                      ? 'border-indigo-400 text-indigo-300'
-                      : 'border-transparent text-stone-400 hover:text-stone-200'
+                      ? 'border-indigo-600 text-indigo-700'
+                      : 'border-transparent text-stone-500 hover:text-stone-800'
                   }`}
                 >
                   <Icon className="w-3.5 h-3.5" />
-                  {label}{count && ` (${rel[count].length})`}
+                  {label}
+                  {count && (
+                    <span className="tabular-nums text-[10px] px-1.5 rounded bg-stone-100 text-stone-600">{rel[count].length}</span>
+                  )}
                 </button>
               ))}
             </div>
 
-            {/* Conteúdo das Abas */}
-            <div className="flex-1 overflow-y-auto p-5 text-xs space-y-4">
+            {/* Conteúdo */}
+            <div className="p-5 md:p-6 text-xs">
               {loading ? (
-                <div className="py-12 flex flex-col items-center justify-center text-stone-400 gap-2">
-                  <RefreshCw className="w-6 h-6 animate-spin text-indigo-400" />
-                  <span>Carregando dados complementares...</span>
+                <div className="py-10 flex items-center justify-center gap-2 text-stone-500">
+                  <RefreshCw className="w-4 h-4 animate-spin text-indigo-600" />
+                  Carregando ficha…
                 </div>
               ) : (
                 <>
-                  {/* Abas 1-3: formulários (Documentação, Endereço, Funcional) */}
                   {activeTab in FIELDS && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-3">
                       {FIELDS[activeTab as keyof typeof FIELDS].map(({ label, inputs, span, copy }) => (
-                        <div key={label} className={`flex flex-col gap-1 ${span || ''}`}>
-                          <label className="text-stone-400 font-semibold uppercase text-[10px]">{label}</label>
+                        <div key={label} className={`flex flex-col gap-1.5 ${span || ''}`}>
+                          <label className="text-xs font-medium text-stone-500">{label}</label>
                           <div className="relative flex gap-2">
                             {inputs.map((i) => (
                               <input
@@ -310,19 +288,17 @@ export const ComplementaryDataWidget: React.FC<Props> = ({ profissionalId, matri
                                 maxLength={i.uf ? 2 : undefined}
                                 value={formData[i.name] || ''}
                                 onChange={handleInputChange}
-                                className={`w-full min-w-0 bg-stone-950 border border-stone-700 rounded-lg px-3 py-2 text-stone-200 focus:outline-none focus:border-indigo-500 ${
-                                  i.mono ? 'font-mono' : ''
-                                } ${i.uf ? 'uppercase' : ''}`}
+                                className={`${inputCls} ${i.mono ? 'font-mono tabular-nums' : ''} ${i.uf ? 'uppercase max-w-16' : ''} ${copy ? 'pr-8' : ''}`}
                               />
                             ))}
                             {copy && formData[inputs[0].name] && (
                               <button
                                 type="button"
                                 onClick={() => copyToClipboard(formData[inputs[0].name], inputs[0].name)}
-                                className="absolute right-2 top-2 text-stone-500 hover:text-white"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-800"
                                 title={`Copiar ${label}`}
                               >
-                                {copiedField === inputs[0].name ? <CheckCircle className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                                {copiedField === inputs[0].name ? <CheckCircle className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                               </button>
                             )}
                           </div>
@@ -331,179 +307,133 @@ export const ComplementaryDataWidget: React.FC<Props> = ({ profissionalId, matri
                     </div>
                   )}
 
-                  {/* Aba 4: Cargas Horárias */}
                   {activeTab === 'cargas' && (
-                    <div className="space-y-3">
-                      {cargas.length === 0 ? (
-                        <div className="py-8 text-center text-stone-500">
-                          Nenhum registro de carga horária vinculado no momento.
-                        </div>
-                      ) : (
-                        cargas.map((cg, idx) => (
-                          <div key={idx} className="p-3.5 bg-stone-950 border border-stone-800 rounded-xl space-y-2">
-                            <div className="flex items-center justify-between">
-                              <span className="font-bold text-white text-xs flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-indigo-400" />
-                                {cg.tipo_carga}
-                              </span>
-                              <div className="flex items-center gap-2">
-                                {cg.turno && (
-                                  <span className="px-2 py-0.5 rounded bg-stone-800 text-stone-300 text-[10px]">
-                                    Turno: {cg.turno}
-                                  </span>
-                                )}
+                    cargas.length === 0 ? (
+                      <p className="py-8 text-center text-stone-500">Nenhuma carga horária vinculada.</p>
+                    ) : (
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                        {cargas.map((cg, idx) => (
+                          <div key={idx} className="p-3.5 bg-stone-50 border border-stone-200 rounded-xl">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="font-semibold text-stone-900 text-sm">{cg.tipo_carga}</span>
+                              <div className="flex items-center gap-1.5">
+                                {cg.turno && <span className={chip}>{cg.turno}</span>}
                                 {cg.atuacao && (
-                                  <span className="px-2 py-0.5 rounded bg-indigo-900/40 text-indigo-300 text-[10px] font-medium border border-indigo-700/30">
-                                    {cg.atuacao}
-                                  </span>
+                                  <span className="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 text-[11px] font-medium">{cg.atuacao}</span>
                                 )}
                               </div>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-stone-300 text-[11px] pt-1 border-t border-stone-800/60">
-                              <p><strong>Unidade:</strong> {cg.unidade || '-'}</p>
-                              <p><strong>CRE:</strong> {cg.cre || '-'}</p>
-                              <p><strong>Lotação:</strong> {cg.lotacao || '-'}</p>
-                              <p><strong>Coord. Externa:</strong> {cg.coord_externa || '-'}</p>
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  )}
-
-                  {/* Aba 5: Cursos & Progressões */}
-                  {activeTab === 'cursos' && (
-                    <div className="space-y-2">
-                      {cursos.length === 0 ? (
-                        <div className="py-8 text-center text-stone-500">
-                          Nenhum curso ou progressão registrado para este servidor.
-                        </div>
-                      ) : (
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-left border border-stone-800 rounded-lg overflow-hidden">
-                            <thead className="bg-stone-950 text-stone-400 text-[10px] uppercase">
-                              <tr>
-                                <th className="p-2.5">Curso</th>
-                                <th className="p-2.5">Instituição</th>
-                                <th className="p-2.5">Emissão</th>
-                                <th className="p-2.5">Utilização / Lei</th>
-                                <th className="p-2.5 text-right">CH (h)</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-stone-800/80 text-stone-200">
-                              {cursos.map((cr, idx) => (
-                                <tr key={idx} className="hover:bg-stone-950/60">
-                                  <td className="p-2.5 font-medium text-white">{cr.curso}</td>
-                                  <td className="p-2.5 text-stone-400">{cr.instituicao || '-'}</td>
-                                  <td className="p-2.5 text-stone-400">{cr.emissao || '-'}</td>
-                                  <td className="p-2.5 text-stone-300">
-                                    <div>{cr.utilizacao || '-'}</div>
-                                    {cr.data_utilizacao && (
-                                      <span className="text-[10px] text-stone-500">
-                                        Data: {cr.data_utilizacao}
-                                      </span>
-                                    )}
-                                  </td>
-                                  <td className="p-2.5 text-right font-mono text-indigo-300">
-                                    {cr.carga_horaria ? `${cr.carga_horaria}h` : '-'}
-                                  </td>
-                                </tr>
+                            <dl className="mt-2.5 pt-2.5 border-t border-stone-200 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[11px]">
+                              {[['Unidade', cg.unidade], ['CRE', cg.cre], ['Lotação', cg.lotacao], ['Coord. externa', cg.coord_externa]].map(([k, v]) => (
+                                <React.Fragment key={k}>
+                                  <dt className="text-stone-500">{k}</dt>
+                                  <dd className="text-stone-800">{v || '—'}</dd>
+                                </React.Fragment>
                               ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      )}
-                    </div>
+                            </dl>
+                          </div>
+                        ))}
+                      </div>
+                    )
                   )}
 
-                  {/* Aba 6: Habilitações & Componentes */}
-                  {activeTab === 'habs' && (
-                    <div className="space-y-4">
-                      <div>
-                        <h4 className="text-[11px] font-bold uppercase text-indigo-400 mb-2 flex items-center gap-1.5">
-                          <Award className="w-3.5 h-3.5" />
-                          Habilitações Funcionais ({habilitacoes.length})
-                        </h4>
-                        {habilitacoes.length === 0 ? (
-                          <p className="text-stone-500">Nenhuma habilitação registrada.</p>
-                        ) : (
-                          <div className="flex flex-wrap gap-2">
-                            {habilitacoes.map((h, idx) => (
-                              <span
-                                key={idx}
-                                className="px-3 py-1.5 rounded-lg bg-stone-950 border border-stone-800 text-stone-200 font-medium"
-                              >
-                                {h.habilitacao}
-                              </span>
+                  {activeTab === 'cursos' && (
+                    cursos.length === 0 ? (
+                      <p className="py-8 text-center text-stone-500">Nenhum curso ou progressão registrado.</p>
+                    ) : (
+                      <div className="overflow-x-auto border border-stone-200 rounded-xl">
+                        <table className="w-full text-left">
+                          <thead className="bg-stone-50 text-stone-500 text-[11px]">
+                            <tr>
+                              <th className="p-2.5 font-medium">Curso</th>
+                              <th className="p-2.5 font-medium">Instituição</th>
+                              <th className="p-2.5 font-medium">Emissão</th>
+                              <th className="p-2.5 font-medium">Utilização / lei</th>
+                              <th className="p-2.5 font-medium text-right">CH</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-stone-100 text-stone-700">
+                            {cursos.map((cr, idx) => (
+                              <tr key={idx} className="hover:bg-stone-50">
+                                <td className="p-2.5 font-medium text-stone-900">{cr.curso}</td>
+                                <td className="p-2.5">{cr.instituicao || '—'}</td>
+                                <td className="p-2.5 tabular-nums">{cr.emissao || '—'}</td>
+                                <td className="p-2.5">
+                                  <div>{cr.utilizacao || '—'}</div>
+                                  {cr.data_utilizacao && <span className="text-[10px] text-stone-500">Data: {cr.data_utilizacao}</span>}
+                                </td>
+                                <td className="p-2.5 text-right font-mono tabular-nums text-stone-900">
+                                  {cr.carga_horaria ? `${cr.carga_horaria}h` : '—'}
+                                </td>
+                              </tr>
                             ))}
-                          </div>
-                        )}
+                          </tbody>
+                        </table>
                       </div>
+                    )
+                  )}
 
-                      <div className="pt-2 border-t border-stone-800">
-                        <h4 className="text-[11px] font-bold uppercase text-indigo-400 mb-2 flex items-center gap-1.5">
-                          <Briefcase className="w-3.5 h-3.5" />
-                          Componentes Curriculares ({componentes.length})
-                        </h4>
-                        {componentes.length === 0 ? (
-                          <p className="text-stone-500">Nenhum componente curricular registrado.</p>
-                        ) : (
-                          <div className="flex flex-wrap gap-2">
-                            {componentes.map((cp, idx) => (
-                              <span
-                                key={idx}
-                                className="px-3 py-1.5 rounded-lg bg-indigo-950/40 border border-indigo-800/40 text-indigo-200 font-medium"
-                              >
-                                {cp.componente}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                  {activeTab === 'habs' && (
+                    <div className="space-y-5">
+                      {[
+                        { title: 'Habilitações funcionais', items: habilitacoes.map((h) => h.habilitacao), empty: 'Nenhuma habilitação registrada.', cls: 'bg-stone-50 border-stone-200 text-stone-800' },
+                        { title: 'Componentes curriculares', items: componentes.map((c) => c.componente), empty: 'Nenhum componente curricular registrado.', cls: 'bg-indigo-50 border-indigo-100 text-indigo-800' },
+                      ].map(({ title, items, empty, cls }) => (
+                        <div key={title}>
+                          <h4 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-400 mb-2">
+                            {title} <span className="tabular-nums">({items.length})</span>
+                          </h4>
+                          {items.length === 0 ? (
+                            <p className="text-stone-500">{empty}</p>
+                          ) : (
+                            <div className="flex flex-wrap gap-2">
+                              {items.map((t, idx) => (
+                                <span key={idx} className={`px-2.5 py-1 rounded-md border font-medium ${cls}`}>{t}</span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   )}
                 </>
               )}
             </div>
 
-            {/* Feedback alert */}
             {feedback && (
               <div
-                className={`mx-5 mb-2 p-2.5 rounded-lg text-xs flex items-center justify-between ${
+                role="status"
+                className={`mx-5 md:mx-6 mb-3 p-2.5 rounded-lg text-xs flex items-center justify-between border ${
                   feedback.type === 'success'
-                    ? 'bg-emerald-950/70 border border-emerald-700/50 text-emerald-200'
-                    : 'bg-red-950/70 border border-red-700/50 text-red-200'
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                    : 'bg-red-50 border-red-200 text-red-800'
                 }`}
               >
                 <span>{feedback.message}</span>
-                <button onClick={() => setFeedback(null)} className="text-stone-400 hover:text-white">✕</button>
+                <button onClick={() => setFeedback(null)} className="text-stone-400 hover:text-stone-800" title="Fechar aviso">
+                  <X className="w-3.5 h-3.5" />
+                </button>
               </div>
             )}
 
-            {/* Footer do Modal */}
-            <div className="p-4 border-t border-stone-800 bg-stone-950/90 flex items-center justify-between">
-              <div className="text-[11px] text-stone-500">
-                {compData?.arquivo_origem && (
-                  <span>Origem: <strong className="text-stone-400">{compData.arquivo_origem}</strong></span>
-                )}
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  disabled={saving || !profissionalId}
-                  className="flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white shadow-lg shadow-indigo-900/30 transition-all cursor-pointer"
-                >
-                  <Save className={`w-3.5 h-3.5 ${saving ? 'animate-spin' : ''}`} />
-                  Salvar Alterações
-                </button>
-              </div>
+            {/* Rodapé */}
+            <div className="px-5 md:px-6 py-3 border-t border-stone-200 bg-stone-50/60 flex items-center justify-between gap-3">
+              <span className="text-[11px] text-stone-500 truncate">
+                {compData?.arquivo_origem && <>Origem: <span className="font-mono">{compData.arquivo_origem}</span></>}
+              </span>
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={saving || !profissionalId}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-stone-900 hover:bg-stone-800 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+              >
+                <Save className="w-3.5 h-3.5" />
+                {saving ? 'Salvando…' : 'Salvar ficha'}
+              </button>
             </div>
-
           </div>
         </div>
-      )}
-    </>
+      </div>
+    </section>
   );
 };
