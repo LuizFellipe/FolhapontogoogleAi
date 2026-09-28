@@ -5,7 +5,6 @@ Esta pasta contém o servidor API desenvolvido em Python para o sistema Folha de
 ## Estrutura da Pasta
 
 -   **`app.py`**: O arquivo de lógica principal da API. Define as rotas Flask para gerenciar profissionais, folhas de ponto e lançamentos.
--   **`MODIFICATION_MEMORY.md`**: Registro histórico de alterações realizadas no backend.
 -   **`scripts/`**: Scripts auxiliares e de manutenção. `backfill_resumo_recesso.py` é um script **one-off histórico** para recálculo do resumo de folhas de junho/2026 — não deve ser reaproveitado para novos backfills (o dicionário `ENTRY_TYPE_CODES` interno não é atualizado; novos backfills devem consultar a tabela `tipos_lancamento` diretamente).
 -   **`__pycache__/`**: Arquivos temporários gerados pelo Python (podem ser ignorados).
 
@@ -43,7 +42,6 @@ O backend atua como intermediário entre o frontend React e o banco de dados MyS
 | `/api/sigep/fichas-cadastrais` | GET | Retorna metadados e tabelas do `sigep/ficha.cadastral.DD.MM.YYYY.json` mais recente (pela data do nome). |
 | `/api/sigep/sincronizar` | POST | Upsert transacional dos dados SIGEP em `profissionais_complementar` + recria as tabelas 1:N (cargas, cursos, habilitações, componentes). Body opcional: `{"matriculas": [...]}`. Casa por matrícula normalizada (`_norm_mat`). |
 | `/api/profissionais/<id>/complementar` | GET, PUT | Dados complementares SIGEP + coleções 1:N do servidor. PUT faz upsert (não sobrescreve `arquivo_origem`). |
-| `/sync` | GET | Serve a interface web standalone (`sync.html`) para sincronização e conciliação de dados cadastrais. |
 | `/api/health` | GET | Verifica se a API e o banco de dados estão operacionais. |
 
 ## Tecnologias Utilizadas

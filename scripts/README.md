@@ -25,16 +25,9 @@ Sincroniza a tabela `tipos_lancamento` do banco com os valores definidos em `src
 ### `backfill_resumo.py` — Recálculo de resumo de folhas
 Script de backfill geral para recalcular `resumo_folha` em lote.
 
-### `update_tree.py` — Atualizar estrutura de diretórios
-Utilitário para regenerar snapshots da árvore de arquivos do projeto.
-
 ### `gen.py` — Diagramas da documentação
 Gera `folhaponto-arquitetura`, `ciclo-vida-folha`, `integracao-sigep-educasync` e `modelo-dados` em `docs/diagrams/` (paleta fixa por camada) e exporta todos os `.drawio` da pasta para `.drawio.svg` com tema claro. Edições manuais nesses 4 `.drawio` são sobrescritas. Requer o CLI `drawio`.
 
 ```bash
 python3 scripts/gen.py
 ```
-
-## MODIFICATION_MEMORY
-
-Veja `MODIFICATION_MEMORY.md` nesta pasta para o histórico de alterações dos scripts.

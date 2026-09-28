@@ -5,7 +5,6 @@ Esta pasta centraliza a gestão de persistência do sistema Folha de Ponto.
 ## Estrutura da Pasta
 
 -   **`migrations/`**: Contém scripts SQL para criação e evolução automática do esquema do banco de dados MySQL.
--   **`MODIFICATION_MEMORY.md`**: Registro histórico de alterações estruturais e melhorias aplicadas nesta camada.
 
 ## Descrição do Modelo de Dados
 

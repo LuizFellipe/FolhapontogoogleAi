@@ -291,7 +291,6 @@ Iniciar, ver status e parar o sistema · adicionar tipo de lançamento · backup
 | `backfill_resumo.py` | Recalcula `resumo_folha` das folhas existentes, preservando dados manuais |
 | `backup_db.py` / `restore_db.py` | Backup e restauração do MySQL |
 | `check_run_migrations.py` | Aplica migrations pendentes |
-| `update_tree.py` | Regera os `tree.txt` de cada pasta |
 | `gen.py` | Gera os diagramas de `docs/diagrams/` e exporta todos para SVG |
 
 ![Fluxo dos scripts](docs/diagrams/scripts-fluxo.drawio.svg)
@@ -378,7 +377,6 @@ Para regerar tudo: `python3 scripts/gen.py` (precisa do CLI `drawio`). Os 4 prim
 | Tema | Arquivo |
 |---|---|
 | Instalação detalhada | [`README_SETUP.md`](README_SETUP.md) |
-| Histórico de alterações | [`MODIFICATION_MEMORY.md`](MODIFICATION_MEMORY.md) |
 | Backend | [`backend/README.md`](backend/README.md) |
 | Banco de dados | [`database/README.md`](database/README.md) |
 | Frontend | [`src/README.md`](src/README.md) · [`src/components/README.md`](src/components/README.md) |

@@ -1,2 +1,0 @@
-# Directory Structure for: backend/scripts
-└── backfill_resumo_recesso.py

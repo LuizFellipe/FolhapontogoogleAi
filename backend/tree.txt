@@ -1,7 +1,0 @@
-# Directory Structure for: backend
-├── Dockerfile
-├── MODIFICATION_MEMORY.md
-├── README.md
-├── app.py
-└── scripts
-    └── backfill_resumo_recesso.py

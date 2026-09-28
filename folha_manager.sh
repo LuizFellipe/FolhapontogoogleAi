@@ -87,13 +87,12 @@ show_main_menu() {
     echo -e "${BRIGHT_WHITE}  [ 3 ]  Parar Sistema${NC}"
     echo -e "${BRIGHT_WHITE}  [ 4 ]  Adicionar Tipo de Lançamento${NC}"
     echo -e "${BRIGHT_WHITE}  [ 5 ]  Fazer Backup do Banco de Dados${NC}"
-    echo -e "${BRIGHT_WHITE}  [ 6 ]  Atualizar Árvore de Diretórios${NC}"
-    echo -e "${BRIGHT_WHITE}  [ 7 ]  Informações do Sistema${NC}"
-    echo -e "${BRIGHT_WHITE}  [ 8 ]  Limpar e Otimizar${NC}"
-    echo -e "${BRIGHT_WHITE}  [ 9 ]  Sincronizar Tipos de Lançamento${NC}"
-    echo -e "${BRIGHT_WHITE}  [ 10 ] Restaurar Backup (Importar)${NC}"
-    echo -e "${BRIGHT_WHITE}  [ 11 ] Extrair Folhas de Ponto (EducaSync)${NC}"
-    echo -e "${BRIGHT_WHITE}  [ 12 ] Sair do Sistema${NC}"
+    echo -e "${BRIGHT_WHITE}  [ 6 ]  Informações do Sistema${NC}"
+    echo -e "${BRIGHT_WHITE}  [ 7 ]  Limpar e Otimizar${NC}"
+    echo -e "${BRIGHT_WHITE}  [ 8 ]  Sincronizar Tipos de Lançamento${NC}"
+    echo -e "${BRIGHT_WHITE}  [ 9 ]  Restaurar Backup (Importar)${NC}"
+    echo -e "${BRIGHT_WHITE}  [ 10 ] Extrair Folhas de Ponto (EducaSync)${NC}"
+    echo -e "${BRIGHT_WHITE}  [ 11 ] Sair do Sistema${NC}"
     echo -e "${BRIGHT_CYAN}=================================================${NC}"
     echo ""
 }
@@ -992,7 +991,7 @@ main() {
         
         show_main_menu
         
-        read -p "${NEON_CYAN}[SELECT OPTION 1-12]: ${NC}" choice
+        read -p "${NEON_CYAN}[SELECT OPTION 1-11]: ${NC}" choice
         
         case $choice in
             1)
@@ -1011,24 +1010,21 @@ main() {
                 backup_db
                 ;;
             6)
-                update_tree
-                ;;
-            7)
                 show_system_info
                 ;;
-            8)
+            7)
                 clean_and_optimize
                 ;;
-            9)
+            8)
                 sync_entry_types
                 ;;
-            10)
+            9)
                 restore_db
                 ;;
-            11)
+            10)
                 extract_educasync
                 ;;
-            12)
+            11)
                 show_header
                 echo -e "${BRIGHT_CYAN}[SYSTEM SHUTDOWN] Thank you for using Gestor Folha Ponto!${NC}"
                 echo -e "${NEON_GREEN}[DISCONNECTED] Connection terminated${NC}"

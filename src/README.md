@@ -22,7 +22,6 @@ Esta pasta concentra toda a lógica de aplicação e componentes da interface do
     - **`main.tsx`**: Ponto de entrada oficial da aplicação React montando a estrutura do DOM no `index.html`.
 -   **`index.css`**: Contém todas as declarações de estilos globais, configurações do Tailwind CSS e definições de layout para impressão (como quebras de página controladas).
 -   **`logo.png`**: Logotipo utilizado no cabeçalho e na folha de ponto oficial.
--   **`MODIFICATION_MEMORY.md`**: Registro consolidado de todas as melhorias visuais e funcionais aplicadas nesta camada.
 
 ## Padrões Técnicos
 -   **Arquitetura baseada em Componentes**: Componentes reutilizáveis e isolados.
