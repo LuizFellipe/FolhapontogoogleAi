@@ -221,7 +221,9 @@ def processar(page, api, grupos, mes, ano, opcoes, dry, confirmar, reconferir=Fa
             if not eventos:
                 continue
             nome, mat = eventos[0]["nome"], mat_sigep(eventos[0]["matricula"])
-            print(f"[{n}/{len(grupos)}] {nome} ({mat})")
+            # .get: API antiga (sem esses campos) continua funcionando
+            print(f"[{n}/{len(grupos)}] {nome} ({mat}) — turnos: {eventos[0].get('turnos_cadastro') or '?'}"
+                  f" | {eventos[0].get('carga_horaria') or '?'}h")
             if not mat:
                 res["FALHA"] += [(e, "sem matrícula") for e in eventos]
                 continue

@@ -540,7 +540,7 @@ def _ranges_eventos(mes, ano):
     """Ranges de dias consecutivos por (folha, tipo). Mesmo evento nos dois turnos → 1 range 'MAT, VESP'.
     Fonte única do Relatório de Eventos (ReportsModal) e do robô sigep/lancar_eventos.py."""
     rows = execute_query("""
-        SELECT v.id, v.nome, v.matricula, v.turno1, v.turno2, v.dia, v.tipo, v.tipo_turno2
+        SELECT v.id, v.nome, v.matricula, v.carga_horaria, v.turno1, v.turno2, v.dia, v.tipo, v.tipo_turno2
         FROM vw_folhas_lancamento v
         JOIN folhas_ponto fp ON fp.id = v.id
         JOIN profissionais p ON p.id = fp.profissional_id
@@ -576,6 +576,8 @@ def _ranges_eventos(mes, ano):
             t = tipos.get(tipo, {})
             out.append({
                 'folha_ponto_id': fid, 'nome': profs[fid]['nome'], 'matricula': profs[fid]['matricula'],
+                'carga_horaria': profs[fid]['carga_horaria'],
+                'turnos_cadastro': ', '.join(t for t in (profs[fid]['turno1'], profs[fid]['turno2']) if t),
                 'tipo': tipo, 'label': t.get('label', tipo), 'codigo': t.get('codigo'),
                 'dia_inicio': g[0], 'dia_fim': g[-1],
                 'turnos': ', '.join(x for x in ('MAT', 'VESP', 'NOT') if x in turnos),
