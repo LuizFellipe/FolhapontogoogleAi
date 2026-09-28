@@ -37,8 +37,6 @@ Em volta disso, ele cuida do que vem antes e depois da folha:
 | 🏷️ Tipos de lançamento com código oficial | ⛔ Críticas de limite de atestados | 📨 Memorandos de entrega e devolução |
 | | 📄 Resumo (Página 2) automático | 🤖 Robô que lança os eventos no SIGEP |
 
-![Tela principal — editor de lançamentos](docs/screenshots/editor_mockup.jpg)
-
 ---
 
 ## 🏛️ Como funciona
