@@ -1,400 +1,401 @@
-# 📋 Gestor Folha Ponto — Secretaria de Estado de Educação
+<div align="center">
 
-> **Sistema moderno e intuitivo** para geração, gerenciamento e impressão de folhas de frequência de servidores públicos.  
-> Desenvolvido com **React 19**, **TypeScript**, **Tailwind CSS** e **MySQL 8**.
+# 📋 Gestor Folha Ponto
 
----
+**Gere, preencha, confira e imprima folhas de frequência de servidores — sem planilha, sem retrabalho.**
 
-## ✨ Funcionalidades Destaque
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript&logoColor=white)
+![Tailwind](https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-3.0-000000?logo=flask&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-8-4479A1?logo=mysql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 
-### 🔐 Autenticação Segura
-- Tela de login com credenciais configuráveis via `.env`
-- Acesso protegido ao sistema (usuário + senha)
-- Interface dark com tema cyberpunk
+[Visão geral](#-visão-geral) ·
+[Como funciona](#-como-funciona) ·
+[Funcionalidades](#-funcionalidades) ·
+[Começando](#-começando) ·
+[Integrações](#-integrações-sigep-e-educasync) ·
+[Dados](#️-modelo-de-dados) ·
+[API](#-api-rest) ·
+[Operação](#-operação-e-manutenção)
 
-### 📊 Gerenciamento de Profissionais
-- **CRUD completo**: criar, editar, visualizar, excluir servidores
-- **Matrícula opcional** para temporários e prestadores
-- **Navegação rápida**: setas, dropdown, índice visual (N de Total)
-
-### 📅 Calendário Inteligente
-- Geração automática de dias conforme mês/ano
-- Suporte a **dois turnos independentes** (20h ou 40h)
-- Segundo turno habilitado automaticamente para carga de 40h
-
-### ⚡ Pré-Preenchimento Inteligente
-- Detecta padrões de **CPIP** e **CURSO FORMAÇÃO** de folhas anteriores
-- Mapeia por **posição semanal + dia da semana** (3ª segunda ≠ 4ª segunda)
-- Botão com barra de progresso para aplicação rápida
-
-### 🗓️ Gerenciamento de Feriados
-- Modal exclusivo para adicionar/aplicar/reverter feriados
-- Feriados salvos no banco para reutilização no mesmo ano
-- Aplicação dinâmica com um clique
-
-### 🎯 Tipos de Lançamento (21 Opções)
-Trabalho Normal, Férias, Recesso, Atestado Médico, Licença Médica, Falta, TRE, Abono de Ponto, CPIP, Curso Formação, Abono Aniversário, Feriado, Abono Art. 151, Falta Paralisação, Atestado de Comparecimento, e mais.
-
-### 📄 Resumo da Frequência (Página 2)
-- **Auto-preenchimento automático** baseado em lançamentos com código oficial
-- Tabela de operação (Inclusão, Alteração, Exclusão)
-- **Formato "U"** para números: `|_|` (fiel ao formulário oficial)
-- Referência rápida de códigos integrada
-
-### 🖨️ Impressão A4 Completo
-- Duas páginas otimizadas (210mm × 297mm)
-- Layout sem espaços em branco
-- Compatível com navegadores (Ctrl+P ou ícone impressora)
-
-### 📦 Geração em Lote
-- Selecione múltiplos profissionais + mês/ano
-- Filtro por cargo
-- Aplica pré-preenchimento automaticamente
-- Barra de progresso em tempo real
-- Imprime todas as folhas em sequência
-
-### 📱 Responsividade Total
-- Desktop, tablet e mobile
-- Interface adaptativa com Tailwind CSS
+</div>
 
 ---
 
-## 🚀 Guia Rápido
+## 🧭 Visão geral
 
-### 1. Setup Automático (Recomendado)
+O **Gestor Folha Ponto** substitui o preenchimento manual das folhas de frequência mensais. Para cada servidor e mês, o sistema monta a grade de dias, aplica feriados, recessos e padrões recorrentes, calcula sozinho o **resumo de ocorrências com códigos oficiais** e imprime o formulário em **duas páginas A4**, prontas para assinatura.
+
+Em volta disso, ele cuida do que vem antes e depois da folha:
+
+| Antes | Durante | Depois |
+|---|---|---|
+| 👥 Cadastro de servidores (manual, **EducaSync** ou **SIGEP**) | ✏️ Grade 31 dias × 2 turnos com auto-save | 🖨️ Impressão individual ou em lote |
+| 🗓️ Feriados e recessos do ano | ⚡ Pré-preenchimento de CPIP / Curso | 📊 Relatórios mensais e anuais |
+| 🏷️ Tipos de lançamento com código oficial | ⛔ Críticas de limite de atestados | 📨 Memorandos de entrega e devolução |
+| | 📄 Resumo (Página 2) automático | 🤖 Robô que lança os eventos no SIGEP |
+
+![Tela principal — editor de lançamentos](docs/screenshots/editor_mockup.jpg)
+
+---
+
+## 🏛️ Como funciona
+
+Três containers (**nginx + React**, **Flask**, **MySQL**) sobem com Docker Compose. Scripts Python locais fazem a ponte com sistemas externos (SIGEP e PDFs do EducaSync) e deixam arquivos JSON que o backend lê.
+
+![Arquitetura geral](docs/diagrams/folhaponto-arquitetura.drawio.svg)
+
+<details>
+<summary><b>Legenda de cores (vale para todos os diagramas)</b></summary>
+
+| Cor | Camada |
+|---|---|
+| 🟦 Azul | Frontend React (`src/`) |
+| 🟩 Verde | Backend Flask (`backend/app.py`) |
+| 🟧 Laranja | Banco MySQL (`database/`) |
+| 🟪 Roxo | Integrações SIGEP / EducaSync (`sigep/`, `educasync/`) |
+| 🟨 Amarelo | Operação e scripts (`scripts/`, `folha_manager.sh`) |
+| 🟥 Vermelho | Bloqueios e regras de negócio |
+
+</details>
+
+### 🔁 Ciclo de vida de uma folha
+
+Do login à entrega: escolha o servidor e o mês, preencha a grade (com ajudantes), o sistema salva a cada mudança e gera o resumo; no fim do mês saem relatórios, memorandos e o lançamento no SIGEP.
+
+![Ciclo de vida da folha](docs/diagrams/ciclo-vida-folha.drawio.svg)
+
+---
+
+## ✨ Funcionalidades
+
+### 👥 Servidores
+- **CRUD completo** com navegação rápida (anterior/próximo, lista, posição *N de total*).
+- Campos: nome, matrícula (opcional para temporários/prestadores), status **Ativo/Inativo**, cargo, disciplina, função, UA, exercício, unidade de lotação, carga horária (**20h ou 40h**) e turnos.
+- **Dados complementares do SIGEP** (admissão, PcD, readaptação, cargas horárias, cursos…) em um card logo abaixo do cadastro.
+
+### ✏️ Grade de lançamentos (Página 1)
+- Dias gerados automaticamente pelo mês/ano; **dois turnos independentes** (o 2º turno só abre para 40h).
+- **Tipos de lançamento dinâmicos** vindos do banco — Trabalho Normal, Férias, Recesso, Atestado Médico, Licença Médica, Falta, TRE, Abono de Ponto, CPIP, Curso Formação, Abono Aniversário, Feriado, Abono Art. 151, Falta Paralisação, Atestado de Comparecimento e outros.
+- **Auto-save**: cada alteração relevante grava folha, lançamentos e resumo (`saveCompleteTimesheet`).
+
+### ⚡ Pré-preenchimento inteligente
+- Detecta os padrões de **CPIP** e **Curso de Formação** nas folhas anteriores.
+- Mapeia por **posição semanal + dia da semana** (a 3ª segunda ≠ a 4ª segunda).
+- Insere automaticamente a observação padrão do curso.
+
+### 🗓️ Feriados e recessos
+- Modal com duas abas: feriados (dia) e recessos (intervalo de datas).
+- Salvos por ano no banco; **aplicar** e **reverter** com um clique, com auto-save.
+
+### ⛔ Críticas de atestados
+- **Bimestral** — atestado médico de até 3 dias: bloqueia se já houver ocorrência no bimestre.
+- **Anual** — atestados de comparecimento: bloqueia acima de **12 por ano** (banco + tela).
+- As contagens vêm das views `vw_relatorio_atestados_*`.
+
+### 📄 Resumo da frequência (Página 2)
+- Gerado por `computeSummaryFromEntries()`: agrupa dias consecutivos com o mesmo **código oficial** (ex.: `99902` = Férias).
+- Operação **I / A / E**, carga (`1` para 20h, `3` para 40h), meses e intervalo de dias no **formato "U"** `|_|`, fiel ao formulário.
+- Pode ser complementado manualmente; tabela de códigos de referência impressa junto.
+
+### 🖨️ Impressão
+- Duas páginas **A4 (210 × 297 mm)** sem espaços vazios; `Ctrl+P` ou ícone da impressora.
+- Dias especiais recebem traços nos campos de entrada/saída; para 20h o 2º turno sai bloqueado.
+
+### 📦 Geração e impressão em lote
+- Filtro por cargo e carga horária, seleção múltipla de servidores + mês/ano.
+- Aplica o pré-preenchimento, mostra progresso em tempo real e imprime tudo em sequência.
+
+### 📊 Relatórios (somente servidores ativos)
+| Relatório | O que mostra |
+|---|---|
+| **Lançamentos efetuados** | Eventos do mês (exceto trabalho normal, CPIP e curso) agrupados em intervalos de dias |
+| **Adicional noturno** | Servidores com turno noturno e dias trabalhados (`vw_adicional_noturno`) |
+| **Resumo anual** | Ocorrências acumuladas de janeiro até hoje, por servidor |
+
+### 📨 Memorandos
+- **Entrega de folhas de ponto** (`TimesheetDeliveryModal`) e **devolução de servidor** (`ReturnMemoModal`), separados por vínculo (efetivos/temporários), prontos para impressão.
+
+### 🔐 Acesso
+- Tela de login com usuário e senha definidos no `.env` (uso interno).
+
+---
+
+## 🚀 Começando
+
+### Pré-requisitos
+- **Docker + Docker Compose** (caminho recomendado), ou
+- **Node 20+**, **Python 3.11+** e **MySQL 8** para rodar localmente.
+
+### 1. Com Docker (recomendado)
+
 ```bash
-# Clone o repositório
 git clone <url-do-repositorio>
 cd FolhapontogoogleAi
-
-# Inicie todos os serviços com Docker Compose
+cp .env.example .env        # ajuste senhas e credenciais
 docker-compose up -d
-
-# Acesse em: http://localhost:3000
-# Credenciais padrão: admin / senha123 (.env)
 ```
 
-### 2. Primeira Entrada
-- **Mês/Ano**: Selecione no topo
-- **Dados do Servidor**: Nome, matrícula (opcional), cargo, UA, exercício, unidade, turnos
-- **Grade**: Para cada dia, escolha o tipo de lançamento
-- **Botões auxiliares**:
-  - **Pré Preenchimento**: replica padrões CPIP/CURSO
-  - **Limpar**: reseta tudo para TRABALHO NORMAL
-  - **Feriados**: abre modal de gerenciamento
+Acesse **http://localhost:3000**. O login é o definido em `VITE_APP_USERNAME` / `VITE_APP_PASSWORD` (padrão de exemplo `admin` / `senha123` — **troque**).
 
-### 3. Resumo da Frequência
-- Preenchimento automático conforme lançamentos com código oficial
-- Complemente manualmente se necessário
-- Campos: Operação, Código, Carga Horária, Meses, Intervalo de Dias
+### 2. Localmente, pelo gerenciador
 
-### 4. Impressão
-- Clique em **Visualizar** para conferir layout
-- Use **Ctrl+P** ou ícone impressora no header
-- Salve como PDF ou imprima direto
-
----
-
-## 📸 Interface em Ação
-
-### Tela Principal — Editor de Lançamentos
-
-![Editor de Lançamentos](docs/screenshots/editor_mockup.jpg)
-*Interface de edição e validação de frequências diárias com tema cyberpunk e sincronização automática.*
-
-### Página 1 — Formulário Oficial
-Reproduz fidedignamente o formulário da SEE com:
-- Cabeçalho: UA, Exercício, Unidade, Nome, Matrícula
-- Grade 31 dias × 2 turnos
-- Campos de observação
-- Assinatura e datas
-
-### Página 2 — Resumo da Frequência
-Tabela de operações com:
-- Coluna: Operação (I/A/E)
-- Coluna: Código oficial (ex: 99902=FÉRIAS)
-- Coluna: Carga horária
-- Coluna: Meses
-- Coluna: Intervalo de dias (formato "U")
-- Caixa MENSAGEM para observações
-
----
-
-## 🛠️ Tecnologias
-
-| Camada | Tecnologia | Versão |
-|--------|-----------|--------|
-| **Frontend** | React | 19 |
-| **Linguagem** | TypeScript | 5.x |
-| **Estilo** | Tailwind CSS | 4.x |
-| **Ícones** | Lucide React | latest |
-| **Animações** | Framer Motion | latest |
-| **Build** | Vite | 6.x |
-| **Backend** | Flask | 3.0 |
-| **Banco** | MySQL | 8.0 |
-| **Deploy** | Docker + Compose | latest |
-
----
-
-## ⚙️ Configuração de Ambiente
-
-### Variáveis Principais (`.env`)
 ```bash
-# Ambiente (local | docker)
-VITE_ENVIRONMENT=local
-
-# Autenticação
-VITE_APP_USERNAME=admin
-VITE_APP_PASSWORD=senha123
-
-# Banco de Dados
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=SUA_SENHA_AQUI
-DB_NAME=folhaponto_db
+./folha_manager.sh          # menu interativo: opção 1 inicia backend + frontend
 ```
 
-### Ambientes Suportados
+Detalhes de instalação manual em [`README_SETUP.md`](README_SETUP.md).
 
-| Ambiente | Uso | Frontend | Backend | Proxy |
-|----------|-----|----------|---------|-------|
-| **Local** | Desenvolvimento | http://localhost:3000 | http://localhost:5000 | localhost:5000 |
-| **Docker** | Produção | http://localhost:3000 | backend:5000 (interno) | backend:5000 |
+### 3. Primeira folha em 5 passos
+1. Escolha **mês/ano** no topo.
+2. Selecione (ou crie com **Novo**) o servidor.
+3. Clique em **Pré Preenchimento** e em **Feriados** para aplicar o calendário do ano.
+4. Ajuste dia a dia na grade — o resumo da Página 2 se atualiza sozinho.
+5. **Visualizar** → `Ctrl+P` → imprimir ou salvar em PDF.
 
-O Vite detecta automaticamente via `VITE_ENVIRONMENT` e ajusta o proxy.
+### ⚙️ Variáveis de ambiente (`.env`)
+
+| Variável | Para quê | Exemplo |
+|---|---|---|
+| `DB_HOST` / `DB_PORT` | Endereço do MySQL | `localhost` / `3307` |
+| `DB_USER` / `DB_PASSWORD` / `DB_NAME` | Credenciais do banco | `root` / — / `folhaponto_db` |
+| `API_PORT` / `API_HOST` | Porta e interface do Flask | `5000` / `0.0.0.0` |
+| `FLASK_DEBUG` | Debug do Flask (só em dev) | `false` |
+| `VITE_ENVIRONMENT` | `local` ou `docker` — ajusta o proxy do Vite | `local` |
+| `VITE_API_URL` | URL base da API (opcional) | — |
+| `VITE_APP_USERNAME` / `VITE_APP_PASSWORD` | Login da tela inicial | `admin` / — |
+
+| Ambiente | Frontend | Backend | Banco |
+|---|---|---|---|
+| **Local** | http://localhost:3000 (Vite) | http://localhost:5000 | localhost:3307 |
+| **Docker** | http://localhost:3000 (nginx) | `backend:5000` via proxy `/api` | `db:3306` (exposto em 3307) |
 
 ---
 
-## 📁 Estrutura do Projeto
+## 🔌 Integrações SIGEP e EducaSync
+
+Três fluxos independentes, todos rodados localmente e com login manual quando envolvem o SIGEP:
+
+1. **SIGEP → fichas cadastrais** — `verificar_novos.py` encontra servidores novos, `raspar_fichas.py` baixa a ficha de cada um em PDF, `extrair_fichas.py` converte em JSON/XLSX e a aba **SIGEP** do modal de sincronização grava os dados complementares no banco.
+2. **Folha → SIGEP (robô)** — `lancar_eventos.py` lê os eventos do mês pela API e os lança em *03.Lançamento*. Cada intervalo recebe a marca `JA_EXISTIA` ou `LANCADO`; sobreposição parcial vira **conflito** para revisão manual. Roda em modo **simulação** por padrão.
+3. **EducaSync** — lê folhas de ponto em PDF (`educasync/educa_folha/`), gera `dados_folha_ponto.json` e o modal compara com o banco para aplicar divergências.
+
+![Integrações SIGEP e EducaSync](docs/diagrams/integracao-sigep-educasync.drawio.svg)
+
+Guias completos: [`sigep/README.md`](sigep/README.md) · [`educasync/README.md`](educasync/README.md) · [`sigep.md`](sigep.md)
+
+---
+
+## 🗄️ Modelo de dados
+
+Tudo gira em torno de **profissionais → folhas_ponto → lançamentos/resumo**. Os dados do SIGEP ficam em tabelas satélite e as views alimentam relatórios e críticas.
+
+![Modelo de dados](docs/diagrams/modelo-dados.drawio.svg)
+
+- O schema evolui por **migrations numeradas** (`database/migrations/001…026`), registradas em `schema_migrations`.
+- `database/full_setup.sql` cria schema + dados de referência, **sem dados pessoais**.
+- Mais em [`database/README.md`](database/README.md).
+
+---
+
+## 🔗 API REST
+
+Base: `/api` · Flask em `backend/app.py` · todas as rotas passam por `execute_query()`.
+
+<details>
+<summary><b>👥 Profissionais</b></summary>
+
+| Método | Endpoint | Descrição |
+|---|---|---|
+| `GET` | `/profissionais` | Listar servidores |
+| `POST` | `/profissionais` | Criar servidor |
+| `GET` | `/profissionais/<id>` | Obter servidor |
+| `PUT` | `/profissionais/<id>` | Atualizar servidor |
+| `DELETE` | `/profissionais/<id>` | Excluir servidor (cascata nas folhas) |
+| `GET` | `/profissionais/<id>/complementar` | Dados complementares do SIGEP |
+| `PUT` | `/profissionais/<id>/complementar` | Atualizar dados complementares |
+
+</details>
+
+<details>
+<summary><b>📄 Folhas, lançamentos e resumo</b></summary>
+
+| Método | Endpoint | Descrição |
+|---|---|---|
+| `GET` | `/folhas-ponto` | Listar folhas (filtros: `profissional_id`, `mes`, `ano`) |
+| `POST` | `/folhas-ponto` | Criar folha |
+| `GET` | `/folhas-ponto/<id>` | Folha com lançamentos e resumo |
+| `PUT` | `/folhas-ponto/<id>` | Atualizar folha |
+| `DELETE` | `/folhas-ponto/<id>` | Excluir folha |
+| `POST` | `/folhas-ponto/<id>/lancamentos` | Salvar lançamentos diários em lote |
+| `POST` | `/folhas-ponto/<id>/resumo` | Salvar resumo em lote |
+| `GET` | `/tipos-lancamento` | Tipos de lançamento e códigos |
+
+</details>
+
+<details>
+<summary><b>🗓️ Feriados e recessos</b></summary>
+
+| Método | Endpoint | Descrição |
+|---|---|---|
+| `GET` | `/feriados?ano=` | Listar feriados do ano |
+| `POST` | `/feriados` | Criar feriado |
+| `DELETE` | `/feriados/<id>` | Excluir feriado |
+| `GET` | `/recessos?ano=` | Listar recessos do ano |
+| `POST` | `/recessos` | Criar recesso |
+| `DELETE` | `/recessos/<id>` | Excluir recesso |
+
+</details>
+
+<details>
+<summary><b>📊 Relatórios e críticas</b></summary>
+
+| Método | Endpoint | Descrição |
+|---|---|---|
+| `GET` | `/relatorio/adicional-noturno?mes=&ano=` | Adicional noturno |
+| `GET` | `/relatorio/resumo?ano=` | Ocorrências acumuladas no ano |
+| `GET` | `/atestados-bimestrais?matricula=&ano=` | Atestados por bimestre |
+| `GET` | `/atestados-comparecimento?matricula=&ano=` | Comparecimentos por mês (limite 12/ano) |
+
+</details>
+
+<details>
+<summary><b>🔄 Integrações</b></summary>
+
+| Método | Endpoint | Descrição |
+|---|---|---|
+| `GET` | `/sigep/eventos?mes=&ano=` | Eventos do mês agrupados em intervalos (usado pelo robô e pelo relatório) |
+| `POST` | `/sigep/eventos/sync` | Grava a marca `JA_EXISTIA` / `LANCADO` |
+| `GET` | `/sigep/fichas-cadastrais` | Conteúdo do `ficha.cadastral.*.json` mais recente |
+| `POST` | `/sigep/sincronizar` | Upsert dos dados complementares (todas ou algumas matrículas) |
+| `GET` | `/educasync/dados` | Conteúdo do `dados_folha_ponto.json` |
+| `GET` | `/health` | Health check |
+
+</details>
+
+Fluxo interno de cada rota: [`app-py-fluxo`](docs/diagrams/app-py-fluxo.drawio.svg) · detalhes em [`backend/README.md`](backend/README.md).
+
+---
+
+## 🧰 Operação e manutenção
+
+### `folha_manager.sh` — menu central
+Iniciar, ver status e parar o sistema · adicionar tipo de lançamento · backup e restauração do banco · atualizar árvores `tree.txt` · informações do sistema · limpeza (cache npm, venv, temporários, logs) · sincronizar tipos de lançamento · extrair folhas (EducaSync).
+
+### Scripts (`scripts/`)
+
+| Script | O que faz |
+|---|---|
+| `add_entry_type.py` | Cria um tipo de lançamento: atualiza `src/types.ts`, SQL de setup, gera migration e aplica no banco |
+| `sync_tipos_lancamento.py` | Compara e sincroniza tipos entre `src/types.ts` e o banco |
+| `backfill_resumo.py` | Recalcula `resumo_folha` das folhas existentes, preservando dados manuais |
+| `backup_db.py` / `restore_db.py` | Backup e restauração do MySQL |
+| `check_run_migrations.py` | Aplica migrations pendentes |
+| `update_tree.py` | Regera os `tree.txt` de cada pasta |
+| `gen.py` | Gera os diagramas de `docs/diagrams/` e exporta todos para SVG |
+
+![Fluxo dos scripts](docs/diagrams/scripts-fluxo.drawio.svg)
+
+### Backup automático
+`backup_cron.py` (agendado no cron) gera o backup via `backup_db`, envia ao **OneDrive** com `rclone` e mantém só a cópia mais recente em disco.
+
+### Deploy
+
+```bash
+docker-compose up -d                                  # desenvolvimento
+docker-compose -f docker-compose.prod.yml up -d       # produção: imagens prontas, nginx + gunicorn
+docker-compose logs -f                                # acompanhar
+docker-compose down                                   # parar (-v apaga os volumes)
+```
+
+---
+
+## 📁 Estrutura do projeto
 
 ```
 FolhapontogoogleAi/
-├── src/                          # Frontend React + TypeScript
-│   ├── components/               # 9 componentes reutilizáveis
-│   │   ├── LoginScreen.tsx       # Autenticação
-│   │   ├── EmployeeForm.tsx      # Dados do servidor
-│   │   ├── TimesheetGrid.tsx     # Grade de lançamentos
-│   │   ├── TimesheetPreview.tsx  # Página 1 (impressão)
-│   │   ├── TimesheetSummaryPreview.tsx  # Página 2 (resumo)
-│   │   ├── HolidayModal.tsx      # Gerenciador de feriados
-│   │   ├── BatchTimesheetModal.tsx # Geração em lote
-│   │   └── ...
-│   ├── services/api.ts           # Comunicação com backend
-│   ├── types.ts                  # 21 tipos de lançamento + interfaces
-│   └── App.tsx                   # Orquestração principal
-│
-├── backend/                       # API Flask
-│   ├── app.py                    # 15+ endpoints REST
-│   └── Dockerfile
-│
-├── database/                      # MySQL + Migrations
-│   ├── full_setup.sql            # Setup: schema + dados de referência (sem dados pessoais)
-│   ├── migrations/               # 20 migrations organizadas
-│   │   ├── 001_create_tables.sql
-│   │   ├── 003_add_second_turn_columns.sql
-│   │   ├── 011_create_feriados_table.sql
-│   │   ├── 016_create_vw_eventos_consolidados.sql
-│   │   ├── 017_create_recessos_table.sql
-│   │   ├── 018_create_schema_migrations.sql
-│   │   ├── 019_recessos_unique_constraint.sql
-│   │   ├── 020_create_vw_atestados_comparecimento.sql
-│   │   └── ...
-│   └── Dockerfile
-│
-├── scripts/                       # Automação
-│   ├── add_entry_type.py         # Adicionar novos tipos
-│   ├── sync_tipos_lancamento.py  # Sincronizar tipos ↔ banco
-│   ├── backfill_resumo.py        # Backfill de resumos
-│   ├── backup_db.py              # Backup/restore
-│   └── update_tree.py            # Gera tree.txt de cada pasta
-│
-├── backend/scripts/               # Scripts one-off do backend
-│   └── backfill_resumo_recesso.py
-│
-├── docs/diagrams/                 # Diagramas de arquitetura (draw.io)
-│   ├── folhaponto-arquitetura.drawio(.png)
-│   ├── scripts-fluxo.drawio(.png)
-│   ├── backend-scripts-fluxo.drawio(.png)
-│   └── app-py-fluxo.drawio(.png)
-│
-├── docker-compose.yml            # Orquestração (dev + prod)
-├── vite.config.ts                # Proxy condicional
-├── README.md                      # Este arquivo
-└── tree.txt                       # Árvore de arquivos comentada
+├── src/                     🎨 Frontend React + TypeScript
+│   ├── App.tsx              orquestra estado, auto-save e modais
+│   ├── components/          17 componentes (grade, previews, modais, sync…)
+│   ├── services/api.ts      cliente da API
+│   └── types.ts             tipos de lançamento + interfaces
+├── backend/                 ⚙️ API Flask (app.py) + scripts one-off
+├── database/                🗄️ full_setup.sql + migrations/ 001…026
+├── sigep/                   🔌 raspador, parser de fichas, robô de eventos
+├── educasync/               🔌 extrator de folhas de ponto em PDF
+├── scripts/                 🧰 manutenção (tipos, backup, backfill, árvores)
+├── docs/
+│   ├── diagrams/            📐 diagramas .drawio + .svg
+│   └── screenshots/
+├── folha_manager.sh         menu de operação
+├── backup_cron.py           backup agendado → OneDrive
+├── docker-compose.yml       dev  ·  docker-compose.prod.yml  produção
+└── nginx.conf               SPA + proxy /api
 ```
+
+Cada pasta tem seu `README.md` e um `tree.txt` comentado.
 
 ---
 
-## 🎯 Fluxo de Dados
+## 📐 Diagramas
 
-```
-┌──────────┐
-│ Servidor │ (nome, matrícula, carga, turnos)
-└────┬─────┘
-     │
-     ▼
-┌──────────────────┐
-│  Folha Ponto     │ (mes, ano, servidor_id)
-└────┬─────────────┘
-     │
-     ├─────────────────────────────────┐
-     ▼                                 ▼
-┌─────────────────┐          ┌──────────────────┐
-│ Lançamentos     │          │ Resumo Folha     │
-│ Diários (31×2)  │          │ (até 8 linhas)   │
-│ + Observações   │          │ + Operações      │
-└─────────────────┘          └──────────────────┘
-```
+Todos em [`docs/diagrams/`](docs/diagrams/): o `.drawio` é editável no [draw.io](https://app.diagrams.net/) e o `.svg` ao lado é o que aparece aqui.
+
+| Diagrama | Mostra |
+|---|---|
+| [Arquitetura geral](docs/diagrams/folhaponto-arquitetura.drawio.svg) | Containers, camadas, integrações e operação |
+| [Ciclo de vida da folha](docs/diagrams/ciclo-vida-folha.drawio.svg) | Jornada do usuário do login à entrega |
+| [Integrações SIGEP + EducaSync](docs/diagrams/integracao-sigep-educasync.drawio.svg) | Importação de fichas, robô de eventos e EducaSync |
+| [Modelo de dados](docs/diagrams/modelo-dados.drawio.svg) | Tabelas, relacionamentos e views |
+| [Fluxo do app.py](docs/diagrams/app-py-fluxo.drawio.svg) | Rotas do backend agrupadas por recurso |
+| [Scripts](docs/diagrams/scripts-fluxo.drawio.svg) | Funcionamento de cada script de `scripts/` |
+| [Scripts do backend](docs/diagrams/backend-scripts-fluxo.drawio.svg) | `backfill_resumo_recesso.py` |
+
+Para regerar tudo: `python3 scripts/gen.py` (precisa do CLI `drawio`). Os 4 primeiros diagramas da tabela são gerados pelo script — mude-os lá, não no draw.io; os demais podem ser editados no draw.io e o script só re-exporta o SVG.
 
 ---
 
-## 🔧 Scripts Auxiliares
+## 🔐 Segurança e privacidade
 
-### Adicionar Novo Tipo de Lançamento
-```bash
-python3 add_entry_type.py
-# Interage com usuário, atualiza:
-# - src/types.ts
-# - full_setup.sql
-# - migrations/001_create_tables.sql
-# - Cria migration numerada
-# - Aplica no banco (Docker ou local)
-```
-
-### Sincronizar Tipos ↔ Banco
-```bash
-python3 sync_tipos_lancamento.py
-# Verifica discrepâncias entre src/types.ts e banco
-# Sincroniza códigos bidirecionalmente
-```
-
-### Backfill de Resumos
-```bash
-python3 backfill_resumo.py
-# Preenche resumo_folha para todas as folhas existentes
-# Preserva dados manuais (seguro)
-```
+- ✅ Credenciais só no `.env` (fora do git).
+- ✅ SQL parametrizado via `mysql-connector`.
+- ⚠️ CORS aberto para qualquer origem (`CORS(app)`); em produção o acesso passa pelo proxy do nginx, mas restrinja as origens se expor a API diretamente.
+- ✅ **Dados pessoais fora do repositório**: PDFs, planilhas (`.xls`/`.xlsx`/`.ods`), CSVs e JSONs de `sigep/` e `educasync/` estão no `.gitignore` e no `.graphifyignore`; o histórico foi saneado com `git-filter-repo`.
+- ⚠️ A autenticação do frontend é básica, pensada para rede interna. Para exposição pública, implemente OAuth2/JWT no backend.
 
 ---
 
-## 📊 Endpoints da API
-
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| `GET` | `/api/profissionais` | Listar servidores |
-| `POST` | `/api/profissionais` | Criar servidor |
-| `PUT` | `/api/profissionais/<id>` | Atualizar servidor |
-| `DELETE` | `/api/profissionais/<id>` | Excluir servidor + folhas |
-| `GET` | `/api/folhas-ponto` | Listar folhas (filtros opcionais: profissional_id, mes, ano) |
-| `GET` | `/api/folhas-ponto/<id>` | Obter folha específica com lançamentos e resumo |
-| `POST` | `/api/folhas-ponto` | Criar folha |
-| `PUT` | `/api/folhas-ponto/<id>` | Atualizar folha |
-| `DELETE` | `/api/folhas-ponto/<id>` | Excluir folha |
-| `POST` | `/api/folhas-ponto/<id>/lancamentos` | Salvar lançamentos diários em lote |
-| `POST` | `/api/folhas-ponto/<id>/resumo` | Salvar resumo da folha em lote |
-| `GET` | `/api/feriados` | Listar feriados do ano |
-| `POST` | `/api/feriados` | Criar feriado |
-| `DELETE` | `/api/feriados/<id>` | Excluir feriado |
-| `GET` | `/api/recessos` | Listar recessos do ano |
-| `POST` | `/api/recessos` | Criar recesso |
-| `DELETE` | `/api/recessos/<id>` | Excluir recesso |
-| `GET` | `/api/relatorio/adicional-noturno?mes=&ano=` | Relatório de adicional noturno |
-| `GET` | `/api/relatorio/lancamentos?mes=&ano=` | Relatório de lançamentos |
-| `GET` | `/api/relatorio/resumo?ano=` | Resumo anual de ocorrências por profissional (jan → hoje) |
-| `GET` | `/api/tipos-lancamento` | Listar tipos de lançamento |
-| `GET` | `/api/atestados-bimestrais?matricula=&ano=` | Contagem de atestados por bimestre |
-| `GET` | `/api/atestados-comparecimento?matricula=&ano=` | Contagem de comparecimentos por mês (limite 12/ano) |
-| `GET` | `/api/health` | Health check da API |
-
-
----
-
-## 🐳 Deploy com Docker
-
-### Desenvolvimento
-```bash
-docker-compose up -d
-docker-compose logs -f
-# Acesso: http://localhost:3000
-```
-
-### Produção
-```bash
-docker-compose -f docker-compose.prod.yml up -d
-# Nginx proxy + frontend otimizado + backend em gunicorn
-```
-
-### Parar Serviços
-```bash
-docker-compose down
-docker-compose down -v  # com volumes
-```
-
----
-
-## 🔐 Segurança
-
-- ✅ **Credenciais**: Definidas em `.env` (não no código)
-- ✅ **API Key exposta**: NÃO EXISTEM no projeto
-- ✅ **CORS**: Configurado para `localhost`
-- ✅ **SQL**: Prepared statements via ORM/Connector
-- ✅ **Dados pessoais de servidores**: PDFs, planilhas (`.xls`/`.xlsx`/`.ods`), CSVs e JSONs de dados de `sigep/` e `educasync/` ficam fora do git (`.gitignore`) e do grafo do graphify (`.graphifyignore`); o histórico foi saneado com `git-filter-repo`
-- ⚠️ **Autenticação frontend**: Básica (para uso interno)
-  - Para produção pública: implemente OAuth2/JWT no backend
-
----
-
-## 🗺️ Diagramas de Arquitetura
-
-Diagramas `.drawio` (editáveis) com PNG exportado, em [`docs/diagrams/`](docs/diagrams/):
-
-### 1. Visão Geral da Arquitetura
-![Visão geral do projeto](docs/diagrams/folhaponto-arquitetura.drawio.png)
-*Visão geral do projeto: telas React → `api.ts` → rotas Flask → MySQL, incluindo chamada ao Gemini API.*
-
-### 2. Funcionamento dos Scripts
-![Funcionamento dos scripts em scripts/](docs/diagrams/scripts-fluxo.drawio.png)
-*Funcionamento dos scripts em `scripts/` (add_entry_type, sync_tipos_lancamento, backfill_resumo, backup_db, update_tree).*
-
-### 3. Fluxo de Scripts do Backend
-![Fluxo do script backend/scripts/backfill_resumo_recesso.py](docs/diagrams/backend-scripts-fluxo.drawio.png)
-*Fluxo do script `backend/scripts/backfill_resumo_recesso.py`.*
-
-### 4. Fluxo de app.py (Backend)
-![Fluxo direto do backend/app.py](docs/diagrams/app-py-fluxo.drawio.png)
-*Fluxo direto do `backend/app.py`: cada rota agrupada por recurso até `execute_query()`/MySQL.*
-
-Abra os arquivos `.drawio` no [draw.io](https://app.diagrams.net/) para editá-los diretamente, ou use as imagens PNG exportadas correspondentes.
-
----
-
-## 🤝 Como Contribuir
+## 🤝 Como contribuir
 
 1. Crie uma branch: `git checkout -b feat/sua-feature`
 2. Commit com mensagem clara: `git commit -m "feat: descrição"`
 3. Push: `git push origin feat/sua-feature`
 4. Abra um Pull Request
 
----
+## 📚 Documentação complementar
+
+| Tema | Arquivo |
+|---|---|
+| Instalação detalhada | [`README_SETUP.md`](README_SETUP.md) |
+| Histórico de alterações | [`MODIFICATION_MEMORY.md`](MODIFICATION_MEMORY.md) |
+| Backend | [`backend/README.md`](backend/README.md) |
+| Banco de dados | [`database/README.md`](database/README.md) |
+| Frontend | [`src/README.md`](src/README.md) · [`src/components/README.md`](src/components/README.md) |
+| SIGEP | [`sigep/README.md`](sigep/README.md) · [`sigep.md`](sigep.md) |
+| EducaSync | [`educasync/README.md`](educasync/README.md) |
 
 ## 📝 Licença
 
-Apache License 2.0 — veja `LICENSE` para detalhes.
+Apache License 2.0 — veja [`LICENSE`](LICENSE).
 
 ---
 
-## 📞 Suporte e Documentação
+<div align="center">
 
-- **Setup detalhado**: veja `README_SETUP.md`
-- **Histórico de alterações**: `MODIFICATION_MEMORY.md`
-- **Backend**: `backend/README.md`
-- **Banco de dados**: `database/README.md`
-- **Frontend**: `src/README.md`
-- **Componentes**: `src/components/README.md`
+**Feito com ❤️ para facilitar a vida de quem cuida da frequência dos servidores.**
 
----
+<sub>Atualizado em 27/09/2026</sub>
 
-**Desenvolvido com ❤️ para facilitar a vida do servidor público.**
-
-*Last updated: 2026-07-30*
+</div>

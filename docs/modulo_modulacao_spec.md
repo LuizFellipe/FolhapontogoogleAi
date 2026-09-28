@@ -249,7 +249,7 @@ Todos os profissionais — efetivos, temporários, readaptados.
 | Campo | Tipo | Descrição |
 |---|---|---|
 | id | INT PK | Identificador |
-| matricula | VARCHAR(20) | Matrícula SEEDF |
+| matricula | VARCHAR(20) | Matrícula funcional |
 | nome | VARCHAR(150) | Nome completo |
 | tipo | ENUM | efetivo, temporario, readaptado |
 | ativo | BOOLEAN | Se está ativo no sistema |

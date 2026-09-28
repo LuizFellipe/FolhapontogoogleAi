@@ -1,7 +1,7 @@
 # Extrator de Fichas Cadastrais - SIGEP
 
 Script para automatizar a extração em massa de Fichas Cadastrais de servidores
-no sistema SIGEP (https://sigep.se.df.gov.br/), a partir de uma listagem geral
+no sistema SIGEP, a partir de uma listagem geral
 em PDF.
 
 ## O que o script faz
@@ -152,7 +152,7 @@ python3 raspar_fichas.py        # todos os pendentes
 python3 raspar_fichas.py 3      # só os 3 próximos pendentes (bom para testar)
 ```
 
-1. Uma janela do Chromium abrirá em `https://sigep.se.df.gov.br/`.
+1. Uma janela do Chromium abrirá na página de login do SIGEP (URL definida em `raspar_fichas.py`).
 2. **Faça login manualmente** com suas credenciais (o script não sabe login/senha).
 3. Volte ao terminal e pressione **ENTER** quando o login estiver concluído.
 4. O script processa a lista inteira automaticamente, imprimindo o progresso

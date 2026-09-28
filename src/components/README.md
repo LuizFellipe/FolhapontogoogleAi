@@ -33,7 +33,7 @@ Esta pasta contém todos os componentes React modulares utilizados para construi
 
 ### 📄 Visualizações para Impressão (Preview)
 
--   **`TimesheetPreview.tsx`**: Renderiza a **Página 1** da folha de ponto seguindo o layout oficial da Secretaria de Educação.
+-   **`TimesheetPreview.tsx`**: Renderiza a **Página 1** da folha de ponto seguindo o layout do formulário oficial de frequência.
     -   **Cabeçalho Oficial**: Exibe dados cadastrais do servidor, incluindo Cargo/Especialidade e o campo Disciplina (exibido em linha com o rótulo quando curto e com quebra de até 2 linhas apenas quando necessário para preservar o layout A4) ao lado da Carga Horária (C.H.).
     -   **Preenchimento A4 Completo**: Em modo de impressão, ocupa toda a página A4 via classes CSS `print-page` + `print-page-table-section`, distribuindo as 31 linhas da tabela uniformemente com o trick `tbody tr { height: 1% }`. Usa `page-break-after: always` (compatível com Chrome) para forçar a Página 2 em nova folha.
     -   **Preenchimento**: Invalida automaticamente campos de entrada/saída com travessões (`---`) em dias de lançamentos especiais.

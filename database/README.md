@@ -9,7 +9,7 @@ Esta pasta centraliza a gestão de persistência do sistema Folha de Ponto.
 
 ## Descrição do Modelo de Dados
 
-O banco de dados `folhaponto_db` utiliza um modelo estruturado para representar os formulários oficiais da Secretaria de Educação:
+O banco de dados `folhaponto_db` utiliza um modelo estruturado para representar os formulários oficiais de frequência:
 
 1.  **`profissionais`**: Entidade central que mapeia os dados cadastrais (Matrícula, Nome, UA, Exercício, Lotação, Carga Horária e Turnos).
 2.  **`folhas_ponto`**: Vincula um profissional a um período específico (Mês/Ano). É o container principal dos lançamentos.

@@ -131,7 +131,7 @@ O Vite, ao detectar a porta 3000 ocupada, abria automaticamente na próxima port
 
 #### 1. `src/components/LoginScreen.tsx` — Novo componente de login
 - Tela escura (dark) que contrasta com o app claro, com acento verde terminal (`#059669`), evocando o tema cyberpunk do `folha_manager.sh`.
-- Exibe identificador `SEE-DF · SISTEMA OFICIAL` e título `GESTOR FOLHA PONTO` em fonte monoespaciada.
+- Exibe identificador institucional e título `GESTOR FOLHA PONTO` em fonte monoespaciada.
 - Campos de usuário e senha com focus highlight verde. Animação de "shake" no card ao errar a senha.
 - Valida contra `import.meta.env.VITE_APP_USERNAME` e `import.meta.env.VITE_APP_PASSWORD` (client-side).
 - Recebe prop `onLogin: () => void` — chamado ao autenticar com sucesso.
@@ -291,7 +291,7 @@ Automatizar o preenchimento da Página 2 (Resumo da Frequência) tanto em tempo 
 - `src/components/TimesheetSummaryPreview.tsx`: referência a `'TRE'` como texto descritivo cosmético (não é validação) ✅
 
 ### Objetivo:
-Associar códigos oficiais de ocorrência (ex: 99902 para FÉRIAS, 00294 para ATESTADO) aos tipos de lançamento para suporte a geração de relatórios e conformidade com os formulários da SEE. Modernizar o schema eliminando ENUM hardcoded.
+Associar códigos oficiais de ocorrência (ex: 99902 para FÉRIAS, 00294 para ATESTADO) aos tipos de lançamento para suporte a geração de relatórios e conformidade com os formulários oficiais. Modernizar o schema eliminando ENUM hardcoded.
 
 ---
 
@@ -396,10 +396,10 @@ Agilizar o cadastro de novos profissionais, pré-populando os campos que são co
 #### 1. Lógica de preenchimento automático
 - Atualizada a função `handlePreFill` para inserir automaticamente a observação referente ao CURSO FORMAÇÃO CONTINUADA caso seja detectado o padrão de CPIP ou CURSO de meses anteriores.
 - Atualizada a função `handleBatchGenerate` para inserir a mesma observação automática nas folhas geradas em lote, quando houver dias com CPIP ou CURSO.
-- Texto inserido: `"CURSO FORMACAO CONTINUADA DE ACORDO MEMORANDO/CIRC 59/2025 - SEE/SUBEB DE 18/02/2025 - SEI 00080.00049147/2025-76"`
+- Texto inserido: observação padrão do curso, com a referência da circular (constante `obsText` em `src/App.tsx`).
 
 ### Objetivo:
-Automatizar a inclusão da justificativa/observação padrão para servidores que possuem CPIP ou CURSO DE FORMAÇÃO CONTINUADA, garantindo conformidade com as orientações circulares da SEE/SUBEB tanto no preenchimento individual quanto na geração em lote.
+Automatizar a inclusão da justificativa/observação padrão para servidores que possuem CPIP ou CURSO DE FORMAÇÃO CONTINUADA, garantindo conformidade com as orientações da circular tanto no preenchimento individual quanto na geração em lote.
 
 ---
 

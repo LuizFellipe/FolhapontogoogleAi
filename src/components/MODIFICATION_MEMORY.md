@@ -297,7 +297,7 @@ Gerar o memorando oficial de devolução de servidor, fiel ao PDF `MemoDevolucao
 - `src/components/README.md`
 
 ### 🎯 Objetivo
-Tornar o memorando impresso idêntico ao `layout_memo.jpg` e `MemoDevolucao.pdf` oficiais, substituindo layout flex ad-hoc por estrutura de tabela com bordas bem definidas — padrão dos documentos SEEDF.
+Tornar o memorando impresso idêntico ao `layout_memo.jpg` e `MemoDevolucao.pdf` oficiais, substituindo layout flex ad-hoc por estrutura de tabela com bordas bem definidas — padrão dos documentos oficiais.
 
 ---
 
@@ -335,7 +335,7 @@ Reduzir poluição visual (arco-íris de accents) e reorganizar botões por fun�
 ### 🔍 Alterações Realizadas (`src/components/TimesheetDeliveryModal.tsx` — componente `PrintDocument`)
 
 #### 1. Cabeçalho institucional
-- 1ª linha "GOVERNO DO DISTRITO FEDERAL" em **13pt**; demais 3 linhas em **11pt**, `lineHeight 1.3` (hierarquia igual ao PDF).
+- 1ª linha (nome do governo) em **13pt**; demais 3 linhas em **11pt**, `lineHeight 1.3` (hierarquia igual ao PDF).
 - Logo reduzida de 64px → **52px**.
 
 #### 2. Espaçamento / tipografia do corpo
