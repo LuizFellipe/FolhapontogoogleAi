@@ -65,8 +65,14 @@ docs/dados_folha_ponto.json
 docs/relatorio_comparacao_servidores_*.html
 docs/modulo_modulacao_dados_*.md
 
-# graphify: cache/grafo gerado localmente (pode conter trechos de dados pessoais)
-graphify-out/
+# graphify: versiona só o relatório e o grafo (verificados sem dados pessoais);
+# cache, manifest, html e backups são locais
+graphify-out/*
+!graphify-out/GRAPH_REPORT.md
+!graphify-out/graph.json
+
+# travas do LibreOffice (guardam usuário/máquina)
+.~lock.*#
 
 # PDFs na raiz (folhas de ponto reais)
 /*.pdf

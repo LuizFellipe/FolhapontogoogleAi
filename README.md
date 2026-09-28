@@ -361,6 +361,7 @@ Para regerar tudo: `python3 scripts/gen.py` (precisa do CLI `drawio`). Os 4 prim
 - ✅ SQL parametrizado via `mysql-connector`.
 - ⚠️ CORS aberto para qualquer origem (`CORS(app)`); em produção o acesso passa pelo proxy do nginx, mas restrinja as origens se expor a API diretamente.
 - ✅ **Dados pessoais fora do repositório**: PDFs, planilhas (`.xls`/`.xlsx`/`.ods`), CSVs e JSONs de `sigep/` e `educasync/` estão no `.gitignore` e no `.graphifyignore`; o histórico foi saneado com `git-filter-repo`.
+- ✅ Do `graphify-out/` só entram no git `GRAPH_REPORT.md` e `graph.json`, gerados a partir de arquivos já filtrados pelo `.graphifyignore`; cache, manifest, HTML e backups ficam locais.
 - ⚠️ A autenticação do frontend é básica, pensada para rede interna. Para exposição pública, implemente OAuth2/JWT no backend.
 
 ---
