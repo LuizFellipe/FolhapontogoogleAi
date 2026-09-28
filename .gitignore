@@ -48,6 +48,7 @@ backup_db.py
 sigep/*.pdf
 sigep/ficha.cadastral.*
 sigep/servidores.csv
+sigep/obs_sigep.json
 sigep/.browser_profile/
 sigep/.playwright-mcp/
 sigep/.claude/settings.local.json

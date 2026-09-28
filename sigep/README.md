@@ -198,9 +198,11 @@ Aceita matrícula com pontuação (`0243.044-4`, layout antigo) ou sem
 `lancar_eventos.py` lê o **Relatório de Eventos** do sistema (`GET /api/sigep/eventos`, mesmos ranges do
 ReportsModal) e, por matrícula, confere os "Registros Localizados" no SIGEP:
 
-- mesmo evento + mesma data inicial e final → só marca a flag `JA_EXISTIA`
+- mesmo evento + mesma data inicial e final → confere a Obs: igual aos turnos → flag `JA_EXISTIA`;
+  vazia/diferente → abre o registro, grava a Obs certa → flag `LANCADO` (`--reconferir` revisa também os já `JA_EXISTIA`)
 - ausente → Novo → Incluir → Tipo de Evento (casado por **nome**) → Observações = turno (`MAT VESP`) → Gravar →
   rebusca e, se apareceu, flag `LANCADO`
+- exceções de Obs por matrícula em `obs_sigep.json` (local, fora do git: `{"<matrícula>": "MAT VESP"}`) (ex: redução de carga horária — assina só `MAT` na folha, SIGEP `MAT VESP`)
 - sobreposição parcial → `CONFLITO` (não lança, revisar à mão). Ignorados: férias (SIGEP exige PAF) e abono aniversário (não existe no SIGEP).
 
 A flag (`POST /api/sigep/eventos/sync`) aparece na coluna **SIGEP** do relatório com a data.

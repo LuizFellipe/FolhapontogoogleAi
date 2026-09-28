@@ -8,12 +8,14 @@ Flag gravada via POST /api/sigep/eventos/sync. Sobreposição parcial = CONFLITO
 Uso (menu interativo: lista servidores do mês, roda um, vários ou todos):
     python3 lancar_eventos.py
     python3 lancar_eventos.py --api http://servidor:5000/api
+    python3 lancar_eventos.py --reconferir   # JA_EXISTIA também: completa Obs (turnos) vazia/diferente
     python3 lancar_eventos.py --selftest
 Login é manual na janela do Chromium (uma vez); depois aperte ENTER no terminal.
 Cada execução pergunta o modo: simular (dry-run, padrão) ou lançar. 'c' liga/desliga ENTER antes de cada Gravar.
 """
 
 import json
+import os
 import re
 import sys
 import unicodedata
@@ -27,6 +29,10 @@ TIMEOUT_MS = 15000
 IGNORAR = {"FERIAS", "ABONO_NIVER"}  # férias: SIGEP exige PAF. aniversário: não existe no SIGEP
 # tipo (nosso) -> texto exato da opção no SIGEP, só quando o label não casa sozinho
 EVENTO_SIGEP = {}
+# matrícula SIGEP -> Obs fixa (ex: redução de carga horária: assina só MAT na folha, SIGEP é MAT VESP).
+# Dado pessoal -> fica em obs_sigep.json (fora do git): {"<matrícula 8 dígitos>": "MAT VESP"}
+_OBS_JSON = os.path.join(os.path.dirname(os.path.abspath(__file__)), "obs_sigep.json")
+OBS_SIGEP = json.load(open(_OBS_JSON)) if os.path.exists(_OBS_JSON) else {}
 
 
 def norm(s):
@@ -60,6 +66,10 @@ def parse_registro(texto, href):
 
 def obs_turnos(turnos):
     return " ".join(turnos.replace(",", " ").split())  # "MAT, VESP" -> "MAT VESP"
+
+
+def obs_sigep(e):
+    return OBS_SIGEP.get(mat_sigep(e["matricula"])) or obs_turnos(e["turnos"])
 
 
 def classificar(di, df, evento, registros, fim_de):
@@ -116,14 +126,42 @@ def buscar(page, mat):
     return [r for r in (parse_registro(t, h) for t, h in links) if r]
 
 
+def abrir_registro(page, reg):
+    """Abre o registro no form #divCad. Retorna (data final, Obs)."""
+    abrir_evento(page)
+    with page.expect_navigation():
+        page.evaluate(reg["abre"])
+    page.wait_for_selector("#divCad", state="visible", timeout=TIMEOUT_MS)
+    return parse_data(page.input_value("#dataFinal")), page.input_value("#texto")
+
+
 def data_final(page, reg, cache):
     if reg["abre"] not in cache:
-        abrir_evento(page)
-        with page.expect_navigation():
-            page.evaluate(reg["abre"])
-        page.wait_for_selector("#divCad", state="visible", timeout=TIMEOUT_MS)
-        cache[reg["abre"]] = parse_data(page.input_value("#dataFinal"))
-    return cache[reg["abre"]]
+        cache[reg["abre"]] = abrir_registro(page, reg)
+    return cache[reg["abre"]][0]
+
+
+def obs_ok(lida, turnos):
+    return norm(lida) == norm(obs_turnos(turnos))
+
+
+def completar_obs(page, reg, obs, confirmar):
+    """Registro já existe sem a Obs certa: abre, troca #texto, Gravar, reabre e confere. None = pulado."""
+    abrir_registro(page, reg)
+    if page.is_visible("#divMsgBotao"):  # ex: "frequência já entregue na Regional" -> sem botões
+        raise RuntimeError(f"SIGEP bloqueia alteração: {page.inner_text('#divMsgBotao').strip()}")
+    page.fill("#texto", obs)
+    conferir(page, {"#texto": obs}, "Obs")
+    if confirmar and input("   Confira a tela (só a Obs muda). ENTER grava, 'p' pula: ").strip().lower() == "p":
+        return None
+    # registro aberto: #btnGravar fica oculto (#divSoBotaoGravar, só Novo); #btnGravar2 repassa o click pra ele
+    page.click("#btnGravar2")
+    page.wait_for_function("() => !document.querySelector('#btnGravar').disabled", timeout=TIMEOUT_MS)
+    page.wait_for_timeout(1000)
+    msg = page.inner_text("#divMsg1").strip()
+    if not obs_ok(abrir_registro(page, reg)[1], obs):
+        raise RuntimeError(f"Obs não gravada (SIGEP: {msg!r})")
+    return msg
 
 
 def conferir(page, esperado, etapa):
@@ -173,12 +211,13 @@ def lancar(page, mat, di, df, opcao, obs, confirmar):
     return page.inner_text("#divMsg1").strip()
 
 
-def processar(page, api, grupos, mes, ano, opcoes, dry, confirmar):
+def processar(page, api, grupos, mes, ano, opcoes, dry, confirmar, reconferir=False):
     """Roda os ranges pendentes de cada grupo (lista de ranges de uma folha). Retorna res por status."""
-    res = {"JA_EXISTIA": [], "LANCADO": [], "CONFLITO": [], "AUSENTE (dry-run)": [], "NAO MAPEADO": [], "FALHA": []}
+    res = {"JA_EXISTIA": [], "LANCADO": [], "OBS COMPLETADA": [], "CONFLITO": [], "AUSENTE (dry-run)": [],
+           "OBS (dry-run)": [], "NAO MAPEADO": [], "FALHA": []}
     try:
         for n, eventos in enumerate(grupos, 1):
-            eventos = [e for e in eventos if not e["sync_status"] and e["tipo"] not in IGNORAR]
+            eventos = pendentes(eventos, reconferir)
             if not eventos:
                 continue
             nome, mat = eventos[0]["nome"], mat_sigep(eventos[0]["matricula"])
@@ -202,15 +241,32 @@ def processar(page, api, grupos, mes, ano, opcoes, dry, confirmar):
                 try:
                     st = classificar(di, df, opcao, registros, lambda r: data_final(page, r, cache))
                     if st == "EXISTE":
-                        api_flag(api, e, "JA_EXISTIA")
-                        res["JA_EXISTIA"].append((e, ""))
+                        # registro pré-existente pode estar sem o turno na Obs -> completa
+                        reg = next(r for r in registros if r["inicio"] == di and norm(opcao).startswith(norm(r["evento"])))
+                        data_final(page, reg, cache)
+                        obs = obs_sigep(e)
+                        if obs_ok(cache[reg["abre"]][1], obs):
+                            api_flag(api, e, "JA_EXISTIA")
+                            res["JA_EXISTIA"].append((e, ""))
+                        elif dry:
+                            res["OBS (dry-run)"].append((e, f"SIGEP {cache[reg['abre']][1]!r} -> {obs!r}"))
+                            st = f"OBS (dry-run: SIGEP {cache[reg['abre']][1]!r}, folha {obs!r})"
+                        else:
+                            msg = completar_obs(page, reg, obs, confirmar)
+                            if msg is None:
+                                print(desc + "PULADO")
+                                continue
+                            cache[reg["abre"]] = (df, obs)
+                            api_flag(api, e, "LANCADO")
+                            res["OBS COMPLETADA"].append((e, msg))
+                            st = "OBS COMPLETADA"
                     elif st == "CONFLITO":
                         res["CONFLITO"].append((e, opcao))
                     elif dry:
                         res["AUSENTE (dry-run)"].append((e, opcao))
                         st = "AUSENTE (dry-run: não lançado)"
                     else:
-                        msg = lancar(page, mat, di, df, opcao, obs_turnos(e["turnos"]), confirmar)
+                        msg = lancar(page, mat, di, df, opcao, obs_sigep(e), confirmar)
                         if msg is None:
                             print(desc + "PULADO")
                             continue
@@ -227,7 +283,7 @@ def processar(page, api, grupos, mes, ano, opcoes, dry, confirmar):
     except KeyboardInterrupt:
         print("\nInterrompido.")
     print("\nResumo: " + ", ".join(f"{len(v)} {k}" for k, v in res.items()))
-    for k in ("CONFLITO", "NAO MAPEADO", "FALHA"):
+    for k in ("CONFLITO", "OBS (dry-run)", "NAO MAPEADO", "FALHA"):
         for e, info in res[k]:
             print(f"  {k}: {e['nome']} ({e['matricula']}) {e['label']} "
                   f"{e['dia_inicio']:02d}-{e['dia_fim']:02d}/{mes:02d} {info}")
@@ -253,8 +309,10 @@ def fmt_range(e):
     return f"{marca}{e['label'][:18].strip()} {dias}"
 
 
-def pendentes(g):
-    return [e for e in g if not e["sync_status"] and e["tipo"] not in IGNORAR]
+def pendentes(g, reconferir=False):
+    """reconferir: JA_EXISTIA volta a ser pendente (só a Obs é revisada)."""
+    ok = (None, "JA_EXISTIA") if reconferir else (None,)
+    return [e for e in g if e["sync_status"] in ok and e["tipo"] not in IGNORAR]
 
 
 def listar(grupos, mes, ano):
@@ -286,6 +344,7 @@ def escolher(txt, total):
 
 def main():
     api = next((sys.argv[i + 1] for i, a in enumerate(sys.argv) if a == "--api"), "http://localhost:5000/api")
+    reconferir = "--reconferir" in sys.argv
     hoje = date.today()
     resp = input(f"Mês/ano [{hoje:%m/%Y}]: ").strip()
     mes, ano = map(int, resp.split("/")) if resp else (hoje.month, hoje.year)
@@ -321,7 +380,7 @@ def main():
                     for i in escolher(cmd[1:] or "0", len(grupos)):
                         detalhar(grupos[i], mes)
                 elif cmd == "t" or re.fullmatch(r"[\d,\- ]+", cmd):
-                    alvo = [g for g in grupos if pendentes(g)] if cmd == "t" else \
+                    alvo = [g for g in grupos if pendentes(g, reconferir)] if cmd == "t" else \
                         [grupos[i] for i in escolher(cmd, len(grupos))]
                     if not alvo:
                         print("Nada selecionado.")
@@ -333,7 +392,8 @@ def main():
                     if modo == "l" and len(alvo) > 1 and \
                             input(f"Confirma LANÇAR para {len(alvo)} servidores? (s/N) ").strip().lower() != "s":
                         continue
-                    processar(page, api, alvo, mes, ano, opcoes, dry=modo != "l", confirmar=confirmar)
+                    processar(page, api, alvo, mes, ano, opcoes, dry=modo != "l", confirmar=confirmar,
+                              reconferir=reconferir)
                     grupos = carregar(api, mes, ano)  # atualiza flags
                 else:
                     print("Opção inválida.")
@@ -355,6 +415,13 @@ def selftest():
     assert casar_evento("ABONO ANIVERSÁRIO", opcoes) is None
     assert casar_evento("ABONO TRE", opcoes) == "Abono TRE"
     assert obs_turnos("MAT, VESP") == "MAT VESP" and obs_turnos("NOT") == "NOT"
+    OBS_SIGEP["00000019"] = "MAT VESP"
+    assert obs_sigep({"matricula": "1-9", "turnos": "MAT"}) == "MAT VESP"
+    assert obs_sigep({"matricula": "203.656-8", "turnos": "MAT"}) == "MAT"
+    assert obs_ok(" vesp  not", "VESP, NOT") and not obs_ok("", "VESP, NOT") and not obs_ok("MAT VESP", "MAT")
+    g = [{"sync_status": None, "tipo": "FALTA"}, {"sync_status": "JA_EXISTIA", "tipo": "FALTA"},
+         {"sync_status": "LANCADO", "tipo": "FALTA"}, {"sync_status": None, "tipo": "FERIAS"}]
+    assert pendentes(g) == g[:1] and pendentes(g, reconferir=True) == g[:2]
     assert mat_sigep("203.656-8") == "02036568" and mat_sigep("7062.819-X") == "7062819X" and mat_sigep(None) == ""
     assert escolher("3", 10) == [2] and escolher("1,4, 7", 10) == [0, 3, 6]
     assert escolher("2-4,9", 5) == [1, 2, 3]  # 9 fora do total é descartado

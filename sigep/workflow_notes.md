@@ -209,6 +209,9 @@ Mapeado ao vivo em 27/09/2026.
 - **Tipo de Evento**: valores do SIGEP (`D`, `0C`, `F2`...) **não** são os códigos SIGRH do `tipos_lancamento.codigo`.
   Casar por **nome**: nosso `label` igual (sem acento/maiúsculo) ou única opção que começa com ele
   (`AFAST CASAMENTO ART 62 LEI` → `...LEI COMP 840/2011`). `ABONO ANIVERSÁRIO` não existe na lista.
+- **Alterar registro existente** (aberto via `AbreDados`): `#btnGravar` fica oculto (`#divSoBotaoGravar`, só no Novo);
+  visível é `#btnGravar2`, que só faz `$("#btnGravar").click()` → mesmo POST `procGravaEvento.jsp` com `idEvento`
+  (altera, não duplica). Frequência já entregue na Regional → `#divMsgBotao` visível, sem botões.
 - **Excluir** (`#btnExcluir` → `procDelEvento.jsp`) existe no form — o robô nunca clica.
 - **Armadilha de foco no modal Novo**: `#divNovo` abre com `fade`; ao terminar, `shown.bs.modal` faz
   `$('#novoMat').focus()`. O `fill` do Playwright insere o texto no elemento *focado* → se preencher durante a
