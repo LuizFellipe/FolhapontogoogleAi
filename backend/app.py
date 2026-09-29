@@ -15,6 +15,8 @@ from dotenv import load_dotenv
 import mysql.connector
 from mysql.connector import Error
 
+import gh_sync
+
 # Carregar variáveis de ambiente
 load_dotenv()
 
@@ -952,6 +954,31 @@ def update_profissional_complementar(prof_id):
     if not execute_query(*_upsert_complementar(prof_id, data, cols), fetch=False):
         return jsonify({'error': 'Erro ao salvar dados complementares'}), 500
     return jsonify({'message': 'Dados complementares salvos com sucesso'})
+
+# Carências GH (gh/GH.N.sem.AAAA[.historico].json)
+@app.route('/api/gh/arquivos', methods=['GET'])
+def get_gh_arquivos():
+    """Lista os arquivos de carências encontrados em gh/ (sem tocar o banco)."""
+    return jsonify({'arquivos': [{k: v for k, v in a.items() if k != 'caminho'} for a in gh_sync.listar_arquivos()]})
+
+@app.route('/api/gh/sincronizar', methods=['POST'])
+def sincronizar_gh():
+    """Upsert das carências e eventos da GH. Nunca apaga; refaz o casamento com profissionais."""
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'error': 'Falha na conexão com banco de dados'}), 500
+    try:
+        return jsonify(gh_sync.sincronizar(conn))
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': f'Erro durante sincronização GH: {e}'}), 500
+    finally:
+        conn.close()
+
+@app.route('/api/profissionais/<int:prof_id>/carencias', methods=['GET'])
+def get_profissional_carencias(prof_id):
+    """Carências (como titular ou substituto) do profissional, com o histórico de cada uma."""
+    return jsonify({'carencias': gh_sync.carencias_do_profissional(execute_query, prof_id)})
 
 # Rota de saúde
 @app.route('/api/health', methods=['GET'])

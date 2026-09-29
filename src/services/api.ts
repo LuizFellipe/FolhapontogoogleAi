@@ -20,6 +20,58 @@ export interface AtestadosComparecimentoResponse {
   mes8: number; mes9: number; mes10: number; mes11: number;
 }
 
+export interface GhArquivo {
+  arquivo: string;
+  historico: string | null;
+  ano: number;
+  semestre: number;
+  ultima_atualizacao: string | null;
+  total_carencias: number;
+  modificado_em: string;
+}
+
+export interface GhPendencia {
+  cod_carencia: string;
+  ano: number;
+  semestre: number;
+  papel: 'titular' | 'substituto';
+  nome: string;
+}
+
+export interface GhSyncResumo {
+  arquivos: { arquivo: string; ano: number; semestre: number; total_carencias: number }[];
+  carencias: { novas: number; atualizadas: number };
+  eventos_novos: number;
+  nao_casados: GhPendencia[];
+  ambiguos: GhPendencia[];
+}
+
+export interface GhEvento {
+  id: number;
+  data: string | null;
+  situacao: string | null;
+  matricula: string | null;
+  nome: string | null;
+  observacao: string | null;
+}
+
+export interface GhCarencia {
+  id: number;
+  ano: number;
+  semestre: number;
+  cod_carencia: string;
+  cod_carencia_pai: string | null;
+  nome_carga_horaria: string | null;
+  periodo: string | null;
+  tipo: string | null;
+  componente: string | null;
+  situacao: string | null;
+  titular_nome: string | null;
+  substituto_nome: string | null;
+  papel: 'titular' | 'substituto';
+  historico: GhEvento[];
+}
+
 class ApiService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
@@ -258,6 +310,19 @@ class ApiService {
       method: 'PUT',
       body: JSON.stringify(data),
     });
+  }
+
+  // Carências GH (gh/GH.N.sem.AAAA.json + histórico)
+  async getGhArquivos() {
+    return this.request<{ arquivos: GhArquivo[] }>('/gh/arquivos');
+  }
+
+  async sincronizarGh() {
+    return this.request<GhSyncResumo>('/gh/sincronizar', { method: 'POST' });
+  }
+
+  async getProfissionalCarencias(profissionalId: number) {
+    return this.request<{ carencias: GhCarencia[] }>(`/profissionais/${profissionalId}/carencias`);
   }
 
   // Método utilitário para converter dados do frontend para o backend

@@ -114,6 +114,10 @@ Amplia `profissionais_complementar.pcd` para `VARCHAR(100)` (valores como `SIM -
 Cria `sigep_eventos_sync`: uma linha por range do Relatório de Eventos (`folha_ponto_id`, `tipo`, `dia_inicio`, `dia_fim`) já sincronizado no SIGEP, com `status` (`JA_EXISTIA`/`LANCADO`) e `sincronizado_em`. Gravada por `sigep/lancar_eventos.py` via `POST /api/sigep/eventos/sync`.
 > Finaliza registrando `026` na tabela `schema_migrations`.
 
+### `027_create_gh_carencias.sql`
+Cria `gh_carencias` (chave única `ano, semestre, cod_carencia`; período parseado em `periodo_ini`/`periodo_fim`; `titular_profissional_id` e `substituto_profissional_id` nullable com `ON DELETE SET NULL`; `ultima_vista_em`) e `gh_carencia_historico` (eventos por carência, chave única `carencia_id, hash`, `ON DELETE CASCADE`). Populadas por `POST /api/gh/sincronizar` a partir de `gh/*.json`.
+> Finaliza registrando `027` na tabela `schema_migrations`.
+
 ## Como Adicionar Novos Tipos de Lançamento
 
 Use o script interativo na raiz do projeto — ele atualiza automaticamente `types.ts`, os SQLs e aplica a migration no banco:

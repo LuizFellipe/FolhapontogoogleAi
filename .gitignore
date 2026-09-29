@@ -58,6 +58,11 @@ educasync/educa_folha/*.pdf
 educasync/dados_folha_ponto.json
 docs/dados_folha_ponto.json
 
+# gh: carências/histórico com nomes de servidores (versionar só script + docs)
+gh/GH.*.json
+gh/GH.*.csv
+gh/debug/
+
 # Playwright MCP: capturas/snapshots de sessão (podem conter dados pessoais)
 .playwright-mcp/
 

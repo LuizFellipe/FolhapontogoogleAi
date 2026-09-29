@@ -5,6 +5,7 @@ Esta pasta contém o servidor API desenvolvido em Python para o sistema Folha de
 ## Estrutura da Pasta
 
 -   **`app.py`**: O arquivo de lógica principal da API. Define as rotas Flask para gerenciar profissionais, folhas de ponto e lançamentos.
+-   **`gh_sync.py`**: Ingestão das carências da GH (`gh/GH.N.sem.AAAA[.historico].json`). Parsers e casamento com `profissionais` são funções puras (`normalizar_nome`, `parse_substituto`, `casar_profissional`); `sincronizar()` faz o upsert. Testes em `test_gh_sync.py` (`python -m unittest test_gh_sync`).
 -   **`scripts/`**: Scripts auxiliares e de manutenção. `backfill_resumo_recesso.py` é um script **one-off histórico** para recálculo do resumo de folhas de junho/2026 — não deve ser reaproveitado para novos backfills (o dicionário `ENTRY_TYPE_CODES` interno não é atualizado; novos backfills devem consultar a tabela `tipos_lancamento` diretamente).
 -   **`__pycache__/`**: Arquivos temporários gerados pelo Python (podem ser ignorados).
 
@@ -42,6 +43,9 @@ O backend atua como intermediário entre o frontend React e o banco de dados MyS
 | `/api/sigep/fichas-cadastrais` | GET | Retorna metadados e tabelas do `sigep/ficha.cadastral.DD.MM.YYYY.json` mais recente (pela data do nome). |
 | `/api/sigep/sincronizar` | POST | Upsert transacional dos dados SIGEP em `profissionais_complementar` + recria as tabelas 1:N (cargas, cursos, habilitações, componentes). Body opcional: `{"matriculas": [...]}`. Casa por matrícula normalizada (`_norm_mat`). |
 | `/api/profissionais/<id>/complementar` | GET, PUT | Dados complementares SIGEP + coleções 1:N do servidor. PUT faz upsert (não sobrescreve `arquivo_origem`). |
+| `/api/gh/arquivos` | GET | Lista os `gh/GH.N.sem.AAAA.json` encontrados (semestre, total de carências, presença do `.historico.json`, mtime). Não toca o banco. |
+| `/api/gh/sincronizar` | POST | Upsert idempotente em `gh_carencias` e `gh_carencia_historico` (eventos deduplicados por `hash`). Nunca apaga: carência que some do arquivo só deixa de atualizar `ultima_vista_em`. Casa titular/substituto com `profissionais` por CPF/matrícula e depois por nome normalizado; homônimo vira ambíguo e não vincula. Retorna resumo com `nao_casados` e `ambiguos`. |
+| `/api/profissionais/<id>/carencias` | GET | Carências do servidor como titular ou substituto (`papel` derivado), mais recentes primeiro, com o histórico de cada uma aninhado. |
 | `/api/health` | GET | Verifica se a API e o banco de dados estão operacionais. |
 
 ## Tecnologias Utilizadas

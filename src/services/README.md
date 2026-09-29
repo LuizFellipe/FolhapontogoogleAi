@@ -59,6 +59,8 @@ O `apiService` encapsula toda a lógica de persistência de dados:
     -   `getSigepFichasCadastrais()`: Lê o JSON mais recente das fichas cadastrais SIGEP (`GET /sigep/fichas-cadastrais`).
     -   `sincronizarSigep(matriculas?)`: Importa/atualiza dados complementares SIGEP no MySQL (`POST /sigep/sincronizar`).
     -   `getProfissionalComplementar(id)` / `updateProfissionalComplementar(id, data)`: Consulta e upsert dos dados complementares de um servidor (`GET/PUT /profissionais/:id/complementar`).
+    -   `getGhArquivos()` / `sincronizarGh()`: Lista os arquivos `gh/` e sincroniza carências e histórico no MySQL (`GET /gh/arquivos`, `POST /gh/sincronizar`).
+    -   `getProfissionalCarencias(id)`: Carências do servidor (titular/substituto) com histórico aninhado (`GET /profissionais/:id/carencias`). Tipos exportados: `GhArquivo`, `GhSyncResumo`, `GhPendencia`, `GhCarencia`, `GhEvento`.
     -   `normMat(m)` (export avulso): normaliza matrícula (remove pontuação e zeros à esquerda). Espelha `_norm_mat` do backend. Usado por `SyncEducaModal` e `SyncSigepTab`.
 
 8.  **Saúde da API**

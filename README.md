@@ -72,7 +72,7 @@ Do login à entrega: escolha o servidor e o mês, preencha a grade (com ajudante
 ### 👥 Servidores
 - **CRUD completo** com navegação rápida (anterior/próximo, lista, posição *N de total*).
 - Campos: nome, matrícula (opcional para temporários/prestadores), status **Ativo/Inativo**, cargo, disciplina, função, UA, exercício, unidade de lotação, carga horária (**20h ou 40h**) e turnos.
-- **Dados complementares do SIGEP** (admissão, PcD, readaptação, cargas horárias, cursos…) em um card logo abaixo do cadastro.
+- **Dados complementares do SIGEP** (admissão, PcD, readaptação, cargas horárias, cursos…) em um card logo abaixo do cadastro, seguido do card **Carências GH** (carências como titular/substituto ao longo dos semestres, com o histórico de cada uma).
 
 ### ✏️ Grade de lançamentos (Página 1)
 - Dias gerados automaticamente pelo mês/ano; **dois turnos independentes** (o 2º turno só abre para 40h).
@@ -174,11 +174,12 @@ Detalhes de instalação manual em [`README_SETUP.md`](README_SETUP.md).
 
 ## 🔌 Integrações SIGEP e EducaSync
 
-Três fluxos independentes, todos rodados localmente e com login manual quando envolvem o SIGEP:
+Quatro fluxos independentes, todos rodados localmente e com login manual quando envolvem o SIGEP:
 
 1. **SIGEP → fichas cadastrais** — `verificar_novos.py` encontra servidores novos, `raspar_fichas.py` baixa a ficha de cada um em PDF, `extrair_fichas.py` converte em JSON/XLSX e a aba **SIGEP** do modal de sincronização grava os dados complementares no banco.
 2. **Folha → SIGEP (robô)** — `lancar_eventos.py` lê os eventos do mês pela API e os lança em *03.Lançamento*. Cada intervalo recebe a marca `JA_EXISTIA` ou `LANCADO`; sobreposição parcial vira **conflito** para revisão manual. Roda em modo **simulação** por padrão.
-3. **EducaSync** — lê folhas de ponto em PDF (`educasync/educa_folha/`), gera `dados_folha_ponto.json` e o modal compara com o banco para aplicar divergências.
+3. **GH → carências** — `gh/processar_gh.py` consolida os CSVs em `GH.N.sem.AAAA.json`, `gh/raspar_historico.py` gera o `.historico.json` e a aba **GH** do modal de sincronização grava carências e histórico no banco (sem apagar nada).
+4. **EducaSync** — lê folhas de ponto em PDF (`educasync/educa_folha/`), gera `dados_folha_ponto.json` e o modal compara com o banco para aplicar divergências.
 
 ![Integrações SIGEP e EducaSync](docs/diagrams/integracao-sigep-educasync.drawio.svg)
 
@@ -192,7 +193,7 @@ Tudo gira em torno de **profissionais → folhas_ponto → lançamentos/resumo**
 
 ![Modelo de dados](docs/diagrams/modelo-dados.drawio.svg)
 
-- O schema evolui por **migrations numeradas** (`database/migrations/001…026`), registradas em `schema_migrations`.
+- O schema evolui por **migrations numeradas** (`database/migrations/001…027`), registradas em `schema_migrations`.
 - `database/full_setup.sql` cria schema + dados de referência, **sem dados pessoais**.
 - Mais em [`database/README.md`](database/README.md).
 

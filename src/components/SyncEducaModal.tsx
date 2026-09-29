@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { X, RefreshCw, CheckSquare, Square, UserPlus, AlertTriangle, CheckCircle, Database, Search, ArrowRight, FileText } from 'lucide-react';
+import { X, RefreshCw, CheckSquare, Square, UserPlus, AlertTriangle, CheckCircle, Database, Search, ArrowRight, FileText, Layers } from 'lucide-react';
 import { apiService, normMat } from '../services/api';
 import { SyncSigepTab } from './SyncSigepTab';
+import { SyncGhTab } from './SyncGhTab';
 
 interface Props {
   isOpen: boolean;
@@ -35,7 +36,7 @@ interface ComparedItem {
 }
 
 export const SyncEducaModal: React.FC<Props> = ({ isOpen, onClose, onSynced }) => {
-  const [sourceMode, setSourceMode] = useState<'educasync' | 'sigep'>('educasync');
+  const [sourceMode, setSourceMode] = useState<'educasync' | 'sigep' | 'gh'>('educasync');
   const [loading, setLoading] = useState(false);
   const [jsonRecords, setJsonRecords] = useState<JsonRecord[]>([]);
   const [dbProfissionais, setDbProfissionais] = useState<any[]>([]);
@@ -352,9 +353,23 @@ export const SyncEducaModal: React.FC<Props> = ({ isOpen, onClose, onSynced }) =
               Novo
             </span>
           </button>
+
+          <button
+            onClick={() => setSourceMode('gh')}
+            className={`pb-2.5 px-3 text-xs font-bold flex items-center gap-2 border-b-2 transition-all ${
+              sourceMode === 'gh'
+                ? 'border-amber-400 text-amber-300'
+                : 'border-transparent text-stone-400 hover:text-stone-200'
+            }`}
+          >
+            <Layers className="w-4 h-4" />
+            GH (Carências e Histórico)
+          </button>
         </div>
 
-        {sourceMode === 'sigep' ? (
+        {sourceMode === 'gh' ? (
+          <SyncGhTab onSynced={onSynced} />
+        ) : sourceMode === 'sigep' ? (
           <SyncSigepTab
             dbProfissionais={dbProfissionais}
             onSynced={() => {

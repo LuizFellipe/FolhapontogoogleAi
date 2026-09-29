@@ -1,6 +1,7 @@
 import React from 'react';
 import { EmployeeData } from '../types';
 import { ComplementaryDataWidget } from './ComplementaryDataWidget';
+import { CarenciasGhWidget } from './CarenciasGhWidget';
 
 interface Props {
   data: EmployeeData;
@@ -124,6 +125,7 @@ export const EmployeeForm: React.FC<Props> = ({ data, onChange, profissionalId }
       </div>
 
       <ComplementaryDataWidget profissionalId={profissionalId} matricula={data.registration} nome={data.name} />
+      <CarenciasGhWidget profissionalId={profissionalId} />
     </div>
   );
 };
