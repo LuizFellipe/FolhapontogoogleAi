@@ -340,6 +340,18 @@ export const SyncEducaModal: React.FC<Props> = ({ isOpen, onClose, onSynced }) =
           </button>
 
           <button
+            onClick={() => setSourceMode('gh')}
+            className={`pb-2.5 px-3 text-xs font-bold flex items-center gap-2 border-b-2 transition-all ${
+              sourceMode === 'gh'
+                ? 'border-amber-400 text-amber-300'
+                : 'border-transparent text-stone-400 hover:text-stone-200'
+            }`}
+          >
+            <Layers className="w-4 h-4" />
+            EducaSync (Carências/Histórico)
+          </button>
+
+          <button
             onClick={() => setSourceMode('sigep')}
             className={`pb-2.5 px-3 text-xs font-bold flex items-center gap-2 border-b-2 transition-all ${
               sourceMode === 'sigep'
@@ -352,18 +364,6 @@ export const SyncEducaModal: React.FC<Props> = ({ isOpen, onClose, onSynced }) =
             <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
               Novo
             </span>
-          </button>
-
-          <button
-            onClick={() => setSourceMode('gh')}
-            className={`pb-2.5 px-3 text-xs font-bold flex items-center gap-2 border-b-2 transition-all ${
-              sourceMode === 'gh'
-                ? 'border-amber-400 text-amber-300'
-                : 'border-transparent text-stone-400 hover:text-stone-200'
-            }`}
-          >
-            <Layers className="w-4 h-4" />
-            GH (Carências e Histórico)
           </button>
         </div>
 

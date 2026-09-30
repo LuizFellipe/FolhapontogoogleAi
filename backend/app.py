@@ -961,14 +961,30 @@ def get_gh_arquivos():
     """Lista os arquivos de carências encontrados em gh/ (sem tocar o banco)."""
     return jsonify({'arquivos': [{k: v for k, v in a.items() if k != 'caminho'} for a in gh_sync.listar_arquivos()]})
 
-@app.route('/api/gh/sincronizar', methods=['POST'])
-def sincronizar_gh():
-    """Upsert das carências e eventos da GH. Nunca apaga; refaz o casamento com profissionais."""
+@app.route('/api/gh/comparar', methods=['GET'])
+def comparar_gh():
+    """Compara os arquivos da GH com o banco (novo/divergente/sincronizado), sem gravar."""
     conn = get_db_connection()
     if not conn:
         return jsonify({'error': 'Falha na conexão com banco de dados'}), 500
     try:
-        return jsonify(gh_sync.sincronizar(conn))
+        grupos = request.args.get('grupos')
+        grupos = grupos.split(',') if grupos is not None else None
+        return jsonify({'carencias': gh_sync.comparar(conn, grupos=grupos)})
+    except Exception as e:
+        return jsonify({'error': f'Erro ao comparar GH: {e}'}), 500
+    finally:
+        conn.close()
+
+@app.route('/api/gh/sincronizar', methods=['POST'])
+def sincronizar_gh():
+    """Upsert das carências e eventos da GH. Nunca apaga; refaz o casamento com profissionais."""
+    body = request.get_json(silent=True) or {}
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'error': 'Falha na conexão com banco de dados'}), 500
+    try:
+        return jsonify(gh_sync.sincronizar(conn, chaves=body.get('chaves'), grupos=body.get('grupos')))
     except Exception as e:
         conn.rollback()
         return jsonify({'error': f'Erro durante sincronização GH: {e}'}), 500

@@ -156,93 +156,257 @@ def carregar_arquivo(caminho):
     return dados, historico
 
 
-def sincronizar(conn, gh_dir=GH_DIR):
+# Grupos de campos que o usuário liga/desliga na aba de sync. 'historico' = eventos (tabela própria).
+GRUPOS = {
+    'situacao': ['situacao'],
+    'pessoas': ['titular_nome', 'titular_profissional_id', 'substituto_nome', 'substituto_doc',
+                'substituto_profissional_id'],
+    'dados': ['periodo', 'tipo', 'componente', 'nome_carga_horaria', 'cod_carencia_pai'],
+}
+GRUPOS_TODOS = ('situacao', 'pessoas', 'dados', 'historico')
+
+
+def normalizar_grupos(grupos):
+    """None = todos; ignora nomes inválidos."""
+    if grupos is None:
+        return set(GRUPOS_TODOS)
+    return {g for g in grupos if g in GRUPOS_TODOS}
+
+
+def campos_dos_grupos(grupos):
+    return [c for g in GRUPOS if g in grupos for c in GRUPOS[g]]
+
+
+def chave_carencia(ano, semestre, cod):
+    return f'{ano}.{semestre}.{cod}'
+
+
+def motivos_da_divergencia(diffs, eventos_novos):
+    """Traduz os diffs (campo/antes/depois) e a contagem de eventos novos em motivos legíveis."""
+    motivos = []
+
+    def add(m):
+        if m not in motivos:
+            motivos.append(m)
+
+    for d in diffs:
+        campo = d['campo']
+        if campo == 'situacao':
+            add('situacao_mudou')
+        elif campo.endswith('_profissional_id'):
+            if d['antes'] is None and d['depois'] is not None:
+                add('servidor_vinculado')
+            elif d['antes'] is not None and d['depois'] is None:
+                add('servidor_desvinculado')
+            else:
+                add('pessoas_mudaram')
+        elif campo in GRUPOS['pessoas']:
+            add('pessoas_mudaram')
+        else:
+            add('dados_mudaram')
+    if eventos_novos:
+        add('eventos_novos')
+    return motivos
+
+
+def _ler_carencias(cursor, gh_dir):
     """
-    Upsert das carências e eventos. Nunca apaga. Refaz o casamento com profissionais a cada execução.
-    Retorna o resumo para a aba de sync.
+    Lê os arquivos e resolve o casamento com profissionais.
+    Retorna (arquivos, itens, nomes_por_id); cada item traz a chave, os campos a gravar e os eventos do arquivo.
     """
     arquivos = listar_arquivos(gh_dir)
-    cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT id, nome, matricula FROM profissionais")
     profissionais = cursor.fetchall()
     cursor.execute("SELECT profissional_id, cpf FROM profissionais_complementar WHERE cpf IS NOT NULL")
     cpf_por_id = {r['profissional_id']: r['cpf'] for r in cursor.fetchall()}
     por_nome, por_doc = indexar_profissionais(profissionais, cpf_por_id)
+    nomes_por_id = {p['id']: p['nome'] for p in profissionais}
 
-    novas = atualizadas = eventos_novos = 0
-    nao_casados, ambiguos = [], []
-    agora = datetime.now()
-
+    itens = []
     for arq in arquivos:
         dados, historico = carregar_arquivo(arq['caminho'])
         ano, semestre = dados.get('ano'), dados.get('semestre')
         if not ano or not semestre:
             continue
-
         for c in dados.get('carencias', []):
             cod = str(c['cod_carencia'])
             sub_nome, sub_doc = parse_substituto(c.get('professor_substituto'))
             tit_nome = _vazio(c.get('professor_titular'))
             ini, fim = parse_periodo(c.get('periodo'))
 
-            tit_id = sub_id = None
+            ids, pendencias = {}, []
             for papel, nome, doc in (('titular', tit_nome, None), ('substituto', sub_nome, sub_doc)):
+                ids[papel] = None
                 if not nome:
                     continue
                 pid, status = casar_profissional(nome, doc, por_nome, por_doc)
-                if papel == 'titular':
-                    tit_id = pid
-                else:
-                    sub_id = pid
+                ids[papel] = pid
                 if status != 'casado':
-                    alvo = ambiguos if status == 'ambiguo' else nao_casados
-                    item = {'cod_carencia': cod, 'ano': ano, 'semestre': semestre, 'papel': papel, 'nome': nome}
-                    if item not in alvo:
-                        alvo.append(item)
+                    pendencias.append((status, {'cod_carencia': cod, 'ano': ano, 'semestre': semestre,
+                                                'papel': papel, 'nome': nome}))
 
-            cursor.execute(
-                "SELECT id FROM gh_carencias WHERE ano=%s AND semestre=%s AND cod_carencia=%s",
-                (ano, semestre, cod))
-            existente = cursor.fetchone()
-            valores = (
-                parse_cod_pai(c.get('cod_carencia_pai')), c.get('nome_carga_horaria'), c.get('periodo'), ini, fim,
-                c.get('tipo'), c.get('componente_principal'), c.get('situacao'),
-                tit_nome, tit_id, sub_nome, sub_doc, sub_id, agora,
-            )
-            if existente:
-                carencia_id = existente['id']
-                cursor.execute("""
-                    UPDATE gh_carencias SET cod_carencia_pai=%s, nome_carga_horaria=%s, periodo=%s,
-                        periodo_ini=%s, periodo_fim=%s, tipo=%s, componente=%s, situacao=%s,
-                        titular_nome=%s, titular_profissional_id=%s, substituto_nome=%s,
-                        substituto_doc=%s, substituto_profissional_id=%s, ultima_vista_em=%s
-                    WHERE id=%s
-                """, valores + (carencia_id,))
-                atualizadas += 1
-            else:
-                cursor.execute("""
-                    INSERT INTO gh_carencias (cod_carencia_pai, nome_carga_horaria, periodo, periodo_ini,
-                        periodo_fim, tipo, componente, situacao, titular_nome, titular_profissional_id,
-                        substituto_nome, substituto_doc, substituto_profissional_id, ultima_vista_em,
-                        ano, semestre, cod_carencia)
-                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-                """, valores + (ano, semestre, cod))
-                carencia_id = cursor.lastrowid
-                novas += 1
+            itens.append({
+                'chave': chave_carencia(ano, semestre, cod),
+                'ano': ano, 'semestre': semestre, 'cod_carencia': cod,
+                'ini': ini, 'fim': fim,
+                'campos': {
+                    'cod_carencia_pai': parse_cod_pai(c.get('cod_carencia_pai')),
+                    'nome_carga_horaria': c.get('nome_carga_horaria'),
+                    'periodo': c.get('periodo'),
+                    'tipo': c.get('tipo'),
+                    'componente': c.get('componente_principal'),
+                    'situacao': c.get('situacao'),
+                    'titular_nome': tit_nome,
+                    'titular_profissional_id': ids['titular'],
+                    'substituto_nome': sub_nome,
+                    'substituto_doc': sub_doc,
+                    'substituto_profissional_id': ids['substituto'],
+                },
+                'pendencias': pendencias,
+                'eventos': [e for e in (historico.get(cod) or {}).get('historico', []) if e.get('hash')],
+            })
+    return arquivos, itens, nomes_por_id
 
-            for ev in (historico.get(cod) or {}).get('historico', []):
-                if not ev.get('hash'):
-                    continue
-                cursor.execute("""
-                    INSERT IGNORE INTO gh_carencia_historico
-                        (carencia_id, data, situacao, matricula, nome, observacao, hash, raspado_em)
-                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
-                """, (
-                    carencia_id, parse_data_hora(ev.get('data')), ev.get('situacao'),
-                    _vazio(ev.get('matricula')), _vazio(ev.get('nome')), _vazio(ev.get('observacao')),
-                    ev['hash'], parse_raspado_em(ev.get('raspado_em')),
-                ))
-                eventos_novos += cursor.rowcount
+
+def _evento_resumo(e):
+    return {'data': e.get('data'), 'situacao': e.get('situacao'), 'nome': _vazio(e.get('nome')),
+            'observacao': _vazio(e.get('observacao'))}
+
+
+def comparar(conn, gh_dir=GH_DIR, grupos=None):
+    """
+    Compara arquivos x banco sem gravar, só nos grupos de campos ativos. Status por carência:
+    'novo' (não existe), 'divergente' (campo mudou ou há evento novo) ou 'sincronizado'.
+    Cada item traz `motivos`, `diffs` (vínculos com nome do servidor) e `eventos` (os que seriam gravados).
+    """
+    grupos = normalizar_grupos(grupos)
+    campos = campos_dos_grupos(grupos)
+    cursor = conn.cursor(dictionary=True)
+    _, itens, nomes = _ler_carencias(cursor, gh_dir)
+    saida = []
+    for it in itens:
+        cursor.execute(
+            f"SELECT id, {', '.join(sorted(set(c for g in GRUPOS.values() for c in g)))} "
+            "FROM gh_carencias WHERE ano=%s AND semestre=%s AND cod_carencia=%s",
+            (it['ano'], it['semestre'], it['cod_carencia']))
+        db = cursor.fetchone()
+        diffs, novos = [], it['eventos']
+        if db:
+            for campo in campos:
+                antes, depois = db[campo], it['campos'][campo]
+                if (antes or None) != (depois or None):
+                    diffs.append({'campo': campo, 'antes': antes, 'depois': depois})
+            cursor.execute("SELECT hash FROM gh_carencia_historico WHERE carencia_id=%s", (db['id'],))
+            existentes = {r['hash'] for r in cursor.fetchall()}
+            novos = [e for e in it['eventos'] if e['hash'] not in existentes]
+        if 'historico' not in grupos:
+            novos = []
+        motivos = motivos_da_divergencia(diffs, len(novos)) if db else []
+        status = 'novo' if not db else ('divergente' if diffs or novos else 'sincronizado')
+
+        diffs_saida = []
+        for d in diffs:
+            antes, depois = d['antes'], d['depois']
+            if d['campo'].endswith('_profissional_id'):
+                antes, depois = nomes.get(antes), nomes.get(depois)
+            diffs_saida.append({'campo': d['campo'],
+                                'antes': None if antes is None else str(antes),
+                                'depois': None if depois is None else str(depois)})
+        c = it['campos']
+        saida.append({
+            'chave': it['chave'], 'ano': it['ano'], 'semestre': it['semestre'], 'cod_carencia': it['cod_carencia'],
+            'nome_carga_horaria': c['nome_carga_horaria'], 'componente': c['componente'],
+            'situacao': c['situacao'], 'periodo': c['periodo'],
+            'titular_nome': c['titular_nome'], 'substituto_nome': c['substituto_nome'],
+            'titular_casado': c['titular_profissional_id'] is not None,
+            'substituto_casado': c['substituto_profissional_id'] is not None,
+            'status': status, 'motivos': motivos, 'diffs': diffs_saida,
+            'eventos_novos': len(novos), 'total_eventos': len(it['eventos']),
+            'eventos': [_evento_resumo(e) for e in novos],
+        })
+    cursor.close()
+    return saida
+
+
+def _gravar_carencia(cursor, it, grupos, agora):
+    """Upsert de uma carência (+ eventos). Retorna ('nova'|'atualizada', eventos_novos)."""
+    ano, semestre, cod, c = it['ano'], it['semestre'], it['cod_carencia'], it['campos']
+    cursor.execute(
+        "SELECT id FROM gh_carencias WHERE ano=%s AND semestre=%s AND cod_carencia=%s", (ano, semestre, cod))
+    existente = cursor.fetchone()
+
+    if existente:
+        carencia_id = existente['id']
+        cols = {campo: c[campo] for campo in campos_dos_grupos(grupos)}
+        if 'dados' in grupos:
+            cols['periodo_ini'], cols['periodo_fim'] = it['ini'], it['fim']
+        cols['ultima_vista_em'] = agora
+        cursor.execute(
+            f"UPDATE gh_carencias SET {', '.join(f'{k}=%s' for k in cols)} WHERE id=%s",
+            tuple(cols.values()) + (carencia_id,))
+        acao = 'atualizada'
+    else:
+        cols = dict(c, periodo_ini=it['ini'], periodo_fim=it['fim'], ultima_vista_em=agora,
+                    ano=ano, semestre=semestre, cod_carencia=cod)
+        cursor.execute(
+            f"INSERT INTO gh_carencias ({', '.join(cols)}) VALUES ({', '.join(['%s'] * len(cols))})",
+            tuple(cols.values()))
+        carencia_id = cursor.lastrowid
+        acao = 'nova'
+
+    eventos_novos = 0
+    if 'historico' in grupos:
+        for ev in it['eventos']:
+            cursor.execute("""
+                INSERT IGNORE INTO gh_carencia_historico
+                    (carencia_id, data, situacao, matricula, nome, observacao, hash, raspado_em)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+            """, (
+                carencia_id, parse_data_hora(ev.get('data')), ev.get('situacao'),
+                _vazio(ev.get('matricula')), _vazio(ev.get('nome')), _vazio(ev.get('observacao')),
+                ev['hash'], parse_raspado_em(ev.get('raspado_em')),
+            ))
+            eventos_novos += cursor.rowcount
+    return acao, eventos_novos
+
+
+def sincronizar(conn, gh_dir=GH_DIR, chaves=None, grupos=None):
+    """
+    Upsert das carências e eventos. Nunca apaga. Refaz o casamento com profissionais a cada execução.
+    `chaves` (opcional): só as carências com essas chaves (ano.semestre.cod); None = todas.
+    `grupos` (opcional): grupos de campos a gravar em carências já existentes (None = todos);
+    carência nova sempre entra completa.
+    Cada carência roda em SAVEPOINT: falha em uma não derruba as outras e vai para `falhas` com o motivo.
+    """
+    grupos = normalizar_grupos(grupos)
+    cursor = conn.cursor(dictionary=True)
+    arquivos, itens, _ = _ler_carencias(cursor, gh_dir)
+    if chaves is not None:
+        chaves = set(chaves)
+        itens = [i for i in itens if i['chave'] in chaves]
+
+    novas = atualizadas = eventos_novos = 0
+    nao_casados, ambiguos, resultados = [], [], []
+    agora = datetime.now()
+
+    for it in itens:
+        cursor.execute("SAVEPOINT gh_item")
+        try:
+            acao, n_eventos = _gravar_carencia(cursor, it, grupos, agora)
+            cursor.execute("RELEASE SAVEPOINT gh_item")
+        except Exception as e:
+            cursor.execute("ROLLBACK TO SAVEPOINT gh_item")
+            resultados.append({'chave': it['chave'], 'ok': False, 'motivo': f'{type(e).__name__}: {e}'})
+            continue
+
+        novas += acao == 'nova'
+        atualizadas += acao == 'atualizada'
+        eventos_novos += n_eventos
+        resultados.append({'chave': it['chave'], 'ok': True, 'acao': acao, 'eventos_novos': n_eventos})
+        for status, item in it['pendencias']:
+            alvo = ambiguos if status == 'ambiguo' else nao_casados
+            if item not in alvo:
+                alvo.append(item)
 
     conn.commit()
     cursor.close()
@@ -250,9 +414,12 @@ def sincronizar(conn, gh_dir=GH_DIR):
         'arquivos': [{k: a[k] for k in ('arquivo', 'ano', 'semestre', 'total_carencias')} for a in arquivos],
         'carencias': {'novas': novas, 'atualizadas': atualizadas},
         'eventos_novos': eventos_novos,
+        'resultados': resultados,
+        'falhas': [r for r in resultados if not r['ok']],
         'nao_casados': nao_casados,
         'ambiguos': ambiguos,
     }
+
 
 
 def carencias_do_profissional(execute_query, prof_id):

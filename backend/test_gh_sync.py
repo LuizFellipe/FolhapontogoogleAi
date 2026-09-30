@@ -65,6 +65,31 @@ class CasamentoTests(unittest.TestCase):
         self.assertEqual(self.casar(None), (None, 'nao_casado'))
 
 
+class GruposEMotivosTests(unittest.TestCase):
+    def test_grupos_none_liga_todos_e_ignora_invalidos(self):
+        self.assertEqual(g.normalizar_grupos(None), set(g.GRUPOS_TODOS))
+        self.assertEqual(g.normalizar_grupos(['situacao', 'xpto']), {'situacao'})
+        self.assertEqual(g.normalizar_grupos([]), set())
+
+    def test_campos_dos_grupos(self):
+        self.assertEqual(g.campos_dos_grupos({'situacao'}), ['situacao'])
+        self.assertEqual(g.campos_dos_grupos({'historico'}), [])
+        self.assertIn('substituto_profissional_id', g.campos_dos_grupos({'pessoas'}))
+
+    def test_chave_carencia(self):
+        self.assertEqual(g.chave_carencia(2026, 1, '123'), '2026.1.123')
+
+    def test_motivos(self):
+        d = lambda campo, a, b: {'campo': campo, 'antes': a, 'depois': b}
+        self.assertEqual(g.motivos_da_divergencia([d('situacao', 'A', 'B')], 0), ['situacao_mudou'])
+        self.assertEqual(g.motivos_da_divergencia([d('substituto_profissional_id', None, 7)], 0), ['servidor_vinculado'])
+        self.assertEqual(g.motivos_da_divergencia([d('substituto_profissional_id', 7, None)], 0), ['servidor_desvinculado'])
+        self.assertEqual(g.motivos_da_divergencia([d('substituto_profissional_id', 7, 8)], 0), ['pessoas_mudaram'])
+        self.assertEqual(g.motivos_da_divergencia([d('substituto_nome', 'A', 'B'), d('titular_nome', 'C', 'D')], 0), ['pessoas_mudaram'])
+        self.assertEqual(g.motivos_da_divergencia([d('periodo', 'x', 'y')], 2), ['dados_mudaram', 'eventos_novos'])
+        self.assertEqual(g.motivos_da_divergencia([], 0), [])
+
+
 class ArquivosRealTests(unittest.TestCase):
     def test_lista_arquivos_de_carencias(self):
         if not os.path.isdir(g.GH_DIR):

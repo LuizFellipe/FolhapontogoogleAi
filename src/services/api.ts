@@ -30,6 +30,46 @@ export interface GhArquivo {
   modificado_em: string;
 }
 
+export type GhStatus = 'novo' | 'divergente' | 'sincronizado';
+export type GhGrupo = 'situacao' | 'pessoas' | 'dados' | 'historico';
+export type GhMotivo =
+  | 'situacao_mudou' | 'pessoas_mudaram' | 'dados_mudaram'
+  | 'servidor_vinculado' | 'servidor_desvinculado' | 'eventos_novos';
+
+export interface GhEventoNovo {
+  data: string | null;
+  situacao: string | null;
+  nome: string | null;
+  observacao: string | null;
+}
+
+export interface GhDiff {
+  campo: string;
+  antes: string | null;
+  depois: string | null;
+}
+
+export interface GhComparacao {
+  chave: string;
+  ano: number;
+  semestre: number;
+  cod_carencia: string;
+  nome_carga_horaria: string | null;
+  componente: string | null;
+  situacao: string | null;
+  periodo: string | null;
+  titular_nome: string | null;
+  substituto_nome: string | null;
+  titular_casado: boolean;
+  substituto_casado: boolean;
+  status: GhStatus;
+  motivos: GhMotivo[];
+  diffs: GhDiff[];
+  eventos_novos: number;
+  total_eventos: number;
+  eventos: GhEventoNovo[];
+}
+
 export interface GhPendencia {
   cod_carencia: string;
   ano: number;
@@ -38,10 +78,20 @@ export interface GhPendencia {
   nome: string;
 }
 
+export interface GhResultado {
+  chave: string;
+  ok: boolean;
+  acao?: 'nova' | 'atualizada';
+  eventos_novos?: number;
+  motivo?: string;
+}
+
 export interface GhSyncResumo {
   arquivos: { arquivo: string; ano: number; semestre: number; total_carencias: number }[];
   carencias: { novas: number; atualizadas: number };
   eventos_novos: number;
+  resultados: GhResultado[];
+  falhas: GhResultado[];
   nao_casados: GhPendencia[];
   ambiguos: GhPendencia[];
 }
@@ -317,8 +367,17 @@ class ApiService {
     return this.request<{ arquivos: GhArquivo[] }>('/gh/arquivos');
   }
 
-  async sincronizarGh() {
-    return this.request<GhSyncResumo>('/gh/sincronizar', { method: 'POST' });
+  async compararGh(grupos?: GhGrupo[]) {
+    const qs = grupos ? `?grupos=${grupos.join(',')}` : '';
+    return this.request<{ carencias: GhComparacao[] }>(`/gh/comparar${qs}`);
+  }
+
+  async sincronizarGh(chaves?: string[], grupos?: GhGrupo[]) {
+    return this.request<GhSyncResumo>('/gh/sincronizar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...(chaves && { chaves }), ...(grupos && { grupos }) }),
+    });
   }
 
   async getProfissionalCarencias(profissionalId: number) {

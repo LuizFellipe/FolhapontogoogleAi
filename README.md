@@ -72,7 +72,7 @@ Do login à entrega: escolha o servidor e o mês, preencha a grade (com ajudante
 ### 👥 Servidores
 - **CRUD completo** com navegação rápida (anterior/próximo, lista, posição *N de total*).
 - Campos: nome, matrícula (opcional para temporários/prestadores), status **Ativo/Inativo**, cargo, disciplina, função, UA, exercício, unidade de lotação, carga horária (**20h ou 40h**) e turnos.
-- **Dados complementares do SIGEP** (admissão, PcD, readaptação, cargas horárias, cursos…) em um card logo abaixo do cadastro, seguido do card **Carências GH** (carências como titular/substituto ao longo dos semestres, com o histórico de cada uma).
+- **Dados complementares do SIGEP** (admissão, PcD, readaptação, cargas horárias, cursos…) em um card logo abaixo do cadastro, seguido do card **Carências/Histórico** (carências como titular/substituto ao longo dos semestres, com o histórico de cada uma).
 
 ### ✏️ Grade de lançamentos (Página 1)
 - Dias gerados automaticamente pelo mês/ano; **dois turnos independentes** (o 2º turno só abre para 40h).
