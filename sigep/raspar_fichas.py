@@ -8,6 +8,7 @@ Uso:
     pip install playwright && playwright install chromium
     python3 raspar_fichas.py        # todos os pendentes
     python3 raspar_fichas.py 3      # só os 3 próximos pendentes
+    python3 raspar_fichas.py --status  # só lista quem está sem ficha (sem navegador/login)
 Login é manual na janela do Chromium; depois aperte ENTER no terminal.
 """
 
@@ -121,10 +122,17 @@ def baixar_ficha_pdf(page, id_servidor, codigo_unidade):
 
 
 def main():
-    limite = int(sys.argv[1]) if len(sys.argv) > 1 else None
+    status = "--status" in sys.argv
+    args = [a for a in sys.argv[1:] if a != "--status"]
+    limite = int(args[0]) if args else None
     servidores = carregar_servidores()
     pendentes = [s for s in servidores if not os.path.exists(os.path.join(PASTA, nome_arquivo(s["nome"], s["matricula"])))]
     pulados = len(servidores) - len(pendentes)
+    if status:  # só lista, sem navegador nem login
+        print(f"{len(servidores)} no CSV, {pulados} com ficha, {len(pendentes)} sem ficha:")
+        for s in pendentes:
+            print(f"  - {s['matricula']} {s['nome']}")
+        return
     if limite:
         pendentes = pendentes[:limite]
     gerados, falhas, sem_cadastro = 0, [], []

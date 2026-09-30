@@ -150,6 +150,7 @@ playwright install chromium
 ```bash
 python3 raspar_fichas.py        # todos os pendentes
 python3 raspar_fichas.py 3      # só os 3 próximos pendentes (bom para testar)
+python3 raspar_fichas.py --status  # só lista quem está no CSV sem ficha (offline, sem login)
 ```
 
 1. Uma janela do Chromium abrirá na página de login do SIGEP (URL definida em `raspar_fichas.py`).
