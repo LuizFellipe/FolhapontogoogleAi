@@ -96,6 +96,15 @@ export interface GhSyncResumo {
   ambiguos: GhPendencia[];
 }
 
+export interface GhDistribuicao {
+  id: number;
+  ano: number;
+  semestre: number;
+  grade: string;
+  turno: string | null;
+  carga_horaria: number | null;
+}
+
 export interface GhEvento {
   id: number;
   data: string | null;
@@ -312,6 +321,10 @@ class ApiService {
     return this.request<{ origem: string; total: number; dados: any[] }>('/educasync/dados');
   }
 
+  async extrairEducaSync() {
+    return this.request<{ total: number; saida: string }>('/educasync/extrair', { method: 'POST' });
+  }
+
   // Dados complementares SIGEP (Ficha Cadastral)
   async getSigepFichasCadastrais() {
     return this.request<{
@@ -367,6 +380,10 @@ class ApiService {
     return this.request<{ arquivos: GhArquivo[] }>('/gh/arquivos');
   }
 
+  async processarGh() {
+    return this.request<{ saida: string; distribuicao: { linhas: number; vinculadas: number } }>('/gh/processar', { method: 'POST' });
+  }
+
   async compararGh(grupos?: GhGrupo[]) {
     const qs = grupos ? `?grupos=${grupos.join(',')}` : '';
     return this.request<{ carencias: GhComparacao[] }>(`/gh/comparar${qs}`);
@@ -381,7 +398,7 @@ class ApiService {
   }
 
   async getProfissionalCarencias(profissionalId: number) {
-    return this.request<{ carencias: GhCarencia[] }>(`/profissionais/${profissionalId}/carencias`);
+    return this.request<{ carencias: GhCarencia[]; distribuicao: GhDistribuicao[] }>(`/profissionais/${profissionalId}/carencias`);
   }
 
   // Método utilitário para converter dados do frontend para o backend

@@ -45,6 +45,8 @@ export const SyncEducaModal: React.FC<Props> = ({ isOpen, onClose, onSynced }) =
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState<{ current: number; total: number; label: string } | null>(null);
+  const [extracting, setExtracting] = useState(false);
+  const [extractMsg, setExtractMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   // Checkbox granular de campos
   const [syncFields, setSyncFields] = useState({
@@ -82,6 +84,20 @@ export const SyncEducaModal: React.FC<Props> = ({ isOpen, onClose, onSynced }) =
       console.error('Erro ao carregar dados:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleExtract = async () => {
+    setExtracting(true);
+    setExtractMsg(null);
+    try {
+      const res = await apiService.extrairEducaSync();
+      await loadData();
+      setExtractMsg({ ok: true, text: `${res.total} registros extraídos dos PDFs` });
+    } catch (err: any) {
+      setExtractMsg({ ok: false, text: err.message || 'Falha na extração' });
+    } finally {
+      setExtracting(false);
     }
   };
 
@@ -427,15 +443,28 @@ export const SyncEducaModal: React.FC<Props> = ({ isOpen, onClose, onSynced }) =
             </label>
           </div>
 
-          <div className="relative">
-            <Search className="w-4 h-4 text-stone-400 absolute left-3 top-2.5" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar por nome ou matrícula..."
-              className="pl-9 pr-3 py-1.5 bg-stone-900 border border-stone-700 rounded-lg text-xs text-white placeholder-stone-500 focus:outline-none focus:border-cyan-500 w-64"
-            />
+          <div className="flex items-center gap-3">
+            {extractMsg && (
+              <span className={`text-xs ${extractMsg.ok ? 'text-emerald-400' : 'text-red-400'}`}>{extractMsg.text}</span>
+            )}
+            <button
+              onClick={handleExtract}
+              disabled={extracting || isProcessing}
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-stone-800 hover:bg-stone-700 disabled:opacity-50 text-stone-200 border border-stone-700 flex items-center gap-2"
+            >
+              <FileText className={`w-4 h-4 ${extracting ? 'animate-pulse' : ''}`} />
+              {extracting ? 'Extraindo...' : 'Extrair PDFs'}
+            </button>
+            <div className="relative">
+              <Search className="w-4 h-4 text-stone-400 absolute left-3 top-2.5" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Buscar por nome ou matrícula..."
+                className="pl-9 pr-3 py-1.5 bg-stone-900 border border-stone-700 rounded-lg text-xs text-white placeholder-stone-500 focus:outline-none focus:border-cyan-500 w-64"
+              />
+            </div>
           </div>
         </div>
 

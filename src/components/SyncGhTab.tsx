@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { RefreshCw, CheckCircle, AlertTriangle, CheckSquare, Square, Search, ArrowRight, ChevronDown, RotateCw } from 'lucide-react';
+import { RefreshCw, CheckCircle, AlertTriangle, CheckSquare, Square, Search, ArrowRight, ChevronDown, RotateCw, FileText } from 'lucide-react';
 import { apiService, GhArquivo, GhComparacao, GhSyncResumo, GhPendencia, GhGrupo, GhMotivo } from '../services/api';
 
 interface Props {
@@ -74,6 +74,8 @@ export const SyncGhTab: React.FC<Props> = ({ onSynced }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [resumo, setResumo] = useState<GhSyncResumo | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+  const [processando, setProcessando] = useState(false);
+  const [processMsg, setProcessMsg] = useState<string | null>(null);
   const [currentTab, setCurrentTab] = useState<Aba>('divergent');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -143,6 +145,23 @@ export const SyncGhTab: React.FC<Props> = ({ onSynced }) => {
       return next;
     });
 
+  const handleProcessar = async () => {
+    try {
+      setProcessando(true);
+      setErro(null);
+      setResumo(null);
+      const { saida, distribuicao } = await apiService.processarGh();
+      await load();
+      const csvs = /Processando\]/.test(saida) ? 'CSVs novos convertidos para JSON.' : 'Nenhum CSV novo para processar.';
+      setProcessMsg(`${csvs} Distribuição: ${distribuicao.linhas} linha(s), ${distribuicao.vinculadas} vinculada(s).`);
+    } catch (err: any) {
+      setProcessMsg(null);
+      setErro(err.message || 'Falha ao processar os CSVs da GH.');
+    } finally {
+      setProcessando(false);
+    }
+  };
+
   const handleSync = async (chaves: string[] = Array.from(selectedIds)) => {
     if (chaves.length === 0) return;
     try {
@@ -179,15 +198,26 @@ export const SyncGhTab: React.FC<Props> = ({ onSynced }) => {
             </label>
           ))}
         </div>
-        <div className="relative">
-          <Search className="w-4 h-4 text-stone-400 absolute left-3 top-2.5" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Buscar por código, componente ou nome..."
-            className="pl-9 pr-3 py-1.5 bg-stone-900 border border-stone-700 rounded-lg text-xs text-white placeholder-stone-500 focus:outline-none focus:border-cyan-500 w-72"
-          />
+        <div className="flex items-center gap-3">
+          {processMsg && <span className="text-xs text-emerald-400">{processMsg}</span>}
+          <button
+            onClick={handleProcessar}
+            disabled={processando || isProcessing}
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-stone-800 hover:bg-stone-700 disabled:opacity-50 text-stone-200 border border-stone-700 flex items-center gap-2"
+          >
+            <FileText className={`w-4 h-4 ${processando ? 'animate-pulse' : ''}`} />
+            {processando ? 'Processando...' : 'Processar CSVs'}
+          </button>
+          <div className="relative">
+            <Search className="w-4 h-4 text-stone-400 absolute left-3 top-2.5" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Buscar por código, componente ou nome..."
+              className="pl-9 pr-3 py-1.5 bg-stone-900 border border-stone-700 rounded-lg text-xs text-white placeholder-stone-500 focus:outline-none focus:border-cyan-500 w-72"
+            />
+          </div>
         </div>
       </div>
 

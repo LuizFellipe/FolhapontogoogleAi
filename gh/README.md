@@ -168,6 +168,10 @@ Exemplo real do formato produzido em `GH.<semestre>.sem.<ano>.json`:
 - Python 3.8 ou superior.
 - Nenhuma dependência externa necessária (utiliza exclusivamente a biblioteca padrão: `csv`, `json`, `pathlib`, `re`, `datetime`, `argparse`).
 
+### Via sistema (botão)
+
+Na aba **EducaSync (Carências/Histórico)** do modal de sincronização, o botão **Processar CSVs** (`POST /api/gh/processar`) roda este script sobre `gh/` e, em seguida, importa `distribuicao_carga.csv` (colunas `GRADE HORÁRIA`, `NOME DO PROFESSOR`, `MATRÍCULA`, `ANO`, `SEMESTRE`, `TURNO`) na tabela `gh_distribuicao`. Essa distribuição é exibida na ficha do servidor apenas quando ele não tem carências. Cada importação regrava os semestres presentes no CSV.
+
 ### Comandos de Execução
 
 1. **Processar o diretório atual:**

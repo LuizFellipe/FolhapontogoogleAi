@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useId, useMemo } from 'react';
 import { ClipboardList, ChevronDown, RefreshCw, History } from 'lucide-react';
-import { apiService, GhCarencia } from '../services/api';
+import { apiService, GhCarencia, GhDistribuicao } from '../services/api';
 
 interface Props {
   profissionalId?: number;
@@ -26,18 +26,24 @@ export const CarenciasGhWidget: React.FC<Props> = ({ profissionalId }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [loading, setLoading] = useState(false);
   const [carencias, setCarencias] = useState<GhCarencia[]>([]);
+  const [distribuicao, setDistribuicao] = useState<GhDistribuicao[]>([]);
   const [openId, setOpenId] = useState<number | null>(null);
   const bodyId = useId();
 
   useEffect(() => {
     setCarencias([]);
+    setDistribuicao([]);
     setOpenId(null);
     if (!profissionalId) return;
     let cancelado = false;
     setLoading(true);
     apiService
       .getProfissionalCarencias(profissionalId)
-      .then((res) => !cancelado && setCarencias(res.carencias))
+      .then((res) => {
+        if (cancelado) return;
+        setCarencias(res.carencias);
+        setDistribuicao(res.distribuicao || []);
+      })
       .catch((err) => console.error('Erro ao carregar carências GH:', err))
       .finally(() => !cancelado && setLoading(false));
     return () => {
@@ -55,7 +61,16 @@ export const CarenciasGhWidget: React.FC<Props> = ({ profissionalId }) => {
     return Array.from(m.entries());
   }, [carencias]);
 
-  if (!profissionalId || (!loading && carencias.length === 0)) return null;
+  // Fallback: servidor sem carências mostra a distribuição de carga (gh/distribuicao_carga.csv)
+  const modoDistribuicao = carencias.length === 0 && distribuicao.length > 0;
+  const gruposDist = Array.from(
+    distribuicao.reduce((m, d) => {
+      const k = `${d.ano}.${d.semestre}`;
+      return m.set(k, [...(m.get(k) || []), d]);
+    }, new Map<string, GhDistribuicao[]>())
+  );
+
+  if (!profissionalId || (!loading && carencias.length === 0 && distribuicao.length === 0)) return null;
 
   const emExercicio = carencias.filter((c) => /exerc[ií]cio/i.test(c.situacao || '')).length;
   const idsPai = new Map(carencias.map((c) => [c.cod_carencia, c.nome_carga_horaria]));
@@ -74,13 +89,24 @@ export const CarenciasGhWidget: React.FC<Props> = ({ profissionalId }) => {
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <h2 className="text-base font-semibold text-stone-900">Carências/Histórico</h2>
+            <h2 className="text-base font-semibold text-stone-900">
+              {modoDistribuicao ? 'Distribuição de carga' : 'Carências/Histórico'}
+            </h2>
             {loading && <RefreshCw className="w-3.5 h-3.5 animate-spin text-indigo-600" />}
           </div>
           <div className="mt-1 flex items-center gap-1.5 flex-wrap">
-            <span className={chip}>{carencias.length} carência(s)</span>
-            {emExercicio > 0 && <span className={chip}>{emExercicio} em exercício</span>}
-            <span className={chip}>{grupos.length} semestre(s)</span>
+            {modoDistribuicao ? (
+              <>
+                <span className={chip}>{distribuicao.length} grade(s)</span>
+                <span className={chip}>{gruposDist.length} semestre(s)</span>
+              </>
+            ) : (
+              <>
+                <span className={chip}>{carencias.length} carência(s)</span>
+                {emExercicio > 0 && <span className={chip}>{emExercicio} em exercício</span>}
+                <span className={chip}>{grupos.length} semestre(s)</span>
+              </>
+            )}
           </div>
         </div>
         <span className="hidden sm:inline text-xs font-medium text-stone-500">{isExpanded ? 'Recolher' : 'Expandir'}</span>
@@ -97,7 +123,25 @@ export const CarenciasGhWidget: React.FC<Props> = ({ profissionalId }) => {
       >
         <div className="overflow-hidden" inert={!isExpanded}>
           <div className="border-t border-stone-200 p-5 md:p-6 space-y-5 text-xs">
-            {grupos.map(([semestre, itens]) => (
+            {modoDistribuicao && gruposDist.map(([semestre, itens]) => (
+              <div key={semestre}>
+                <h4 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-400 mb-2">
+                  {semestre.replace('.', 'º/')}º sem <span className="tabular-nums">({itens.length})</span>
+                </h4>
+                <div className="space-y-2">
+                  {itens.map((d) => (
+                    <div key={d.id} className="bg-stone-50 border border-stone-200 rounded-xl p-3.5 flex items-center justify-between gap-2 flex-wrap">
+                      <span className="font-mono tabular-nums text-stone-900">{d.grade}</span>
+                      <div className="flex items-center gap-1.5">
+                        {d.turno && <span className={chip}>{d.turno}</span>}
+                        {d.carga_horaria != null && <span className={chip}>{d.carga_horaria}h</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+            {!modoDistribuicao && grupos.map(([semestre, itens]) => (
               <div key={semestre}>
                 <h4 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-400 mb-2">
                   {semestre.replace('.', 'º/')}º sem <span className="tabular-nums">({itens.length})</span>

@@ -56,11 +56,13 @@ O `apiService` encapsula toda a lógica de persistência de dados:
     -   `saveCompleteTimesheet()`: Orquestrador que agrupa a criação/atualização de profissional, folha, lançamentos e resumo em uma única chamada lógica para o usuário.
     -   `loadCompleteTimesheet()`: Carrega folha completa com todos os dados associados.
     -   `getEducaSyncDados()`: Obtém a listagem consolidada de profissionais extraídos via script EducaSync a partir do arquivo `dados_folha_ponto.json` (`GET /educasync/dados`).
+    -   `extrairEducaSync()`: Roda a extração dos PDFs no backend e regrava `dados_folha_ponto.json` (`POST /educasync/extrair`).
     -   `getSigepFichasCadastrais()`: Lê o JSON mais recente das fichas cadastrais SIGEP (`GET /sigep/fichas-cadastrais`).
     -   `sincronizarSigep(matriculas?)`: Importa/atualiza dados complementares SIGEP no MySQL (`POST /sigep/sincronizar`).
     -   `getProfissionalComplementar(id)` / `updateProfissionalComplementar(id, data)`: Consulta e upsert dos dados complementares de um servidor (`GET/PUT /profissionais/:id/complementar`).
     -   `getGhArquivos()` / `compararGh(grupos?)` / `sincronizarGh(chaves?, grupos?)`: Lista os arquivos `gh/`, compara com o banco por grupos de campos (`GET /gh/comparar`) e sincroniza só as carências escolhidas; o resumo traz `resultados` e `falhas` por carência (`POST /gh/sincronizar`).
-    -   `getProfissionalCarencias(id)`: Carências do servidor (titular/substituto) com histórico aninhado (`GET /profissionais/:id/carencias`). Tipos exportados: `GhArquivo`, `GhSyncResumo`, `GhPendencia`, `GhCarencia`, `GhEvento`.
+    -   `processarGh()`: Roda `gh/processar_gh.py` e importa `distribuicao_carga.csv` (`POST /gh/processar`); devolve `distribuicao: {linhas, vinculadas}`.
+    -   `getProfissionalCarencias(id)`: Carências do servidor (titular/substituto) com histórico aninhado e, se não houver carências, a `distribuicao` de carga (`GET /profissionais/:id/carencias`). Tipos exportados: `GhArquivo`, `GhSyncResumo`, `GhPendencia`, `GhCarencia`, `GhDistribuicao`, `GhEvento`.
     -   `normMat(m)` (export avulso): normaliza matrícula (remove pontuação e zeros à esquerda). Espelha `_norm_mat` do backend. Usado por `SyncEducaModal` e `SyncSigepTab`.
 
 8.  **Saúde da API**

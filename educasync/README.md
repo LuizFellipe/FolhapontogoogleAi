@@ -68,6 +68,10 @@ pip install -r requirements.txt
 
 Na raiz do projeto, rode `./folha_manager.sh` e escolha **[ 11 ] Extrair Folhas de Ponto (EducaSync)**. A opção instala o PyMuPDF no `venv` se necessário e gera `docs/dados_folha_ponto.json`, que o endpoint `GET /api/educasync/dados` lê com prioridade sobre `educasync/dados_folha_ponto.json` (usado apenas como fallback). Basta recarregar a aba EducaSync no sistema.
 
+### Via botão no sistema
+
+No modal de sincronização, o botão **Extrair PDFs** chama `POST /api/educasync/extrair`: o backend roda `extrair_folhas.py` com o Python do `venv`, grava `docs/dados_folha_ponto.json` e copia para `educasync/dados_folha_ponto.json`. Requer PyMuPDF instalado no `venv`.
+
 > **Dados sensíveis:** os PDFs de `educa_folha/` e os `dados_folha_ponto.json` estão no `.gitignore` — ficam só na máquina local/servidor e não são versionados.
 
 ### Execução Básica (padrão)

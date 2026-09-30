@@ -8,6 +8,8 @@ import json
 import os
 import sys
 import re
+import shutil
+import subprocess
 from datetime import datetime
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
@@ -733,6 +735,29 @@ def get_educasync_dados():
                 
     return jsonify({'error': 'Arquivo dados_folha_ponto.json não encontrado'}), 404
 
+@app.route('/api/educasync/extrair', methods=['POST'])
+def extrair_educasync():
+    """Roda educasync/extrair_folhas.py e grava o JSON em docs/ e educasync/."""
+    raiz = os.path.dirname(os.path.dirname(__file__))
+    edu = os.path.join(raiz, 'educasync')
+    saida_docs = os.path.join(raiz, 'docs', 'dados_folha_ponto.json')
+    try:
+        r = subprocess.run(
+            [sys.executable, os.path.join(edu, 'extrair_folhas.py'),
+             '-i', os.path.join(edu, 'educa_folha'), '-o', saida_docs, '-v'],
+            capture_output=True, text=True, timeout=120
+        )
+    except subprocess.TimeoutExpired:
+        return jsonify({'error': 'Extração excedeu 120s'}), 500
+    if r.returncode != 0:
+        if 'PyMuPDF' in r.stderr:
+            return jsonify({'error': 'PyMuPDF ausente. Rode: pip install -r educasync/requirements.txt'}), 500
+        return jsonify({'error': (r.stderr.strip() or 'Falha na extração')[-500:]}), 500
+    shutil.copyfile(saida_docs, os.path.join(edu, 'dados_folha_ponto.json'))
+    with open(saida_docs, 'r', encoding='utf-8') as f:
+        total = len(json.load(f))
+    return jsonify({'total': total, 'saida': r.stdout})
+
 # Helpers para dados complementares do SIGEP
 def _norm_mat(mat):
     if not mat:
@@ -961,6 +986,29 @@ def get_gh_arquivos():
     """Lista os arquivos de carências encontrados em gh/ (sem tocar o banco)."""
     return jsonify({'arquivos': [{k: v for k, v in a.items() if k != 'caminho'} for a in gh_sync.listar_arquivos()]})
 
+@app.route('/api/gh/processar', methods=['POST'])
+def processar_gh():
+    """Roda gh/processar_gh.py: converte CSVs GH.N.sem.dd.mm.aaaa.csv em JSON incremental (sem tocar o banco)."""
+    try:
+        r = subprocess.run(
+            [sys.executable, os.path.join(gh_sync.GH_DIR, 'processar_gh.py'), '-d', gh_sync.GH_DIR],
+            capture_output=True, text=True, timeout=120
+        )
+    except subprocess.TimeoutExpired:
+        return jsonify({'error': 'Processamento excedeu 120s'}), 500
+    if r.returncode != 0:
+        return jsonify({'error': (r.stderr.strip() or 'Falha ao processar GH')[-500:]}), 500
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'error': 'CSVs processados, mas falhou a conexão com o banco para importar a distribuição'}), 500
+    try:
+        distribuicao = gh_sync.importar_distribuicao(conn)
+    except Exception as e:
+        return jsonify({'error': f'CSVs processados, mas falhou a importação da distribuição: {e}'}), 500
+    finally:
+        conn.close()
+    return jsonify({'saida': r.stdout, 'distribuicao': distribuicao})
+
 @app.route('/api/gh/comparar', methods=['GET'])
 def comparar_gh():
     """Compara os arquivos da GH com o banco (novo/divergente/sincronizado), sem gravar."""
@@ -994,7 +1042,10 @@ def sincronizar_gh():
 @app.route('/api/profissionais/<int:prof_id>/carencias', methods=['GET'])
 def get_profissional_carencias(prof_id):
     """Carências (como titular ou substituto) do profissional, com o histórico de cada uma."""
-    return jsonify({'carencias': gh_sync.carencias_do_profissional(execute_query, prof_id)})
+    carencias = gh_sync.carencias_do_profissional(execute_query, prof_id)
+    # Distribuição de carga só como fallback: servidor sem nenhuma carência
+    distribuicao = [] if carencias else gh_sync.distribuicao_do_profissional(execute_query, prof_id)
+    return jsonify({'carencias': carencias, 'distribuicao': distribuicao})
 
 # Rota de saúde
 @app.route('/api/health', methods=['GET'])

@@ -4,6 +4,7 @@ Sincronização das carências da GH (gh/GH.N.sem.AAAA[.historico].json) para o 
 Funções puras (parse/casamento) ficam separadas das que tocam o banco para serem testáveis.
 """
 
+import csv
 import glob
 import json
 import os
@@ -420,6 +421,72 @@ def sincronizar(conn, gh_dir=GH_DIR, chaves=None, grupos=None):
         'ambiguos': ambiguos,
     }
 
+
+
+def parse_distribuicao_linha(row):
+    """Linha do distribuicao_carga.csv -> dict (semestre '1º Semestre' -> 1, CH 'X_12h' -> 12) ou None."""
+    grade = (row.get('GRADE HORÁRIA') or '').strip()
+    mat = (row.get('MATRÍCULA') or '').strip()
+    m_sem = re.match(r'\d', (row.get('SEMESTRE') or '').strip())
+    ano = (row.get('ANO') or '').strip()
+    if not (grade and mat and m_sem and ano.isdigit()):
+        return None
+    m_ch = re.search(r'_(\d+)H$', grade, re.I)
+    return {
+        'ano': int(ano), 'semestre': int(m_sem.group()), 'grade': grade,
+        'nome_professor': (row.get('NOME DO PROFESSOR') or '').strip() or None,
+        'matricula': mat, 'turno': (row.get('TURNO') or '').strip() or None,
+        'carga_horaria': int(m_ch.group(1)) if m_ch else None,
+    }
+
+
+def importar_distribuicao(conn, gh_dir=GH_DIR):
+    """
+    Importa gh/distribuicao_carga.csv em gh_distribuicao. Snapshot por (ano, semestre) presente no CSV:
+    apaga e regrava esses semestres (semestres ausentes do CSV não são tocados).
+    Retorna {'linhas', 'vinculadas'}; CSV ausente = zeros.
+    """
+    caminho = os.path.join(gh_dir, 'distribuicao_carga.csv')
+    if not os.path.exists(caminho):
+        return {'linhas': 0, 'vinculadas': 0}
+    with open(caminho, encoding='utf-8-sig', newline='') as fp:
+        linhas = [r for r in map(parse_distribuicao_linha, csv.DictReader(fp)) if r]
+    if not linhas:
+        return {'linhas': 0, 'vinculadas': 0}
+
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT id, nome, matricula FROM profissionais")
+    profissionais = cursor.fetchall()
+    cursor.execute("SELECT profissional_id, cpf FROM profissionais_complementar WHERE cpf IS NOT NULL")
+    por_nome, por_doc = indexar_profissionais(profissionais, {r['profissional_id']: r['cpf'] for r in cursor.fetchall()})
+
+    try:
+        for ano, semestre in {(r['ano'], r['semestre']) for r in linhas}:
+            cursor.execute("DELETE FROM gh_distribuicao WHERE ano=%s AND semestre=%s", (ano, semestre))
+        vinculadas = 0
+        for r in linhas:
+            r['profissional_id'], _ = casar_profissional(r['nome_professor'], r['matricula'], por_nome, por_doc)
+            vinculadas += r['profissional_id'] is not None
+            cursor.execute(
+                f"INSERT INTO gh_distribuicao ({', '.join(r)}) VALUES ({', '.join(['%s'] * len(r))}) "
+                "ON DUPLICATE KEY UPDATE turno=VALUES(turno), carga_horaria=VALUES(carga_horaria), "
+                "profissional_id=VALUES(profissional_id)",
+                tuple(r.values()))
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        cursor.close()
+    return {'linhas': len(linhas), 'vinculadas': vinculadas}
+
+
+def distribuicao_do_profissional(execute_query, prof_id):
+    """Distribuição de carga do profissional (mais recente primeiro)."""
+    return execute_query("""
+        SELECT id, ano, semestre, grade, turno, carga_horaria FROM gh_distribuicao
+        WHERE profissional_id = %s ORDER BY ano DESC, semestre DESC, grade
+    """, (prof_id,)) or []
 
 
 def carencias_do_profissional(execute_query, prof_id):
