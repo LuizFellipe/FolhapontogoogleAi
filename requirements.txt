@@ -12,3 +12,4 @@ gunicorn==21.2.0
 
 # Utilitários
 Werkzeug==3.0.1
+PyMuPDF==1.28.2

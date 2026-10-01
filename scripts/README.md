@@ -4,6 +4,15 @@ Scripts de manutenção e desenvolvimento para o sistema Folha de Ponto.
 
 ## Scripts Disponíveis
 
+### `test_ficha_cadastral_ui.py` — Regressão da emissão cadastral
+Testa download/nome do PDF, bloqueios por edições principais e complementares, salvar/desfazer, erros de salvamento/geração, ficha pendente e respostas atrasadas durante troca de servidor. Usa API interceptada com dados sintéticos, sem gravações no banco. Requer Playwright/Chromium e Vite iniciado com credenciais de teste:
+
+```bash
+VITE_APP_USERNAME=pdf-test VITE_APP_PASSWORD=pdf-test npm run dev -- --host 127.0.0.1 --port 5173
+# Em outro terminal; ajuste URL se Vite escolher outra porta:
+python3 scripts/test_ficha_cadastral_ui.py http://127.0.0.1:5173
+```
+
 ### `add_entry_type.py` — Adicionar novo tipo de lançamento
 Script interativo para adicionar um novo tipo de lançamento ao sistema. Atualiza todos os artefatos necessários de forma consistente:
 1. `src/types.ts` — union type `EntryType` e array `ENTRY_TYPES`

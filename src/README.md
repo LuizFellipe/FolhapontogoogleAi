@@ -11,6 +11,7 @@ Esta pasta concentra toda a lógica de aplicação e componentes da interface do
     - **Novo**: Implementa funções `handleNewProfissional()` e `handleDeleteProfissional()` para CRUD completo.
     - **Validação**: Verifica nome obrigatório antes de salvar.
     - **Integração**: Recarrega lista de profissionais após criar/excluir.
+    - **PDF cadastral SIGEP**: Passa cadastro persistido e estado de carregamento/salvamento/navegação ao `EmployeeForm`; a emissão exige que nome, matrícula, cargo, função e CH estejam salvos, além dos complementares.
     - **Segundo Turno**: Inicializa entries com `type_turno2: 'TRABALHO'` e passa carga horária para controle de colunas.
     - **Auto-resumo**: `computeSummaryFromEntries(entries, ch)` — função pura (fora do componente) que recalcula automaticamente o `summaryEntries` (Página 2) sempre que os lançamentos diários são alterados. Agrupa dias consecutivos com o mesmo código, deduplica turno1/turno2 no mesmo dia e define `carga` conforme a carga horária (`1` para 20h, `3` para 40h).
     - **Auto-save**: Persiste automaticamente as alterações da folha no banco de dados em tempo real sempre que um Feriado é aplicado ou revertido via modal.

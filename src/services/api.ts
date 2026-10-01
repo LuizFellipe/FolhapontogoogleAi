@@ -358,6 +358,23 @@ class ApiService {
     });
   }
 
+  async downloadFichaCadastral(profissionalId: number): Promise<{ blob: Blob; filename: string }> {
+    const response = await fetch(`${API_BASE_URL}/profissionais/${profissionalId}/ficha-cadastral.pdf`, {
+      cache: 'no-store',
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.error || 'Não foi possível baixar a ficha cadastral.');
+    }
+    if (!response.headers.get('Content-Type')?.includes('application/pdf')) {
+      throw new Error('O servidor não retornou um PDF válido.');
+    }
+    const disposition = response.headers.get('Content-Disposition') || '';
+    const filename = disposition.match(/filename="?([\w-]+\.pdf)"?/)?.[1]
+      || `ficha-cadastral-${profissionalId}.pdf`;
+    return { blob: await response.blob(), filename };
+  }
+
   async getProfissionalComplementar(profissionalId: number) {
     return this.request<{
       complementar: any | null;

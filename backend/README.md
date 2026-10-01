@@ -5,6 +5,7 @@ Esta pasta contém o servidor API desenvolvido em Python para o sistema Folha de
 ## Estrutura da Pasta
 
 -   **`app.py`**: O arquivo de lógica principal da API. Define as rotas Flask para gerenciar profissionais, folhas de ponto e lançamentos.
+-   **`ficha_cadastral.py`**: Consulta consistente do cadastro e geração de PDF A4 SIGEP com PyMuPDF. Usa `assets/sigep-ficha.pdf`, molde vetorial com brasão e rótulos, sem dados pessoais.
 -   **`gh_sync.py`**: Ingestão das carências da GH (`gh/GH.N.sem.AAAA[.historico].json`). Parsers e casamento com `profissionais` são funções puras (`normalizar_nome`, `parse_substituto`, `casar_profissional`); `sincronizar()` faz o upsert. Testes em `test_gh_sync.py` (`python -m unittest test_gh_sync`).
 -   **`scripts/`**: Scripts auxiliares e de manutenção. `backfill_resumo_recesso.py` é um script **one-off histórico** para recálculo do resumo de folhas de junho/2026 — não deve ser reaproveitado para novos backfills (o dicionário `ENTRY_TYPE_CODES` interno não é atualizado; novos backfills devem consultar a tabela `tipos_lancamento` diretamente).
 -   **`__pycache__/`**: Arquivos temporários gerados pelo Python (podem ser ignorados).
@@ -43,6 +44,7 @@ O backend atua como intermediário entre o frontend React e o banco de dados MyS
 | `/api/sigep/fichas-cadastrais` | GET | Retorna metadados e tabelas do `sigep/ficha.cadastral.DD.MM.YYYY.json` mais recente (pela data do nome). |
 | `/api/sigep/sincronizar` | POST | Upsert transacional dos dados SIGEP em `profissionais_complementar` + recria as tabelas 1:N (cargas, cursos, habilitações, componentes). Body opcional: `{"matriculas": [...]}`. Casa por matrícula normalizada (`_norm_mat`). |
 | `/api/profissionais/<id>/complementar` | GET, PUT | Dados complementares SIGEP + coleções 1:N do servidor. PUT faz upsert (não sobrescreve `arquivo_origem`). |
+| `/api/profissionais/<id>/ficha-cadastral.pdf` | GET | Download da ficha completa com dados atuais do banco. Retorna `application/pdf`, `Content-Disposition` e `Cache-Control: no-store`; erros JSON: 404 profissional inexistente, 409 ficha pendente, 500 falha de DB/geração. |
 | `/api/gh/arquivos` | GET | Lista os `gh/GH.N.sem.AAAA.json` encontrados (semestre, total de carências, presença do `.historico.json`, mtime). Não toca o banco. |
 | `/api/gh/comparar` | GET | Compara arquivos da GH x banco sem gravar, só nos grupos de `?grupos=situacao,pessoas,dados,historico` (ausente = todos). Cada carência vem `novo`, `divergente` ou `sincronizado`, com `motivos`, `diffs` (vínculos com nome do servidor) e `eventos` novos. |
 | `/api/gh/sincronizar` | POST | Corpo opcional `{"chaves": ["ano.sem.cod"], "grupos": [...]}` limita às carências e aos grupos de campos gravados (ausente = todos). Cada carência roda em SAVEPOINT: a que falha não derruba as outras e volta em `falhas` com o motivo. Upsert idempotente em `gh_carencias` e `gh_carencia_historico` (eventos deduplicados por `hash`). Nunca apaga: carência que some do arquivo só deixa de atualizar `ultima_vista_em`. Casa titular/substituto com `profissionais` por CPF/matrícula e depois por nome normalizado; homônimo vira ambíguo e não vincula. Retorna resumo com `nao_casados` e `ambiguos`. |
@@ -53,9 +55,19 @@ O backend atua como intermediário entre o frontend React e o banco de dados MyS
 -   **Flask**: Micro-framework para criação da API.
 -   **mysql-connector-python**: Driver oficial para comunicação com o MySQL.
 -   **Flask-CORS**: Habilita o acesso do frontend à API (Cross-Origin Resource Sharing).
+-   **PyMuPDF**: Gera PDFs cadastrais vetoriais; versão definida no `requirements.txt` da raiz. O CORS expõe `Content-Disposition` para preservar nome do download em acessos entre origens.
 -   **python-dotenv**: Gerencia configurações sensíveis (DB_USER, DB_PASSWORD, etc.).
 
 ## Como Executar Localmente
+
+### PDF cadastral SIGEP
+`ficha_cadastral.py` lê cadastro principal, complementares, cargas, cursos, habilitações e componentes numa transação `REPEATABLE READ` com `WITH CONSISTENT SNAPSHOT`. Queries da emissão usam conexão própria, com ordenação por ID e propagação de falhas; não passam pelo helper `execute_query`. O gerador usa dados do banco e molde estático distribuído em `assets/`, sem consultar SIGEP ou PDF original na emissão. Usa data de Brasília, paginação “X de Y”, espaços vazios para dados ausentes e ajuste/truncamento de textos dentro das células.
+
+**Compatibilidade MariaDB:** não enviar `readonly=True` ao Connector/Python. Prefixo de handshake `5.5.5` faz o conector rejeitar esse parâmetro mesmo num MariaDB atual. A emissão só executa SELECTs; mantém isolamento e snapshot consistente. `test_ficha_cadastral.py` cobre essa regressão com implementação real do conector, além de geração, paginação e erros HTTP.
+
+Detalhes do molde, limites de reconstrução e comandos de teste: [`assets/README.md`](assets/README.md).
+
+### Inicialização
 O backend é iniciado através do script `start_backend.sh` na raiz, mas pode ser rodado individualmente:
 ```bash
 python app.py

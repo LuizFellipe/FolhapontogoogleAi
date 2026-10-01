@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useId } from 'react';
+import React, { useState, useEffect, useId, useRef } from 'react';
 import {
   FileText,
   ChevronDown,
@@ -14,8 +14,10 @@ import {
   Award,
   Layers,
   Copy,
+  Download,
 } from 'lucide-react';
 import { apiService } from '../services/api';
+import { hasComplementaryChanges, normalizePhones } from '../services/fichaCadastral';
 
 type Input = { name: string; placeholder?: string; uf?: boolean; mono?: boolean; type?: string };
 type FieldDef = { label: string; inputs: Input[]; span?: string; copy?: boolean };
@@ -72,37 +74,49 @@ const TABS: { id: TabId; label: string; icon: React.ElementType; count?: 'cargas
 ];
 
 const EMPTY_REL = { cargas: [] as any[], cursos: [] as any[], habilitacoes: [] as any[], componentes: [] as any[] };
+const EDITABLE_FIELDS = Object.values(FIELDS).flatMap((fields) => fields.flatMap((field) => field.inputs.map((input) => input.name)));
 
 interface Props {
   profissionalId?: number;
   matricula?: string;
   nome?: string;
+  principalDirty?: boolean;
+  principalBusy?: boolean;
 }
 
-export const ComplementaryDataWidget: React.FC<Props> = ({ profissionalId, matricula, nome }) => {
+export const ComplementaryDataWidget: React.FC<Props> = ({ profissionalId, matricula, principalDirty = false, principalBusy = false }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('pessoal');
   const [compData, setCompData] = useState<any>(null);
   const [rel, setRel] = useState(EMPTY_REL);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const bodyId = useId();
+  const mounted = useRef(true);
+  const requestVersion = useRef(0);
+  const downloadVersion = useRef(0);
+  const emissionAllowed = useRef(false);
 
   // Form editável
   const [formData, setFormData] = useState<any>({});
 
   const loadData = async () => {
+    const version = ++requestVersion.current;
+    setFeedback(null);
     if (!profissionalId) {
       setCompData(null);
       setFormData({});
+      setRel(EMPTY_REL);
       return;
     }
 
     try {
       setLoading(true);
       const res = await apiService.getProfissionalComplementar(profissionalId);
+      if (!mounted.current || version !== requestVersion.current) return;
       setCompData(res.complementar);
       setRel({ ...EMPTY_REL, ...res });
 
@@ -116,16 +130,29 @@ export const ComplementaryDataWidget: React.FC<Props> = ({ profissionalId, matri
       } else {
         setFormData({ matricula: matricula || '' });
       }
+      return true;
     } catch (err: any) {
+      if (!mounted.current || version !== requestVersion.current) return;
+      setCompData(null);
+      setFormData({});
+      setRel(EMPTY_REL);
+      setFeedback({ type: 'error', message: 'Não foi possível carregar a ficha. Tente recarregar os dados.' });
       console.error('Erro ao carregar dados complementares:', err);
+      return false;
     } finally {
-      setLoading(false);
+      if (mounted.current && version === requestVersion.current) setLoading(false);
     }
   };
 
   useEffect(() => {
+    mounted.current = true;
     loadData();
+    return () => { mounted.current = false; requestVersion.current++; };
   }, [profissionalId]);
+
+  useEffect(() => {
+    if (principalBusy || principalDirty) downloadVersion.current++;
+  }, [principalBusy, principalDirty]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -140,9 +167,7 @@ export const ComplementaryDataWidget: React.FC<Props> = ({ profissionalId, matri
       setFeedback(null);
 
       // Tratamento dos telefones
-      const telList = typeof formData.telefones === 'string'
-        ? formData.telefones.split(/[,;\/]/).map((t: string) => t.trim()).filter(Boolean)
-        : formData.telefones || [];
+      const telList = normalizePhones(formData.telefones);
 
       const payload = {
         ...formData,
@@ -151,13 +176,15 @@ export const ComplementaryDataWidget: React.FC<Props> = ({ profissionalId, matri
       };
 
       await apiService.updateProfissionalComplementar(profissionalId, payload);
-      setFeedback({ type: 'success', message: 'Ficha salva.' });
-      await loadData();
+      if (!mounted.current) return;
+      const loaded = await loadData();
+      if (mounted.current && loaded) setFeedback({ type: 'success', message: 'Ficha salva.' });
     } catch (err: any) {
+      if (!mounted.current) return;
       console.error('Erro ao salvar dados complementares:', err);
       setFeedback({ type: 'error', message: 'Não foi possível salvar a ficha. Verifique a conexão com o servidor e tente de novo.' });
     } finally {
-      setSaving(false);
+      if (mounted.current) setSaving(false);
     }
   };
 
@@ -174,6 +201,39 @@ export const ComplementaryDataWidget: React.FC<Props> = ({ profissionalId, matri
   }
 
   const hasData = !!compData;
+  const complementaryDirty = hasComplementaryChanges(formData, compData, EDITABLE_FIELDS);
+  const downloadBlocked = loading || saving || generating || principalBusy || !profissionalId
+    || !hasData || complementaryDirty || principalDirty;
+  emissionAllowed.current = !loading && !saving && !principalBusy && !!profissionalId
+    && hasData && !complementaryDirty && !principalDirty;
+  const pendingMessage = !hasData ? 'Salve a ficha antes de emitir.'
+    : principalDirty && complementaryDirty ? 'Use “Salvar” e “Salvar ficha” antes de emitir.'
+    : principalDirty ? 'Use “Salvar” para salvar os dados do servidor antes de emitir.'
+    : complementaryDirty ? 'Use “Salvar ficha” antes de emitir.' : '';
+
+  const handleDownload = async () => {
+    if (downloadBlocked || !profissionalId) return;
+    const version = ++downloadVersion.current;
+    try {
+      setGenerating(true);
+      setFeedback(null);
+      const { blob, filename } = await apiService.downloadFichaCadastral(profissionalId);
+      if (!mounted.current || version !== downloadVersion.current || !emissionAllowed.current) return;
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err: any) {
+      if (mounted.current && version === downloadVersion.current && emissionAllowed.current)
+        setFeedback({ type: 'error', message: err.message || 'Não foi possível baixar o PDF.' });
+    } finally {
+      if (mounted.current) setGenerating(false);
+    }
+  };
   const { cargas, cursos, habilitacoes, componentes } = rel;
 
   const inputCls =
@@ -284,6 +344,7 @@ export const ComplementaryDataWidget: React.FC<Props> = ({ profissionalId, matri
                                 key={i.name}
                                 type={i.type || 'text'}
                                 name={i.name}
+                                disabled={saving || generating}
                                 placeholder={i.placeholder}
                                 maxLength={i.uf ? 2 : undefined}
                                 value={formData[i.name] || ''}
@@ -417,19 +478,30 @@ export const ComplementaryDataWidget: React.FC<Props> = ({ profissionalId, matri
             )}
 
             {/* Rodapé */}
-            <div className="px-5 md:px-6 py-3 border-t border-stone-200 bg-stone-50/60 flex items-center justify-between gap-3">
+            <div className="px-5 md:px-6 py-3 border-t border-stone-200 bg-stone-50/60 flex flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0 flex-1">
               <span className="text-[11px] text-stone-500 truncate">
                 {compData?.arquivo_origem && <>Origem: <span className="font-mono">{compData.arquivo_origem}</span></>}
               </span>
+              {pendingMessage && !loading && <p id={`${bodyId}-pending`} className="text-[11px] text-amber-700">{pendingMessage}</p>}
+              </div>
+              <div className="flex items-center gap-2">
+              <button type="button" onClick={handleDownload} disabled={downloadBlocked}
+                aria-describedby={pendingMessage ? `${bodyId}-pending` : undefined}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold border border-stone-300 text-stone-800 hover:bg-stone-100 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
+                <Download className="w-3.5 h-3.5" />
+                {generating ? 'Gerando…' : 'Baixar PDF'}
+              </button>
               <button
                 type="button"
                 onClick={handleSave}
-                disabled={saving || !profissionalId}
+                disabled={loading || saving || generating || !profissionalId}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-stone-900 hover:bg-stone-800 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
               >
                 <Save className="w-3.5 h-3.5" />
                 {saving ? 'Salvando…' : 'Salvar ficha'}
               </button>
+              </div>
             </div>
           </div>
         </div>

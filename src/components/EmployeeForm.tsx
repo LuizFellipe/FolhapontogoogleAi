@@ -2,11 +2,14 @@ import React from 'react';
 import { EmployeeData } from '../types';
 import { ComplementaryDataWidget } from './ComplementaryDataWidget';
 import { CarenciasGhWidget } from './CarenciasGhWidget';
+import { hasPrincipalChanges } from '../services/fichaCadastral';
 
 interface Props {
   data: EmployeeData;
   onChange: (data: EmployeeData) => void;
   profissionalId?: number;
+  persistedData?: EmployeeData;
+  principalBusy?: boolean;
 }
 
 const inputCls =
@@ -34,7 +37,7 @@ const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title
   </section>
 );
 
-export const EmployeeForm: React.FC<Props> = ({ data, onChange, profissionalId }) => {
+export const EmployeeForm: React.FC<Props> = ({ data, onChange, profissionalId, persistedData, principalBusy }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     onChange({ ...data, [name]: value });
@@ -124,7 +127,9 @@ export const EmployeeForm: React.FC<Props> = ({ data, onChange, profissionalId }
         </div>
       </div>
 
-      <ComplementaryDataWidget profissionalId={profissionalId} matricula={data.registration} nome={data.name} />
+      <ComplementaryDataWidget key={profissionalId ?? 'novo'} profissionalId={profissionalId}
+        matricula={data.registration} nome={data.name}
+        principalDirty={hasPrincipalChanges(data, persistedData)} principalBusy={principalBusy} />
       <CarenciasGhWidget profissionalId={profissionalId} />
     </div>
   );

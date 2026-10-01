@@ -1088,6 +1088,9 @@ export default function App() {
                 data={employee}
                 onChange={setEmployee}
                 profissionalId={profissionais[currentProfissionalIndex]?.id}
+                persistedData={profissionais[currentProfissionalIndex]
+                  ? apiService.convertProfissionalToEmployee(profissionais[currentProfissionalIndex]) : undefined}
+                principalBusy={saveStatus === 'saving' || isLoading || isLoadingProfissionais || isNavigating}
               />
               
               <TimesheetGrid

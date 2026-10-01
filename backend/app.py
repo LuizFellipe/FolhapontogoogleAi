@@ -10,6 +10,7 @@ import sys
 import re
 import shutil
 import subprocess
+from io import BytesIO
 from datetime import datetime
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
@@ -18,12 +19,13 @@ import mysql.connector
 from mysql.connector import Error
 
 import gh_sync
+import ficha_cadastral
 
 # Carregar variáveis de ambiente
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, expose_headers=['Content-Disposition'])
 
 # Configuração do banco de dados
 DB_CONFIG = {
@@ -942,6 +944,29 @@ def sincronizar_sigep():
         'sincronizados': sincronizados,
         'nao_encontrados': nao_encontrados
     })
+
+@app.route('/api/profissionais/<int:prof_id>/ficha-cadastral.pdf', methods=['GET'])
+def download_ficha_cadastral(prof_id):
+    connection = get_db_connection()
+    if connection is None:
+        return jsonify({'error': 'Não foi possível consultar a ficha cadastral.'}), 500
+    try:
+        snapshot = ficha_cadastral.load_snapshot(connection, prof_id)
+        content = ficha_cadastral.render(snapshot)
+        response = send_file(BytesIO(content), mimetype='application/pdf', as_attachment=True,
+                             download_name=ficha_cadastral.filename(snapshot), max_age=0)
+        response.headers['Cache-Control'] = 'no-store'
+        return response
+    except ficha_cadastral.MissingProfissional:
+        return jsonify({'error': 'Profissional não encontrado.'}), 404
+    except ficha_cadastral.MissingComplementar:
+        return jsonify({'error': 'Salve a ficha cadastral antes de emitir o PDF.'}), 409
+    except Exception:
+        app.logger.exception('Erro ao gerar ficha cadastral do profissional %s', prof_id)
+        return jsonify({'error': 'Não foi possível gerar o PDF. Tente novamente.'}), 500
+    finally:
+        connection.close()
+
 
 @app.route('/api/profissionais/<int:prof_id>/complementar', methods=['GET'])
 def get_profissional_complementar(prof_id):

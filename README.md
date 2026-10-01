@@ -70,6 +70,7 @@ Do login à entrega: escolha o servidor e o mês, preencha a grade (com ajudante
 ## ✨ Funcionalidades
 
 ### 👥 Servidores
+- **Ficha cadastral em PDF**: botão **Baixar PDF** no card SIGEP gera ficha A4 com layout original e dados atuais do banco, inclusive campos não exibidos nas abas. Exige ficha complementar salva e ausência de edições pendentes no cadastro principal e complementar. Salve antes de emitir; download individual, texto selecionável e páginas extras para coleções extensas.
 - **CRUD completo** com navegação rápida (anterior/próximo, lista, posição *N de total*).
 - Campos: nome, matrícula (opcional para temporários/prestadores), status **Ativo/Inativo**, cargo, disciplina, função, UA, exercício, unidade de lotação, carga horária (**20h ou 40h**) e turnos.
 - **Dados complementares do SIGEP** (admissão, PcD, readaptação, cargas horárias, cursos…) em um card logo abaixo do cadastro, seguido do card **Carências/Histórico** (carências como titular/substituto ao longo dos semestres, com o histórico de cada uma).
@@ -201,7 +202,7 @@ Tudo gira em torno de **profissionais → folhas_ponto → lançamentos/resumo**
 
 ## 🔗 API REST
 
-Base: `/api` · Flask em `backend/app.py` · todas as rotas passam por `execute_query()`.
+Base: `/api` · Flask em `backend/app.py` · consultas comuns usam `execute_query()`; operações transacionais, incluindo emissão cadastral, usam conexão própria.
 
 <details>
 <summary><b>👥 Profissionais</b></summary>
@@ -215,6 +216,7 @@ Base: `/api` · Flask em `backend/app.py` · todas as rotas passam por `execute_
 | `DELETE` | `/profissionais/<id>` | Excluir servidor (cascata nas folhas) |
 | `GET` | `/profissionais/<id>/complementar` | Dados complementares do SIGEP |
 | `PUT` | `/profissionais/<id>/complementar` | Atualizar dados complementares |
+| `GET` | `/profissionais/<id>/ficha-cadastral.pdf` | Baixar ficha cadastral completa; 404 profissional ausente, 409 ficha pendente, 500 falha de consulta/geração |
 
 </details>
 

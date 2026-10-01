@@ -7,6 +7,9 @@ Esta pasta centraliza a comunicação do frontend React com a API backend (Flask
 ### `api.ts`
 O serviço principal de comunicação com o backend, utilizando o padrão `ApiService`.
 
+### `fichaCadastral.ts`
+Regras de emissão do PDF: `hasPrincipalChanges` compara nome, matrícula, cargo, função e CH com cadastro salvo; `hasComplementaryChanges` compara campos editáveis com ficha persistida; `normalizePhones` normaliza listas e textos separados por vírgula, ponto e vírgula ou barra. A normalização é compartilhada com o salvamento. Testes em `fichaCadastral.test.ts` verificam bloqueio por pendências, reversão de edições e telefones equivalentes.
+
 ## Principais Funcionalidades
 
 O `apiService` encapsula toda a lógica de persistência de dados:
@@ -60,6 +63,7 @@ O `apiService` encapsula toda a lógica de persistência de dados:
     -   `getSigepFichasCadastrais()`: Lê o JSON mais recente das fichas cadastrais SIGEP (`GET /sigep/fichas-cadastrais`).
     -   `sincronizarSigep(matriculas?)`: Importa/atualiza dados complementares SIGEP no MySQL (`POST /sigep/sincronizar`).
     -   `getProfissionalComplementar(id)` / `updateProfissionalComplementar(id, data)`: Consulta e upsert dos dados complementares de um servidor (`GET/PUT /profissionais/:id/complementar`).
+    -   `downloadFichaCadastral(id)`: Baixa PDF cadastral (`GET /profissionais/:id/ficha-cadastral.pdf`), retornando `{ blob, filename }`. Trata erros JSON e valida tipo da resposta antes de criar download.
     -   `getGhArquivos()` / `compararGh(grupos?)` / `sincronizarGh(chaves?, grupos?)`: Lista os arquivos `gh/`, compara com o banco por grupos de campos (`GET /gh/comparar`) e sincroniza só as carências escolhidas; o resumo traz `resultados` e `falhas` por carência (`POST /gh/sincronizar`).
     -   `processarGh()`: Roda `gh/processar_gh.py` e importa `distribuicao_carga.csv` (`POST /gh/processar`); devolve `distribuicao: {linhas, vinculadas}`.
     -   `getProfissionalCarencias(id)`: Carências do servidor (titular/substituto) com histórico aninhado e, se não houver carências, a `distribuicao` de carga (`GET /profissionais/:id/carencias`). Tipos exportados: `GhArquivo`, `GhSyncResumo`, `GhPendencia`, `GhCarencia`, `GhDistribuicao`, `GhEvento`.
